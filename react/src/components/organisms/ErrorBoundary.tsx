@@ -36,18 +36,35 @@ export class ErrorBoundary extends Component<
       return (
         <div
           role="alert"
-          className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center gap-3 p-6 text-center"
+          style={{
+            minHeight: '100vh',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 12,
+            padding: 24,
+            textAlign: 'center',
+          }}
         >
-          <h1 className="text-2xl font-semibold text-text-primary">
+          <h1
+            style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: 22,
+              fontWeight: 700,
+              color: 'var(--text-primary)',
+            }}
+          >
             Something went wrong
           </h1>
-          <p className="text-sm text-text-secondary">
+          <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>
             An unexpected error occurred. Try reloading the page.
           </p>
           <button
             type="button"
+            className="btn-primary"
+            style={{ maxWidth: 200 }}
             onClick={() => window.location.reload()}
-            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
           >
             Reload
           </button>

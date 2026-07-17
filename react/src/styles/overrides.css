@@ -1,0 +1,14 @@
+/* React-specific layout helpers not present in V2's styles.css.
+   V2 positioned shell dropdowns with inline position:fixed via JS; in React we
+   anchor them to their trigger with a relative wrapper instead. */
+
+.topbar-dd-wrap {
+  position: relative;
+  display: flex;
+}
+
+.topbar-dd-wrap .shell-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+}

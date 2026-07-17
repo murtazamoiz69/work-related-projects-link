@@ -1,0 +1,94 @@
+// Client roster — ported verbatim from V2 clients.js. 15 hand-authored named
+// clients + deterministically generated ones, so the same person reads
+// consistently everywhere in the prototype.
+import { daysAgo, pick, seededRandom } from '@/lib/seed'
+import type { Client, ClientStatus } from './types'
+
+export const STATUS_LABEL: Record<ClientStatus, string> = {
+  active: 'Active',
+  attention: 'Needs Attention',
+  paused: 'Paused',
+  new: 'New',
+}
+
+export const PROGRAM_PLAN: Record<string, string> = {
+  'Weight Loss': '12-Week Weight Loss Kickstart',
+  'Diabetes Management': 'Diabetes-Friendly Meal Plan',
+  'Prenatal Nutrition': 'Prenatal Nutrition Essentials',
+  'Muscle Gain': 'Muscle Gain Progressive Plan',
+  'General Wellness': 'General Wellness Starter',
+  'Post-Surgery Recovery': 'Post-Surgery Recovery Nutrition',
+  'Endurance Training': 'Endurance Base Building',
+  'Body Recomposition': 'Body Recomposition Plan',
+  'Sports Nutrition': 'Athlete Performance Plan',
+  'PCOS Management': 'PCOS Balance Plan',
+  'Cardiac Health': 'Cardiac Health Nutrition',
+}
+
+type NamedClient = Omit<Client, 'plan'>
+
+const NAMED_CLIENTS: NamedClient[] = [
+  { id: 'c-1', name: 'Priya Sharma', initials: 'PS', color: '#C7594A', age: 34, gender: 'Female', program: 'Weight Loss', status: 'attention', adherence: 42, checkInDays: 4, joinDate: daysAgo(118), goals: ['Lose fat', 'Build discipline'], diet: 'Low carb' },
+  { id: 'c-2', name: 'Marcus Chen', initials: 'MC', color: '#3B6FA6', age: 51, gender: 'Male', program: 'Diabetes Management', status: 'attention', adherence: 58, checkInDays: 1, joinDate: daysAgo(210), goals: ['Improve health'], diet: 'Mediterranean' },
+  { id: 'c-3', name: 'Elena Rodriguez', initials: 'ER', color: '#8A5FBF', age: 29, gender: 'Female', program: 'Prenatal Nutrition', status: 'attention', adherence: 66, checkInDays: 2, joinDate: daysAgo(58), goals: ['Improve health', 'More energy'], diet: 'Vegetarian' },
+  { id: 'c-4', name: 'James Okafor', initials: 'JO', color: '#3D8361', age: 26, gender: 'Male', program: 'Muscle Gain', status: 'active', adherence: 92, checkInDays: 0, joinDate: daysAgo(150), goals: ['Build muscle'], diet: 'High protein' },
+  { id: 'c-5', name: 'Aisha Patel', initials: 'AP', color: '#C77F3B', age: 38, gender: 'Female', program: 'General Wellness', status: 'attention', adherence: 40, checkInDays: 3, joinDate: daysAgo(96), goals: ['Improve health', 'Better sleep'], diet: 'Vegan' },
+  { id: 'c-6', name: 'Tom Wilson', initials: 'TW', color: '#5C6862', age: 61, gender: 'Male', program: 'Post-Surgery Recovery', status: 'active', adherence: 75, checkInDays: 0, joinDate: daysAgo(380), goals: ['Improve health'], diet: 'Gluten-free' },
+  { id: 'c-7', name: 'Diana Foster', initials: 'DF', color: '#6B8F71', age: 45, gender: 'Female', program: 'Weight Loss', status: 'active', adherence: 88, checkInDays: 1, joinDate: daysAgo(2015), goals: ['Lose fat'], diet: 'Mediterranean' },
+  { id: 'c-8', name: 'Robert Kim', initials: 'RK', color: '#4A7A9D', age: 55, gender: 'Male', program: 'Diabetes Management', status: 'active', adherence: 90, checkInDays: 0, joinDate: daysAgo(245), goals: ['Improve health'], diet: 'Low carb' },
+  { id: 'c-9', name: 'Nadia Hussain', initials: 'NH', color: '#B0598A', age: 31, gender: 'Female', program: 'Endurance Training', status: 'active', adherence: 95, checkInDays: 0, joinDate: daysAgo(180), goals: ['More energy', 'Build discipline'], diet: 'High protein' },
+  { id: 'c-10', name: 'Leo Martinez', initials: 'LM', color: '#A65D3F', age: 33, gender: 'Male', program: 'Body Recomposition', status: 'active', adherence: 89, checkInDays: 1, joinDate: daysAgo(120), goals: ['Lose fat', 'Build muscle'], diet: 'High protein' },
+  { id: 'c-11', name: 'Sofia Martins', initials: 'SM', color: '#5C9EAD', age: 24, gender: 'Female', program: 'General Wellness', status: 'new', adherence: null, checkInDays: null, joinDate: daysAgo(0), goals: ['Improve health'], diet: 'Eats everything' },
+  { id: 'c-12', name: 'Grace Liu', initials: 'GL', color: '#7A6FA6', age: 41, gender: 'Female', program: 'Weight Loss', status: 'active', adherence: 70, checkInDays: 2, joinDate: daysAgo(14), goals: ['Lose fat'], diet: 'Pescatarian' },
+  { id: 'c-13', name: 'Daniel Osei', initials: 'DO', color: '#3F8F7A', age: 22, gender: 'Male', program: 'Sports Nutrition', status: 'active', adherence: 85, checkInDays: 0, joinDate: daysAgo(88), goals: ['Build muscle', 'More energy'], diet: 'High protein' },
+  { id: 'c-14', name: 'Meera Krishnan', initials: 'MK', color: '#C25B7A', age: 27, gender: 'Female', program: 'PCOS Management', status: 'active', adherence: 72, checkInDays: 2, joinDate: daysAgo(145), goals: ['Improve health'], diet: 'Low carb' },
+  { id: 'c-15', name: 'Carlos Vega', initials: 'CV', color: '#5B7FA6', age: 58, gender: 'Male', program: 'Cardiac Health', status: 'attention', adherence: 55, checkInDays: 5, joinDate: daysAgo(270), goals: ['Improve health'], diet: 'Mediterranean' },
+]
+
+const FIRST_NAMES = ['Olivia', 'Liam', 'Ava', 'Noah', 'Emma', 'Ethan', 'Sophia', 'Mason', 'Isabella', 'Lucas', 'Mia', 'Benjamin', 'Amara', 'Kenji', 'Fatima', 'Hiro', 'Zainab', 'Mateo', 'Layla', 'Arjun', 'Chloe', 'Diego', 'Priyanka', 'Samuel', 'Yuki', 'Aaliyah', 'Nikhil', 'Elif', 'Tariq', 'Camila', 'Andres', 'Ngozi', 'Wei', 'Sana', 'Omar', 'Ines', 'Kwame', 'Rin', 'Anaya', 'Felix']
+const LAST_NAMES = ['Johnson', 'Smith', 'Williams', 'Brown', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez', 'Wilson', 'Anderson', 'Thomas', 'Taylor', 'Moore', 'Jackson', 'White', 'Harris', 'Clark', 'Lewis', 'Young', 'Walker', 'Hall', 'Allen', 'King', 'Wright', 'Scott', 'Green', 'Baker', 'Adams', 'Nelson', 'Carter', 'Mitchell', 'Perez', 'Roberts', 'Turner', 'Phillips', 'Campbell', 'Parker', 'Evans', 'Edwards']
+const COLOR_POOL = ['#C7594A', '#3B6FA6', '#8A5FBF', '#3D8361', '#C77F3B', '#5C6862', '#6B8F71', '#4A7A9D', '#B0598A', '#A65D3F', '#5C9EAD', '#7A6FA6', '#3F8F7A', '#C25B7A', '#5B7FA6']
+const DIETS = ['Eats everything', 'Vegetarian', 'Vegan', 'Pescatarian', 'High protein', 'Low carb', 'Keto', 'Mediterranean', 'Halal', 'Gluten-free']
+const GOAL_POOL = ['Lose fat', 'Build muscle', 'Improve health', 'More energy', 'Better sleep', 'Build discipline']
+const PROGRAMS = Object.keys(PROGRAM_PLAN)
+
+function generateClients(count: number, startIndex: number): NamedClient[] {
+  const out: NamedClient[] = []
+  for (let i = 0; i < count; i++) {
+    const seed = (startIndex + i) * 13.37 + 1
+    const first = pick(FIRST_NAMES, seed * 1.1)
+    const last = pick(LAST_NAMES, seed * 2.3 + 1)
+    const program = pick(PROGRAMS, seed * 6.7 + 5)
+    const statusRoll = seededRandom(seed * 7.9 + 6)
+    const status: ClientStatus =
+      statusRoll < 0.6 ? 'active' : statusRoll < 0.8 ? 'attention' : statusRoll < 0.92 ? 'paused' : 'new'
+    const isNew = status === 'new'
+
+    const goal1 = pick(GOAL_POOL, seed * 12.1 + 11)
+    const goal2 = pick(GOAL_POOL, seed * 12.9 + 12)
+    const goals = goal2 !== goal1 && seededRandom(seed * 12.5 + 11.5) > 0.5 ? [goal1, goal2] : [goal1]
+
+    out.push({
+      id: `c-${startIndex + i + 1}`,
+      name: `${first} ${last}`,
+      initials: (first[0] + last[0]).toUpperCase(),
+      color: pick(COLOR_POOL, seed * 3.7 + 2),
+      age: 20 + Math.floor(seededRandom(seed * 4.1 + 3) * 45),
+      gender: seededRandom(seed * 5.3 + 4) > 0.5 ? 'Female' : 'Male',
+      program,
+      status,
+      adherence: isNew ? null : Math.round(35 + seededRandom(seed * 8.3 + 7) * 60),
+      checkInDays: isNew ? null : Math.floor(seededRandom(seed * 9.1 + 8) * 10),
+      joinDate: isNew
+        ? daysAgo(Math.floor(seededRandom(seed * 10.3 + 9) * 5))
+        : daysAgo(Math.floor(20 + seededRandom(seed * 11.7 + 10) * 400)),
+      goals,
+      diet: pick(DIETS, seed * 13.9 + 12),
+    })
+  }
+  return out
+}
+
+export const CLIENTS_DATA: Client[] = NAMED_CLIENTS.concat(
+  generateClients(33, NAMED_CLIENTS.length),
+).map((c) => ({ ...c, plan: PROGRAM_PLAN[c.program] }))

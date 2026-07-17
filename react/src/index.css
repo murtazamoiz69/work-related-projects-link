@@ -1,50 +1,36 @@
 @import 'tailwindcss';
 @import './styles/tokens.css';
+@import './styles/app.css';
+@import './styles/overrides.css';
 
-/* Map design tokens into Tailwind's theme so utilities like `bg-primary`,
-   `text-text-primary`, `rounded-lg` resolve from tokens.css.
-   `inline` emits resolved values, so raw channel vars stay the single source. */
+/* Expose V2's green design tokens to Tailwind utilities (bg-primary, text-red,
+   rounded-lg, etc.) for incidental use. `inline` emits resolved values so the
+   raw var()s in tokens.css remain the single source of truth. Screens mostly
+   rely on the ported class names in app.css; this is a convenience layer. */
 @theme inline {
-  --color-primary: hsl(var(--color-primary));
-  --color-primary-foreground: hsl(var(--color-primary-foreground));
-  --color-secondary: hsl(var(--color-secondary));
-  --color-secondary-foreground: hsl(var(--color-secondary-foreground));
-  --color-accent: hsl(var(--color-accent));
-  --color-success: hsl(var(--color-success));
-  --color-warning: hsl(var(--color-warning));
-  --color-error: hsl(var(--color-error));
-  --color-info: hsl(var(--color-info));
-  --color-background: hsl(var(--color-background));
-  --color-surface: hsl(var(--color-surface));
-  --color-text-primary: hsl(var(--color-text-primary));
-  --color-text-secondary: hsl(var(--color-text-secondary));
-  --color-border: hsl(var(--color-border));
+  --color-primary: var(--primary);
+  --color-primary-dark: var(--primary-dark);
+  --color-primary-light: var(--primary-light);
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-alt: var(--surface-alt);
+  --color-border: var(--border);
+  --color-border-soft: var(--border-soft);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-green: var(--green);
+  --color-amber: var(--amber);
+  --color-red: var(--red);
+  --color-blue: var(--blue);
+  --color-coral: var(--coral);
+  --color-purple: var(--purple);
 
-  --radius-sm: var(--radius-sm);
-  --radius-md: var(--radius-md);
-  --radius-lg: var(--radius-lg);
-  --radius-xl: var(--radius-xl);
-  --radius-2xl: var(--radius-2xl);
-}
+  --radius-xs: var(--r-xs);
+  --radius-sm: var(--r-sm);
+  --radius-md: var(--r-md);
+  --radius-lg: var(--r-lg);
 
-@layer base {
-  html {
-    color-scheme: light dark;
-  }
-
-  body {
-    margin: 0;
-    min-height: 100vh;
-    background-color: hsl(var(--color-background));
-    color: hsl(var(--color-text-primary));
-    font-family:
-      system-ui,
-      -apple-system,
-      'Segoe UI',
-      Roboto,
-      sans-serif;
-    font-size: var(--font-size-base);
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
 }
