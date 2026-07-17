@@ -34,7 +34,13 @@ export const clientDetailRoute = createRoute({
 export const chatRoute = createRoute({
   getParentRoute: () => authedRoute,
   path: '/chat',
-  component: ChatPage,
+  validateSearch: (search: Record<string, unknown>): { c?: string } => ({
+    c: typeof search.c === 'string' && search.c ? search.c : undefined,
+  }),
+  component: () => {
+    const { c } = chatRoute.useSearch()
+    return <ChatPage initialConversationId={c} />
+  },
 })
 
 export const programsRoute = createRoute({

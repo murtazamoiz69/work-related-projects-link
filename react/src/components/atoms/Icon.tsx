@@ -1,5 +1,6 @@
 import {
   Activity,
+  AlertCircle,
   AlertTriangle,
   Anchor,
   ArrowLeft,
@@ -47,6 +48,7 @@ import {
   Hand,
   HeartPulse,
   HelpCircle,
+  IdCard,
   Image,
   ImageOff,
   ImagePlus,
@@ -89,6 +91,7 @@ import {
   Rocket,
   RotateCcw,
   Rows3,
+  Salad,
   Save,
   Search,
   SearchX,
@@ -133,6 +136,7 @@ import {
 // the bundle stays tree-shaken. Add new names here as screens are ported.
 const ICONS: Record<string, LucideIcon> = {
   'activity': Activity,
+  'alert-circle': AlertCircle,
   'alert-triangle': AlertTriangle,
   'anchor': Anchor,
   'arrow-left': ArrowLeft,
@@ -180,6 +184,7 @@ const ICONS: Record<string, LucideIcon> = {
   'hand': Hand,
   'heart-pulse': HeartPulse,
   'help-circle': HelpCircle,
+  'id-card': IdCard,
   'image': Image,
   'image-off': ImageOff,
   'image-plus': ImagePlus,
@@ -222,6 +227,7 @@ const ICONS: Record<string, LucideIcon> = {
   'rocket': Rocket,
   'rotate-ccw': RotateCcw,
   'rows-3': Rows3,
+  'salad': Salad,
   'save': Save,
   'search': Search,
   'search-x': SearchX,
