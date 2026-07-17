@@ -1,6 +1,7 @@
 import {
   Activity,
   AlertTriangle,
+  Anchor,
   ArrowLeft,
   ArrowRight,
   BarChart2,
@@ -107,6 +108,7 @@ import {
   Tag,
   Target,
   Trash2,
+  TrendingDown,
   Type,
   Underline,
   Upload,
@@ -131,6 +133,7 @@ import {
 const ICONS: Record<string, LucideIcon> = {
   'activity': Activity,
   'alert-triangle': AlertTriangle,
+  'anchor': Anchor,
   'arrow-left': ArrowLeft,
   'arrow-right': ArrowRight,
   'bar-chart-2': BarChart2,
@@ -237,6 +240,7 @@ const ICONS: Record<string, LucideIcon> = {
   'tag': Tag,
   'target': Target,
   'trash-2': Trash2,
+  'trending-down': TrendingDown,
   'type': Type,
   'underline': Underline,
   'upload': Upload,

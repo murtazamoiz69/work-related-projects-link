@@ -11,9 +11,11 @@ type TopbarProps = {
   title?: ReactNode
   subtitle?: ReactNode
   back?: { to: string; label: string }
+  /** Optional status node shown in the greeting row (e.g. an autosave pill). */
+  status?: ReactNode
 }
 
-export function Topbar({ title, subtitle, back }: TopbarProps) {
+export function Topbar({ title, subtitle, back, status }: TopbarProps) {
   const [open, setOpen] = useState<'notif' | 'profile' | null>(null)
   const actionsRef = useRef<HTMLDivElement>(null)
   const activeProfile = useAuthStore((s) => s.activeProfile)
@@ -44,6 +46,7 @@ export function Topbar({ title, subtitle, back }: TopbarProps) {
             {subtitle ? <p>{subtitle}</p> : null}
           </>
         )}
+        {status}
       </div>
 
       <div className="topbar-actions" ref={actionsRef}>
