@@ -3,14 +3,20 @@ import { Modal } from '@/components/molecules/Modal'
 import { CLIENTS_DATA } from '@/features/clients'
 import { showToast } from '@/lib/toast'
 import { useShellStore } from '@/store/useShellStore'
+import {
+  TemplatePickerModal,
+  recordTemplateUsage,
+  stripHtmlToText,
+} from '@/features/templates'
+import type { Template } from '@/features/templates'
 
-// NOTE: the full template-picker wiring (openTemplatePickerModal /
-// recordTemplateUsage) lands with the Templates phase. For now the broadcast
-// composes a plain message to a client segment.
+// Broadcast composer — ported from V2's openBroadcastModal. Pick a template
+// via the universal Template Picker, preview it, and send to a client segment.
 export function BroadcastModal() {
   const closeBroadcast = useShellStore((s) => s.closeBroadcast)
   const [segment, setSegment] = useState('all')
-  const [message, setMessage] = useState('')
+  const [template, setTemplate] = useState<Template | null>(null)
+  const [pickerOpen, setPickerOpen] = useState(false)
 
   const segments = useMemo(
     () => [
@@ -34,6 +40,8 @@ export function BroadcastModal() {
     [],
   )
 
+  const preview = template ? stripHtmlToText(template.content) : ''
+
   const footer = (
     <>
       <button className="link-btn" onClick={closeBroadcast}>
@@ -41,15 +49,16 @@ export function BroadcastModal() {
       </button>
       <button
         className="btn-primary"
-        disabled={!message.trim()}
+        disabled={!template}
         onClick={() => {
+          if (!template) return
+          recordTemplateUsage(template, 'broadcast')
           const seg = segments.find((s) => s.value === segment)
           closeBroadcast()
-          if (seg) {
+          if (seg)
             showToast(
               `Broadcast sent to ${seg.count} ${seg.label.toLowerCase()}`,
             )
-          }
         }}
       >
         Send Broadcast
@@ -58,27 +67,43 @@ export function BroadcastModal() {
   )
 
   return (
-    <Modal title="Broadcast Message" onClose={closeBroadcast} footer={footer}>
-      <label className="modal-field">
-        <span>Send to</span>
-        <select value={segment} onChange={(e) => setSegment(e.target.value)}>
-          {segments.map((s) => (
-            <option key={s.value} value={s.value}>
-              {s.label} ({s.count})
-            </option>
-          ))}
-        </select>
-      </label>
-      <label className="modal-field">
-        <span>Message</span>
-        <textarea
-          className="notes-input"
-          rows={3}
-          placeholder="Write a message to send to this segment…"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
+    <>
+      <Modal title="Broadcast Message" onClose={closeBroadcast} footer={footer}>
+        <label className="modal-field">
+          <span>Send to</span>
+          <select value={segment} onChange={(e) => setSegment(e.target.value)}>
+            {segments.map((s) => (
+              <option key={s.value} value={s.value}>
+                {s.label} ({s.count})
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="modal-field">
+          <span>Message template</span>
+          <button
+            className="btn-secondary full"
+            type="button"
+            onClick={() => setPickerOpen(true)}
+          >
+            {template ? template.title : 'Choose a template…'}
+          </button>
+        </label>
+        {template ? (
+          <p className="pw-muted">
+            {preview.slice(0, 160)}
+            {preview.length > 160 ? '…' : ''}
+          </p>
+        ) : null}
+      </Modal>
+
+      {pickerOpen ? (
+        <TemplatePickerModal
+          context="broadcast"
+          onInsert={(t) => setTemplate(t)}
+          onClose={() => setPickerOpen(false)}
         />
-      </label>
-    </Modal>
+      ) : null}
+    </>
   )
 }

@@ -61,9 +61,18 @@ export const templatesRoute = createRoute({
 export const templateDetailRoute = createRoute({
   getParentRoute: () => authedRoute,
   path: '/templates/$templateId',
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): { edit?: boolean } => ({
+    edit:
+      search.edit === true || search.edit === 'true' || search.edit === '1'
+        ? true
+        : undefined,
+  }),
   component: () => {
     const { templateId } = templateDetailRoute.useParams()
-    return <TemplateDetailPage templateId={templateId} />
+    const { edit } = templateDetailRoute.useSearch()
+    return <TemplateDetailPage templateId={templateId} initialEdit={!!edit} />
   },
 })
 
