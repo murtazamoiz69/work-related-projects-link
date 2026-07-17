@@ -100,10 +100,7 @@ function MenuItems({ template: t, onAction }: ViewProps) {
 export function TemplateCard({ template: t, onAction }: ViewProps) {
   const preview = stripHtmlToText(t.content).slice(0, 92)
   return (
-    <article
-      className="prog-card tpl-card"
-      onClick={() => onAction('view', t)}
-    >
+    <article className="prog-card tpl-card" onClick={() => onAction('view', t)}>
       <div
         className={`prog-card-cover tpl-card-cover`}
         style={{ background: t.cover.value }}
@@ -162,7 +159,11 @@ export function TemplateCard({ template: t, onAction }: ViewProps) {
           <span className="prog-meta-chip">{t.category}</span>
         </div>
         <div className="prog-card-coach">
-          <Avatar initials={authorInitials(t.createdBy)} color="#5B7FA6" size="xs" />
+          <Avatar
+            initials={authorInitials(t.createdBy)}
+            color="#5B7FA6"
+            size="xs"
+          />
           <span>{t.createdBy}</span>
         </div>
         <div className="prog-card-stats">
@@ -176,7 +177,9 @@ export function TemplateCard({ template: t, onAction }: ViewProps) {
           </div>
           <div className="prog-stat">
             <span className="prog-stat-value">
-              {t.usage.lastUsed ? formatCheckIn(daysAgoNum(t.usage.lastUsed)) : '—'}
+              {t.usage.lastUsed
+                ? formatCheckIn(daysAgoNum(t.usage.lastUsed))
+                : '—'}
             </span>
             <span className="prog-stat-label">Last Used</span>
           </div>

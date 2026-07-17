@@ -64,19 +64,34 @@ export function TimelineTimeEditModal({
       const d = getDay(ws, weekNum, dayNum)
       if (d?.workout) {
         d.workout.time = time
-        pushVersion(ws, 'Changed workout time', 'Sarah Nolan', `${d.label} workout moved to ${formatTime12(time)}`)
+        pushVersion(
+          ws,
+          'Changed workout time',
+          'Sarah Nolan',
+          `${d.label} workout moved to ${formatTime12(time)}`,
+        )
       }
     } else if (itemKind === 'extraWorkout') {
       const d = getDay(ws, weekNum, dayNum)
       const wk = (d?.extraWorkouts || []).find((x) => x.uid === itemId)
       if (wk) wk.time = time
-      pushVersion(ws, 'Changed workout time', 'Sarah Nolan', `${wk ? wk.name : 'Session'} moved to ${formatTime12(time)}`)
+      pushVersion(
+        ws,
+        'Changed workout time',
+        'Sarah Nolan',
+        `${wk ? wk.name : 'Session'} moved to ${formatTime12(time)}`,
+      )
     } else {
       const dietDay = getDietDay(ws, weekNum, dayNum)
       const entry = dietDay?.meals.find((x) => x.uid === itemId)
       if (entry) entry.time = time
       const meal = entry ? resolveMeal(ws, entry.mealId) : null
-      pushVersion(ws, 'Changed meal time', 'Sarah Nolan', `${dietDay ? dietDay.label : ''}: ${meal ? meal.name : 'meal'} moved to ${formatTime12(time)}`)
+      pushVersion(
+        ws,
+        'Changed meal time',
+        'Sarah Nolan',
+        `${dietDay ? dietDay.label : ''}: ${meal ? meal.name : 'meal'} moved to ${formatTime12(time)}`,
+      )
     }
     refresh()
     onClose()

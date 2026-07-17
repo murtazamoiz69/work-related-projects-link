@@ -2,7 +2,12 @@ import { useState } from 'react'
 import { Icon } from '@/components/atoms/Icon'
 import { formatJoinDate } from '@/features/clients'
 import type { Program, ProgramWeek } from '../types'
-import { JT_STATUS, deltaTone, jtCurrentWeek, weekChipDateRangeLabel } from '../data'
+import {
+  JT_STATUS,
+  deltaTone,
+  jtCurrentWeek,
+  weekChipDateRangeLabel,
+} from '../data'
 import { MiniBar, PhotoTriplet } from './atoms'
 
 function WeekCard({ w, p }: { w: ProgramWeek; p: Program }) {
@@ -10,7 +15,7 @@ function WeekCard({ w, p }: { w: ProgramWeek; p: Program }) {
   const dateStr = formatJoinDate(w.date)
   const firstWaist = p.weeks[0].measurements
     ? p.weeks[0].measurements.waist
-    : w.measurements?.waist ?? 0
+    : (w.measurements?.waist ?? 0)
   const waistTone = w.measurements
     ? deltaTone(Math.round((w.measurements.waist - firstWaist) * 10) / 10, true)
     : 'flat'
@@ -101,7 +106,9 @@ export function JourneyTimeline({ program }: { program: Program }) {
             onClick={() => setSelected(w.week)}
           >
             Week {w.week}
-            <span className="pw-week-chip-date">{weekChipDateRangeLabel(w.date)}</span>
+            <span className="pw-week-chip-date">
+              {weekChipDateRangeLabel(w.date)}
+            </span>
             {isCurrentReal && w.week === currentWeek ? (
               <span className="pw-current-tag">Today</span>
             ) : null}

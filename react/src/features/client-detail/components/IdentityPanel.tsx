@@ -25,7 +25,10 @@ export function IdentityPanel({ client }: { client: Client }) {
           </p>
         </div>
         <div className="identity-actions">
-          <button className="btn-secondary" onClick={() => navigate({ to: '/chat' })}>
+          <button
+            className="btn-secondary"
+            onClick={() => navigate({ to: '/chat' })}
+          >
             <Icon name="message-circle" />
             Message
           </button>

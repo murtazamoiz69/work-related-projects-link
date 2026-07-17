@@ -3,7 +3,10 @@ import { Avatar } from '@/components/atoms/Avatar'
 import { formatCheckIn } from '@/features/clients'
 import { PROGRAM_STATUS_LABEL } from '../data'
 import type { TrainingProgram } from '../types'
-import { ProgramActionsMenu, type ProgramMenuAction } from './ProgramActionsMenu'
+import {
+  ProgramActionsMenu,
+  type ProgramMenuAction,
+} from './ProgramActionsMenu'
 
 function coachInitials(coach: string): string {
   return coach
@@ -43,10 +46,7 @@ export function ProgramCard({ program: p, onAction, onAssign }: ViewProps) {
           {PROGRAM_STATUS_LABEL[p.status]}
         </span>
         <div onClick={(e) => e.stopPropagation()}>
-          <ProgramActionsMenu
-            program={p}
-            onAction={(a) => onAction(a, p)}
-          />
+          <ProgramActionsMenu program={p} onAction={(a) => onAction(a, p)} />
         </div>
       </div>
       <div className="prog-card-body">
@@ -131,10 +131,7 @@ export function ProgramTableRow({ program: p, onAction, onAssign }: ViewProps) {
       <td>{updatedLabel(p)}</td>
       <td>
         <div className="ct-actions" onClick={(e) => e.stopPropagation()}>
-          <button
-            className="btn-secondary sm"
-            onClick={() => onAssign(p)}
-          >
+          <button className="btn-secondary sm" onClick={() => onAssign(p)}>
             Assign
           </button>
           <ProgramActionsMenu program={p} onAction={(a) => onAction(a, p)} />

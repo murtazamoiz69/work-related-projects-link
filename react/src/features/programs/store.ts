@@ -27,8 +27,7 @@ export const useProgramsStore = create<ProgramsState>((set, get) => ({
   },
   setPrograms: (next) =>
     set((s) => {
-      const programs =
-        typeof next === 'function' ? next(s.programs) : next
+      const programs = typeof next === 'function' ? next(s.programs) : next
       saveTrainingPrograms(programs)
       return { programs, rev: s.rev + 1 }
     }),

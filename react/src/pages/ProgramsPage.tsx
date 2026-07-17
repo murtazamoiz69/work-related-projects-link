@@ -88,9 +88,15 @@ export function ProgramsPage() {
     setStatus('all')
   }
 
-  const handleAction = (action: ProgramMenuAction, program: TrainingProgram) => {
+  const handleAction = (
+    action: ProgramMenuAction,
+    program: TrainingProgram,
+  ) => {
     if (action === 'edit') {
-      navigate({ to: '/programs/$programId', params: { programId: program.id } })
+      navigate({
+        to: '/programs/$programId',
+        params: { programId: program.id },
+      })
       return
     }
     if (action === 'duplicate') {
@@ -219,7 +225,11 @@ export function ProgramsPage() {
               </select>
             </div>
 
-            <div className="view-toggle" role="tablist" aria-label="Switch view">
+            <div
+              className="view-toggle"
+              role="tablist"
+              aria-label="Switch view"
+            >
               <button
                 className={`view-toggle-btn${view === 'table' ? ' active' : ''}`}
                 role="tab"

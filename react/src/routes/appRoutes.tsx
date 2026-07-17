@@ -1,25 +1,65 @@
+import { lazy, Suspense, type ReactNode } from 'react'
 import { createRoute } from '@tanstack/react-router'
-import { DashboardPage } from '@/pages/DashboardPage'
-import { ClientsPage } from '@/pages/ClientsPage'
-import { ClientDetailPage } from '@/pages/ClientDetailPage'
-import { ChatPage } from '@/pages/ChatPage'
-import { ProgramsPage } from '@/pages/ProgramsPage'
-import { ProgramDetailPage } from '@/pages/ProgramDetailPage'
-import { TemplatesPage } from '@/pages/TemplatesPage'
-import { TemplateDetailPage } from '@/pages/TemplateDetailPage'
-import { SettingsPage } from '@/pages/SettingsPage'
 import { authedRoute } from './authed'
+
+// Lazy-load each screen so heavy routes (Chat + Plan Workspace, Program/Client
+// Detail, etc.) become their own chunks and don't bloat the initial load.
+const DashboardPage = lazy(() =>
+  import('@/pages/DashboardPage').then((m) => ({ default: m.DashboardPage })),
+)
+const ClientsPage = lazy(() =>
+  import('@/pages/ClientsPage').then((m) => ({ default: m.ClientsPage })),
+)
+const ClientDetailPage = lazy(() =>
+  import('@/pages/ClientDetailPage').then((m) => ({
+    default: m.ClientDetailPage,
+  })),
+)
+const ChatPage = lazy(() =>
+  import('@/pages/ChatPage').then((m) => ({ default: m.ChatPage })),
+)
+const ProgramsPage = lazy(() =>
+  import('@/pages/ProgramsPage').then((m) => ({ default: m.ProgramsPage })),
+)
+const ProgramDetailPage = lazy(() =>
+  import('@/pages/ProgramDetailPage').then((m) => ({
+    default: m.ProgramDetailPage,
+  })),
+)
+const TemplatesPage = lazy(() =>
+  import('@/pages/TemplatesPage').then((m) => ({ default: m.TemplatesPage })),
+)
+const TemplateDetailPage = lazy(() =>
+  import('@/pages/TemplateDetailPage').then((m) => ({
+    default: m.TemplateDetailPage,
+  })),
+)
+const SettingsPage = lazy(() =>
+  import('@/pages/SettingsPage').then((m) => ({ default: m.SettingsPage })),
+)
+
+function Lazy({ children }: { children: ReactNode }) {
+  return <Suspense fallback={null}>{children}</Suspense>
+}
 
 export const indexRoute = createRoute({
   getParentRoute: () => authedRoute,
   path: '/',
-  component: DashboardPage,
+  component: () => (
+    <Lazy>
+      <DashboardPage />
+    </Lazy>
+  ),
 })
 
 export const clientsRoute = createRoute({
   getParentRoute: () => authedRoute,
   path: '/clients',
-  component: ClientsPage,
+  component: () => (
+    <Lazy>
+      <ClientsPage />
+    </Lazy>
+  ),
 })
 
 export const clientDetailRoute = createRoute({
@@ -27,7 +67,11 @@ export const clientDetailRoute = createRoute({
   path: '/clients/$clientId',
   component: () => {
     const { clientId } = clientDetailRoute.useParams()
-    return <ClientDetailPage clientId={clientId} />
+    return (
+      <Lazy>
+        <ClientDetailPage clientId={clientId} />
+      </Lazy>
+    )
   },
 })
 
@@ -39,14 +83,22 @@ export const chatRoute = createRoute({
   }),
   component: () => {
     const { c } = chatRoute.useSearch()
-    return <ChatPage initialConversationId={c} />
+    return (
+      <Lazy>
+        <ChatPage initialConversationId={c} />
+      </Lazy>
+    )
   },
 })
 
 export const programsRoute = createRoute({
   getParentRoute: () => authedRoute,
   path: '/programs',
-  component: ProgramsPage,
+  component: () => (
+    <Lazy>
+      <ProgramsPage />
+    </Lazy>
+  ),
 })
 
 export const programDetailRoute = createRoute({
@@ -54,22 +106,28 @@ export const programDetailRoute = createRoute({
   path: '/programs/$programId',
   component: () => {
     const { programId } = programDetailRoute.useParams()
-    return <ProgramDetailPage programId={programId} />
+    return (
+      <Lazy>
+        <ProgramDetailPage programId={programId} />
+      </Lazy>
+    )
   },
 })
 
 export const templatesRoute = createRoute({
   getParentRoute: () => authedRoute,
   path: '/templates',
-  component: TemplatesPage,
+  component: () => (
+    <Lazy>
+      <TemplatesPage />
+    </Lazy>
+  ),
 })
 
 export const templateDetailRoute = createRoute({
   getParentRoute: () => authedRoute,
   path: '/templates/$templateId',
-  validateSearch: (
-    search: Record<string, unknown>,
-  ): { edit?: boolean } => ({
+  validateSearch: (search: Record<string, unknown>): { edit?: boolean } => ({
     edit:
       search.edit === true || search.edit === 'true' || search.edit === '1'
         ? true
@@ -78,14 +136,22 @@ export const templateDetailRoute = createRoute({
   component: () => {
     const { templateId } = templateDetailRoute.useParams()
     const { edit } = templateDetailRoute.useSearch()
-    return <TemplateDetailPage templateId={templateId} initialEdit={!!edit} />
+    return (
+      <Lazy>
+        <TemplateDetailPage templateId={templateId} initialEdit={!!edit} />
+      </Lazy>
+    )
   },
 })
 
 export const settingsRoute = createRoute({
   getParentRoute: () => authedRoute,
   path: '/settings',
-  component: SettingsPage,
+  component: () => (
+    <Lazy>
+      <SettingsPage />
+    </Lazy>
+  ),
 })
 
 export const authedChildren = [

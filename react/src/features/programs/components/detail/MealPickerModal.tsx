@@ -121,7 +121,9 @@ export function MealPickerModal({
             )}
           </ul>
           <div className="tpl-picker-preview">
-            {active ? <MealPreview m={active} /> : (
+            {active ? (
+              <MealPreview m={active} />
+            ) : (
               <div className="tpl-picker-empty-preview">
                 <Icon name="mouse-pointer-click" />
                 <span>Select a recipe to preview</span>

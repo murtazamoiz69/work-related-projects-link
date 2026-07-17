@@ -10,7 +10,10 @@ type ClientActionsProps = {
 }
 
 /** Message / Call / View trio used in every client row across the app. */
-export function ClientActions({ client, viewIcon = 'file-text' }: ClientActionsProps) {
+export function ClientActions({
+  client,
+  viewIcon = 'file-text',
+}: ClientActionsProps) {
   const navigate = useNavigate()
   return (
     <div className="ct-actions">

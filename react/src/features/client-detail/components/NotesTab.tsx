@@ -42,7 +42,9 @@ export function NotesTab({ notes }: { notes: InternalNote[] }) {
           <li className="note-item" key={i}>
             <span
               className="avatar avatar-xs"
-              style={{ background: n.author === 'Sarah Nolan' ? '#2F5D50' : '#5B7FA6' }}
+              style={{
+                background: n.author === 'Sarah Nolan' ? '#2F5D50' : '#5B7FA6',
+              }}
             >
               {authorInitials(n.author)}
             </span>

@@ -50,7 +50,9 @@ export function ExercisePickerModal({
       <div className="pw-swap-list">
         {list.map((ex) => {
           const issues = exerciseIssues(ex, profile)
-          const alreadyIn = slots.some((s, idx) => s.exerciseId === ex.id && idx !== replaceIndex)
+          const alreadyIn = slots.some(
+            (s, idx) => s.exerciseId === ex.id && idx !== replaceIndex,
+          )
           return (
             <button
               key={ex.id}
@@ -65,7 +67,9 @@ export function ExercisePickerModal({
               {alreadyIn ? (
                 <span className="pw-swap-note">Already in this workout</span>
               ) : issues.length ? (
-                <span className="pw-swap-note">{issues.map((i) => i.reason).join(', ')}</span>
+                <span className="pw-swap-note">
+                  {issues.map((i) => i.reason).join(', ')}
+                </span>
               ) : null}
             </button>
           )

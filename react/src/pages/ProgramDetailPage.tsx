@@ -18,12 +18,7 @@ import { SettingsTab } from '@/features/programs/components/detail/SettingsTab'
 type ProgramDetailPageProps = { programId: string }
 
 type ProgramTab =
-  | 'overview'
-  | 'workout'
-  | 'diet'
-  | 'members'
-  | 'analytics'
-  | 'settings'
+  'overview' | 'workout' | 'diet' | 'members' | 'analytics' | 'settings'
 
 const PROGRAM_TABS: Array<{ key: ProgramTab; label: string }> = [
   { key: 'overview', label: 'Overview' },
@@ -59,7 +54,9 @@ export function ProgramDetailPage({ programId }: ProgramDetailPageProps) {
   const [saved, setSaved] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
   const [assignOpen, setAssignOpen] = useState(false)
-  const savedTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  const savedTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  )
 
   useEffect(() => {
     setTab('overview')

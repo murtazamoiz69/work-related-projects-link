@@ -4,11 +4,7 @@ import { Icon } from '@/components/atoms/Icon'
 import type { TrainingProgram } from '../types'
 
 export type ProgramMenuAction =
-  | 'edit'
-  | 'duplicate'
-  | 'toggle-publish'
-  | 'archive'
-  | 'delete'
+  'edit' | 'duplicate' | 'toggle-publish' | 'archive' | 'delete'
 
 // V2's openFixedContextMenu: the menu is positioned fixed off the trigger's
 // bounding box and portalled to <body> so the card/table scroll wrappers (which

@@ -28,7 +28,9 @@ export function OverviewTab({
             <h2>
               <Icon name="bot" className="inline-icon" /> Nourish AI's Summary
             </h2>
-            <p className="panel-sub">AI-generated overview · based on the last 30 days</p>
+            <p className="panel-sub">
+              AI-generated overview · based on the last 30 days
+            </p>
           </div>
         </div>
         <ul className="ai-summary-text">
@@ -71,7 +73,11 @@ export function OverviewTab({
             <span className="detail-chip-label">Allergies</span>
             <div className="detail-chip-row">
               {detail.allergies.map((a) => (
-                <Chip text={a} extraClass={a === 'None' ? 'client-tag-diet' : ''} key={a} />
+                <Chip
+                  text={a}
+                  extraClass={a === 'None' ? 'client-tag-diet' : ''}
+                  key={a}
+                />
               ))}
             </div>
           </div>
@@ -79,7 +85,11 @@ export function OverviewTab({
             <span className="detail-chip-label">Medical Conditions</span>
             <div className="detail-chip-row">
               {detail.medicalConditions.map((m) => (
-                <Chip text={m} extraClass={m === 'None' ? 'client-tag-diet' : ''} key={m} />
+                <Chip
+                  text={m}
+                  extraClass={m === 'None' ? 'client-tag-diet' : ''}
+                  key={m}
+                />
               ))}
             </div>
           </div>

@@ -108,9 +108,18 @@ function DietWeekRow({ w }: { w: DietWeek }) {
       </span>
       <div className="ov-macro-col">
         <div className="ov-macro-bar" title={detail}>
-          <span className="ov-macro-seg tone-protein" style={{ width: `${pPct}%` }} />
-          <span className="ov-macro-seg tone-carbs" style={{ width: `${cPct}%` }} />
-          <span className="ov-macro-seg tone-fat" style={{ width: `${fPct}%` }} />
+          <span
+            className="ov-macro-seg tone-protein"
+            style={{ width: `${pPct}%` }}
+          />
+          <span
+            className="ov-macro-seg tone-carbs"
+            style={{ width: `${cPct}%` }}
+          />
+          <span
+            className="ov-macro-seg tone-fat"
+            style={{ width: `${fPct}%` }}
+          />
         </div>
         <span className="ov-macro-text">
           P {avg.protein}g · C {avg.carbs}g · F {avg.fat}g
@@ -183,13 +192,48 @@ export function OverviewTab({
   return (
     <>
       <div className="ov-summary-grid">
-        <OvStatCard icon="calendar-range" value={p.durationWeeks} label="Weeks" tooltip="Total length of this program from start to finish." />
-        <OvStatCard icon="dumbbell" value={totalWorkouts} label="Total Workouts" tooltip="Every workout scheduled across all weeks of the Workout Plan tab." />
-        <OvStatCard icon="utensils" value={totalMeals} label="Meals / Week" tooltip="Breakfast, lunch, snack, and dinner across the 7-day Diet Plan pattern." />
-        <OvStatCard icon="flame" value={avgCalories} label="Avg Daily Calories" tooltip="Average of each day's total calories in the current Diet Plan." />
-        <OvStatCard icon="clock" value={`${avgWorkoutTime}m`} label="Avg Workout Time" tooltip="Average estimated duration across all scheduled workouts." />
-        <OvStatCard icon="users" value={p.members.length} label="Assigned Users" tooltip="Clients currently assigned to this program, active or paused." />
-        <OvStatCard icon="check-circle-2" value={`${p.completionRate}%`} label="Completion" tooltip="Average progress percentage across this program's assigned members." />
+        <OvStatCard
+          icon="calendar-range"
+          value={p.durationWeeks}
+          label="Weeks"
+          tooltip="Total length of this program from start to finish."
+        />
+        <OvStatCard
+          icon="dumbbell"
+          value={totalWorkouts}
+          label="Total Workouts"
+          tooltip="Every workout scheduled across all weeks of the Workout Plan tab."
+        />
+        <OvStatCard
+          icon="utensils"
+          value={totalMeals}
+          label="Meals / Week"
+          tooltip="Breakfast, lunch, snack, and dinner across the 7-day Diet Plan pattern."
+        />
+        <OvStatCard
+          icon="flame"
+          value={avgCalories}
+          label="Avg Daily Calories"
+          tooltip="Average of each day's total calories in the current Diet Plan."
+        />
+        <OvStatCard
+          icon="clock"
+          value={`${avgWorkoutTime}m`}
+          label="Avg Workout Time"
+          tooltip="Average estimated duration across all scheduled workouts."
+        />
+        <OvStatCard
+          icon="users"
+          value={p.members.length}
+          label="Assigned Users"
+          tooltip="Clients currently assigned to this program, active or paused."
+        />
+        <OvStatCard
+          icon="check-circle-2"
+          value={`${p.completionRate}%`}
+          label="Completion"
+          tooltip="Average progress percentage across this program's assigned members."
+        />
       </div>
 
       <div className="split-row split-row-alt ov-split">
@@ -257,7 +301,9 @@ export function OverviewTab({
                   </span>
                   <div className="timeline-body">
                     <p>{a.text}</p>
-                    <span className="timeline-time">{formatCheckIn(a.days)}</span>
+                    <span className="timeline-time">
+                      {formatCheckIn(a.days)}
+                    </span>
                   </div>
                 </li>
               ))

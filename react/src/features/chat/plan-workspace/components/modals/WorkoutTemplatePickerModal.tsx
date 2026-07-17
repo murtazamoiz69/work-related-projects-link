@@ -38,7 +38,10 @@ export function WorkoutTemplatePickerModal({
   onClose: () => void
 }) {
   const day = getDay(ws, weekNum, dayNum)
-  const types = useMemo(() => [...new Set(WORKOUT_TEMPLATES.map((t) => t.muscle))], [])
+  const types = useMemo(
+    () => [...new Set(WORKOUT_TEMPLATES.map((t) => t.muscle))],
+    [],
+  )
   const muscles = useMemo(
     () => [...new Set(EXERCISE_LIBRARY.map((e) => e.muscle))].sort(),
     [],
@@ -62,7 +65,9 @@ export function WorkoutTemplatePickerModal({
   const [equipment, setEquipment] = useState('all')
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
   const [time, setTime] = useState(initialTime)
-  const [slotsCache, setSlotsCache] = useState<Record<number, WorkoutSlot[]>>({})
+  const [slotsCache, setSlotsCache] = useState<Record<number, WorkoutSlot[]>>(
+    {},
+  )
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -73,33 +78,49 @@ export function WorkoutTemplatePickerModal({
   }, [onClose])
 
   const q = query.trim().toLowerCase()
-  const visible = WORKOUT_TEMPLATES.map((t, idx) => ({ t, idx })).filter(({ t }) => {
-    if (q && !t.name.toLowerCase().includes(q)) return false
-    if (type !== 'all' && t.muscle !== type) return false
-    if (muscle !== 'all' && !templateMuscles(t).includes(muscle)) return false
-    if (equipment !== 'all' && !templateEquipment(t).includes(equipment)) return false
-    return true
-  })
+  const visible = WORKOUT_TEMPLATES.map((t, idx) => ({ t, idx })).filter(
+    ({ t }) => {
+      if (q && !t.name.toLowerCase().includes(q)) return false
+      if (type !== 'all' && t.muscle !== type) return false
+      if (muscle !== 'all' && !templateMuscles(t).includes(muscle)) return false
+      if (equipment !== 'all' && !templateEquipment(t).includes(equipment))
+        return false
+      return true
+    },
+  )
 
   const selectTemplate = (idx: number) => {
     setActiveIndex(idx)
     setSlotsCache((prev) => {
       if (prev[idx]) return prev
-      const seed = profile._seed + idx * 991 + Math.round(Math.random() * 100000)
+      const seed =
+        profile._seed + idx * 991 + Math.round(Math.random() * 100000)
       return {
         ...prev,
-        [idx]: WORKOUT_TEMPLATES[idx].exerciseIds.map((id, i) => makeSlot(id, seed, i)),
+        [idx]: WORKOUT_TEMPLATES[idx].exerciseIds.map((id, i) =>
+          makeSlot(id, seed, i),
+        ),
       }
     })
   }
-  const activeSlots = activeIndex != null ? slotsCache[activeIndex] ?? [] : []
+  const activeSlots = activeIndex != null ? (slotsCache[activeIndex] ?? []) : []
 
-  const updateSlot = (i: number, field: 'sets' | 'reps' | 'rest', value: string) => {
+  const updateSlot = (
+    i: number,
+    field: 'sets' | 'reps' | 'rest',
+    value: string,
+  ) => {
     if (activeIndex == null) return
     setSlotsCache((prev) => {
       const slots = (prev[activeIndex] ?? []).map((s, idx) =>
         idx === i
-          ? { ...s, [field]: field === 'sets' ? Math.max(1, parseInt(value, 10) || 1) : value }
+          ? {
+              ...s,
+              [field]:
+                field === 'sets'
+                  ? Math.max(1, parseInt(value, 10) || 1)
+                  : value,
+            }
           : s,
       )
       return { ...prev, [activeIndex]: slots }
@@ -129,8 +150,16 @@ export function WorkoutTemplatePickerModal({
     built.exercises = activeSlots.map((s) => ({ ...s }))
     built.exercises.forEach((slot) => {
       const ex = exerciseById(slot.exerciseId)
-      if (ex && (exerciseHardIssue(ex, profile) || !equipmentAllowed(profile, ex.equipment))) {
-        const alt = pickAltExercise(ex, profile, built.exercises.map((s) => s.exerciseId))
+      if (
+        ex &&
+        (exerciseHardIssue(ex, profile) ||
+          !equipmentAllowed(profile, ex.equipment))
+      ) {
+        const alt = pickAltExercise(
+          ex,
+          profile,
+          built.exercises.map((s) => s.exerciseId),
+        )
         if (alt) slot.exerciseId = alt.id
       }
     })
@@ -138,11 +167,21 @@ export function WorkoutTemplatePickerModal({
     if (day.workout) {
       day.extraWorkouts = day.extraWorkouts || []
       day.extraWorkouts.push(built)
-      pushVersion(ws, `Added extra ${day.label} workout`, 'Sarah Nolan', `${built.name} added as an additional session`)
+      pushVersion(
+        ws,
+        `Added extra ${day.label} workout`,
+        'Sarah Nolan',
+        `${built.name} added as an additional session`,
+      )
     } else {
       day.type = 'workout'
       day.workout = built
-      pushVersion(ws, `Added ${day.label} workout`, 'Sarah Nolan', `${built.name} added from the workout catalog`)
+      pushVersion(
+        ws,
+        `Added ${day.label} workout`,
+        'Sarah Nolan',
+        `${built.name} added from the workout catalog`,
+      )
     }
     refresh()
     onClose()
@@ -186,7 +225,10 @@ export function WorkoutTemplatePickerModal({
           </label>
           <label className="pw-modal-field pw-picker-select">
             Equipment
-            <select value={equipment} onChange={(e) => setEquipment(e.target.value)}>
+            <select
+              value={equipment}
+              onChange={(e) => setEquipment(e.target.value)}
+            >
               <option value="all">All equipment</option>
               {equipmentList.map((eq) => (
                 <option key={eq} value={eq}>
@@ -228,7 +270,11 @@ export function WorkoutTemplatePickerModal({
               visible.map(({ t, idx }) => {
                 const risky = t.exerciseIds.filter((id) => {
                   const ex = exerciseById(id)
-                  return ex && (exerciseHardIssue(ex, profile) || !equipmentAllowed(profile, ex.equipment))
+                  return (
+                    ex &&
+                    (exerciseHardIssue(ex, profile) ||
+                      !equipmentAllowed(profile, ex.equipment))
+                  )
                 }).length
                 return (
                   <li key={idx}>
@@ -242,7 +288,8 @@ export function WorkoutTemplatePickerModal({
                       <span className="tpl-picker-row-body">
                         <span className="tpl-picker-row-title">{t.name}</span>
                         <span className="tpl-picker-row-sub">
-                          {t.exerciseIds.length} exercises · {templateMuscles(t).join(', ')}
+                          {t.exerciseIds.length} exercises ·{' '}
+                          {templateMuscles(t).join(', ')}
                           {risky ? ` · ${risky} to auto-swap` : ''}
                         </span>
                       </span>
@@ -264,9 +311,10 @@ export function WorkoutTemplatePickerModal({
               <div className="tpl-preview-body pw-preview-body">
                 <h4>{WORKOUT_TEMPLATES[activeIndex].name}</h4>
                 <p className="pw-muted">
-                  {activeSlots.length} exercise{activeSlots.length === 1 ? '' : 's'}. Remove any you
-                  don&apos;t want, and sets/reps/rest are editable — the exercises themselves come from
-                  the admin catalog.
+                  {activeSlots.length} exercise
+                  {activeSlots.length === 1 ? '' : 's'}. Remove any you
+                  don&apos;t want, and sets/reps/rest are editable — the
+                  exercises themselves come from the admin catalog.
                 </p>
                 <div className="pw-preview-ex-list">
                   {activeSlots.length ? (
@@ -303,7 +351,9 @@ export function WorkoutTemplatePickerModal({
                             </div>
                             <div className="pw-ex-tags">
                               <span className="pw-ex-tag">{ex.muscle}</span>
-                              <span className="pw-ex-tag alt">{ex.equipment}</span>
+                              <span className="pw-ex-tag alt">
+                                {ex.equipment}
+                              </span>
                             </div>
                             <p className="pw-view-ex-desc">{ex.instructions}</p>
                             <div className="pw-edit-ex-fields">
@@ -314,7 +364,9 @@ export function WorkoutTemplatePickerModal({
                                   min={1}
                                   max={8}
                                   value={slot.sets}
-                                  onChange={(e) => updateSlot(i, 'sets', e.target.value)}
+                                  onChange={(e) =>
+                                    updateSlot(i, 'sets', e.target.value)
+                                  }
                                 />
                               </label>
                               <label className="pw-edit-field">
@@ -322,7 +374,9 @@ export function WorkoutTemplatePickerModal({
                                 <input
                                   type="text"
                                   value={slot.reps}
-                                  onChange={(e) => updateSlot(i, 'reps', e.target.value)}
+                                  onChange={(e) =>
+                                    updateSlot(i, 'reps', e.target.value)
+                                  }
                                 />
                               </label>
                               <label className="pw-edit-field">
@@ -330,7 +384,9 @@ export function WorkoutTemplatePickerModal({
                                 <input
                                   type="text"
                                   value={slot.rest}
-                                  onChange={(e) => updateSlot(i, 'rest', e.target.value)}
+                                  onChange={(e) =>
+                                    updateSlot(i, 'rest', e.target.value)
+                                  }
                                 />
                               </label>
                             </div>
@@ -340,7 +396,8 @@ export function WorkoutTemplatePickerModal({
                     })
                   ) : (
                     <p className="pw-muted">
-                      All exercises removed — pick another workout or add exercises after saving.
+                      All exercises removed — pick another workout or add
+                      exercises after saving.
                     </p>
                   )}
                 </div>
@@ -349,7 +406,11 @@ export function WorkoutTemplatePickerModal({
           </div>
         </div>
         <div className="modal-foot">
-          <button className="btn-primary" disabled={addDisabled} onClick={commit}>
+          <button
+            className="btn-primary"
+            disabled={addDisabled}
+            onClick={commit}
+          >
             Add to {day?.label}
           </button>
         </div>

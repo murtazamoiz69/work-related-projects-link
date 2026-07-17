@@ -35,9 +35,7 @@ export function ConfirmDialog({
           </button>
           <button
             className={
-              danger
-                ? 'btn-primary confirm-dialog-danger-btn'
-                : 'btn-primary'
+              danger ? 'btn-primary confirm-dialog-danger-btn' : 'btn-primary'
             }
             onClick={() => {
               onClose()

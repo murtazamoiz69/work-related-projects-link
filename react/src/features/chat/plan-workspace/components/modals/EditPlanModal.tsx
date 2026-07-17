@@ -21,7 +21,10 @@ export function EditPlanModal({
   const [weeks, setWeeks] = useState(String(initialWeeks))
   const [start, setStart] = useState(toDateInputValue(profile.programStart))
 
-  const weeksNum = Math.min(16, Math.max(4, parseInt(weeks, 10) || initialWeeks))
+  const weeksNum = Math.min(
+    16,
+    Math.max(4, parseInt(weeks, 10) || initialWeeks),
+  )
   const startDate = start ? new Date(`${start}T00:00:00`) : profile.programStart
   const endValue = toDateInputValue(addDays(startDate, weeksNum * 7))
 
@@ -33,22 +36,33 @@ export function EditPlanModal({
       profile.programStart = new Date(`${start}T00:00:00`)
       profile.tenureDays = Math.max(
         1,
-        Math.round((Date.now() - profile.programStart.getTime()) / (24 * 3600 * 1000)),
+        Math.round(
+          (Date.now() - profile.programStart.getTime()) / (24 * 3600 * 1000),
+        ),
       )
       profile.currentWeek = Math.max(1, Math.ceil(profile.tenureDays / 7))
     }
 
-    const requestedWeeks = Math.min(16, Math.max(4, Math.round(parseInt(weeks, 10) || ws.workoutWeeks.length)))
+    const requestedWeeks = Math.min(
+      16,
+      Math.max(4, Math.round(parseInt(weeks, 10) || ws.workoutWeeks.length)),
+    )
     const currentLen = ws.workoutWeeks.length
     if (requestedWeeks > currentLen) {
-      for (let i = currentLen; i < requestedWeeks; i++) generateEmptyWeek(ws, profile)
+      for (let i = currentLen; i < requestedWeeks; i++)
+        generateEmptyWeek(ws, profile)
     } else if (requestedWeeks < currentLen) {
       const keep = Math.max(requestedWeeks, profile.currentWeek)
       ws.workoutWeeks.length = keep
       ws.dietWeeks.length = keep
     }
 
-    pushVersion(ws, 'Updated program', 'Sarah Nolan', `“${ws.planName}” · ${ws.workoutWeeks.length}-week timeline`)
+    pushVersion(
+      ws,
+      'Updated program',
+      'Sarah Nolan',
+      `“${ws.planName}” · ${ws.workoutWeeks.length}-week timeline`,
+    )
     refresh()
     onClose()
   }
@@ -71,7 +85,11 @@ export function EditPlanModal({
     >
       <label className="pw-modal-field">
         Program name
-        <input type="text" value={name} onChange={(e) => setName(e.target.value)} />
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
       </label>
       <label className="pw-modal-field">
         Description
@@ -95,7 +113,11 @@ export function EditPlanModal({
       <div className="modal-field-row">
         <label className="pw-modal-field">
           Start date
-          <input type="date" value={start} onChange={(e) => setStart(e.target.value)} />
+          <input
+            type="date"
+            value={start}
+            onChange={(e) => setStart(e.target.value)}
+          />
         </label>
         <label className="pw-modal-field">
           End date
@@ -103,9 +125,9 @@ export function EditPlanModal({
         </label>
       </div>
       <p className="pw-muted">
-        End date is calculated from the start date and timeline. Extending adds new weeks progressing
-        from the last one; shortening removes weeks from the end (never past the client&apos;s current
-        week).
+        End date is calculated from the start date and timeline. Extending adds
+        new weeks progressing from the last one; shortening removes weeks from
+        the end (never past the client&apos;s current week).
       </p>
     </PwModalShell>
   )

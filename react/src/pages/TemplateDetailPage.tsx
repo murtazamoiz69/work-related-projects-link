@@ -50,7 +50,9 @@ export function TemplateDetailPage({ templateId, initialEdit = false }: Props) {
   const editorRef = useRef<HTMLDivElement>(null)
 
   const [saved, setSaved] = useState(false)
-  const savedTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  const savedTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  )
 
   const [cropOpen, setCropOpen] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
@@ -72,8 +74,7 @@ export function TemplateDetailPage({ templateId, initialEdit = false }: Props) {
   }, [templateId, initialEdit, draft])
 
   useEffect(() => {
-    if (template)
-      document.title = `${template.title} — Nourish with Nourish AI`
+    if (template) document.title = `${template.title} — Nourish with Nourish AI`
   }, [template])
 
   useEffect(
@@ -127,7 +128,9 @@ export function TemplateDetailPage({ templateId, initialEdit = false }: Props) {
     saveEditorFieldsIntoTemplate()
     t.status = 'draft'
     t.versionHistory.push({
-      version: bumpVersion(t.versionHistory[t.versionHistory.length - 1].version),
+      version: bumpVersion(
+        t.versionHistory[t.versionHistory.length - 1].version,
+      ),
       text: 'Saved as draft',
       days: 0,
     })
@@ -150,7 +153,9 @@ export function TemplateDetailPage({ templateId, initialEdit = false }: Props) {
     saveEditorFieldsIntoTemplate()
     t.status = 'active'
     t.versionHistory.push({
-      version: bumpVersion(t.versionHistory[t.versionHistory.length - 1].version),
+      version: bumpVersion(
+        t.versionHistory[t.versionHistory.length - 1].version,
+      ),
       text: 'Published',
       days: 0,
     })
@@ -315,7 +320,10 @@ export function TemplateDetailPage({ templateId, initialEdit = false }: Props) {
       ) : null}
 
       {historyOpen ? (
-        <VersionHistoryModal template={t} onClose={() => setHistoryOpen(false)} />
+        <VersionHistoryModal
+          template={t}
+          onClose={() => setHistoryOpen(false)}
+        />
       ) : null}
 
       {confirmDelete ? (

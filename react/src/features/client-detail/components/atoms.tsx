@@ -3,9 +3,17 @@ import type { DeltaTone, Photos } from '../types'
 import { miniBarTier } from '../data'
 
 /** A diet/chip tag — the `.client-tag` atom from V2. */
-export function Chip({ text, extraClass }: { text: string; extraClass?: string }) {
+export function Chip({
+  text,
+  extraClass,
+}: {
+  text: string
+  extraClass?: string
+}) {
   return (
-    <span className={`client-tag${extraClass ? ` ${extraClass}` : ''}`}>{text}</span>
+    <span className={`client-tag${extraClass ? ` ${extraClass}` : ''}`}>
+      {text}
+    </span>
   )
 }
 
@@ -45,7 +53,10 @@ export function MiniBar({ pct, kind }: { pct: number | null; kind: string }) {
     <div className="mini-bar">
       <span className="mini-bar-label">{kind}</span>
       <div className="mini-bar-track">
-        <div className={`mini-bar-fill tier-${tier}`} style={{ width: `${pct}%` }} />
+        <div
+          className={`mini-bar-fill tier-${tier}`}
+          style={{ width: `${pct}%` }}
+        />
       </div>
       <span className="mini-bar-val">{pct}%</span>
     </div>
@@ -71,7 +82,11 @@ export function PhotoTriplet({
         return (
           <div className="photo-slot" key={s}>
             {typeof val === 'string' ? (
-              <img className="upload-thumb" src={val} alt={`${s} progress photo`} />
+              <img
+                className="upload-thumb"
+                src={val}
+                alt={`${s} progress photo`}
+              />
             ) : (
               <div className={`upload-thumb${val ? '' : ' is-missing'}`}>
                 <Icon name={val ? 'image' : 'image-off'} />

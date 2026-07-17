@@ -40,7 +40,9 @@ export function PlanWorkspaceOverlay({
   const profile = ws.profile
 
   const [activeTab, setActiveTab] = useState<PwTab>('timeline')
-  const [activeWeekOverride, setActiveWeekOverride] = useState<number | null>(null)
+  const [activeWeekOverride, setActiveWeekOverride] = useState<number | null>(
+    null,
+  )
   const [openSections, setOpenSections] = useState<Set<string>>(
     () => new Set(['profile', 'medical']),
   )
@@ -56,7 +58,9 @@ export function PlanWorkspaceOverlay({
   const currentWeek = Math.min(Math.max(profile.currentWeek, 1), totalWeeks)
   const weekExists = (n: number | null): boolean =>
     n != null && ws.workoutWeeks.some((w) => w.weekNum === n)
-  const activeWeek = weekExists(activeWeekOverride) ? (activeWeekOverride as number) : currentWeek
+  const activeWeek = weekExists(activeWeekOverride)
+    ? (activeWeekOverride as number)
+    : currentWeek
 
   const ctx: PwCtx = {
     profile,
@@ -73,7 +77,12 @@ export function PlanWorkspaceOverlay({
   return (
     <div className="pw-overlay" id="planWorkspaceOverlay">
       <div className="pw-shell">
-        <PwTopbar profile={profile} ws={ws} onClose={onClose} onPublish={() => setModal({ kind: 'publish' })} />
+        <PwTopbar
+          profile={profile}
+          ws={ws}
+          onClose={onClose}
+          onPublish={() => setModal({ kind: 'publish' })}
+        />
         <div className="pw-body">
           <aside className="pw-context" id="pwContext">
             <PwContext
@@ -90,7 +99,11 @@ export function PlanWorkspaceOverlay({
             />
           </aside>
           <section className="pw-center" id="pwCenter">
-            <ProgramHeader profile={profile} ws={ws} onEdit={() => setModal({ kind: 'editPlan' })} />
+            <ProgramHeader
+              profile={profile}
+              ws={ws}
+              onEdit={() => setModal({ kind: 'editPlan' })}
+            />
             <div className="pw-tabs">
               <button
                 className={`pw-tab${activeTab === 'timeline' ? ' active' : ''}`}
@@ -115,8 +128,12 @@ export function PlanWorkspaceOverlay({
               </button>
               {activeTab === 'diet' ? (
                 <div className="pw-target-pills">
-                  <span className="pw-target-pill">{ws.targets.calories} kcal</span>
-                  <span className="pw-target-pill">{ws.targets.protein}g protein</span>
+                  <span className="pw-target-pill">
+                    {ws.targets.calories} kcal
+                  </span>
+                  <span className="pw-target-pill">
+                    {ws.targets.protein}g protein
+                  </span>
                   <span className="pw-target-pill">
                     <Icon name="droplet" />
                     {ws.hydrationGoal} L water
@@ -125,7 +142,8 @@ export function PlanWorkspaceOverlay({
               ) : (
                 <span className="pw-plan-duration">
                   <Icon name="calendar-range" />
-                  {ws.workoutWeeks.length} weeks · ~{ws.workoutWeeks.length * 7} days
+                  {ws.workoutWeeks.length} weeks · ~{ws.workoutWeeks.length * 7}{' '}
+                  days
                 </span>
               )}
             </div>
@@ -142,7 +160,14 @@ export function PlanWorkspaceOverlay({
         </div>
       </div>
 
-      <PwModals ws={ws} profile={profile} modal={modal} setModal={setModal} refresh={refresh} onClose={closeModal} />
+      <PwModals
+        ws={ws}
+        profile={profile}
+        modal={modal}
+        setModal={setModal}
+        refresh={refresh}
+        onClose={closeModal}
+      />
     </div>
   )
 }
@@ -170,7 +195,9 @@ function PwTopbar({
       <div className="pw-topbar-id">
         <Avatar initials={profile.initials} color={profile.color} size="sm" />
         <div className="pw-topbar-meta">
-          <span className="pw-topbar-name">{profile.name} · Plan Workspace</span>
+          <span className="pw-topbar-name">
+            {profile.name} · Plan Workspace
+          </span>
           <span className="pw-topbar-sub">
             {profile.program} · Week {profile.currentWeek} ·{' '}
             <span className={`status-pill status-${profile.status}`}>
@@ -217,8 +244,14 @@ function ProgramHeader({
   const totalWeeks = ws.workoutWeeks.length
   const totalDays = totalWeeks * 7
   const elapsedDays = Math.min(profile.tenureDays, totalDays)
-  const currentWeekClamped = Math.min(Math.max(profile.currentWeek, 1), totalWeeks)
-  const pct = totalDays > 0 ? Math.min(100, Math.round((elapsedDays / totalDays) * 100)) : 0
+  const currentWeekClamped = Math.min(
+    Math.max(profile.currentWeek, 1),
+    totalWeeks,
+  )
+  const pct =
+    totalDays > 0
+      ? Math.min(100, Math.round((elapsedDays / totalDays) * 100))
+      : 0
   return (
     <div className="pw-program-card">
       <span className="pw-program-icon">
@@ -240,10 +273,17 @@ function ProgramHeader({
           </span>
         </span>
         <div className="pw-program-progress-bar">
-          <div className="pw-program-progress-fill" style={{ width: `${pct}%` }} />
+          <div
+            className="pw-program-progress-fill"
+            style={{ width: `${pct}%` }}
+          />
         </div>
       </div>
-      <button className="icon-btn sm pw-program-edit" title="Edit program" onClick={onEdit}>
+      <button
+        className="icon-btn sm pw-program-edit"
+        title="Edit program"
+        onClick={onEdit}
+      >
         <Icon name="pencil" />
       </button>
     </div>
@@ -319,14 +359,19 @@ function PwModals({
     case 'timelineAddChooser': {
       const day = getDay(ws, modal.weekNum, modal.dayNum)
       if (!day) return null
-      const hasSession = !!day.workout || (day.extraWorkouts && day.extraWorkouts.length > 0)
+      const hasSession =
+        !!day.workout || (day.extraWorkouts && day.extraWorkouts.length > 0)
       return (
         <TimelineAddChooser
           dayLabel={day.label}
           weekNum={modal.weekNum}
           hasSession={hasSession}
           onWorkout={() =>
-            setModal({ kind: 'workoutTemplatePicker', weekNum: modal.weekNum, dayNum: modal.dayNum })
+            setModal({
+              kind: 'workoutTemplatePicker',
+              weekNum: modal.weekNum,
+              dayNum: modal.dayNum,
+            })
           }
           onDiet={() =>
             setModal({
@@ -355,9 +400,23 @@ function PwModals({
         />
       )
     case 'editPlan':
-      return <EditPlanModal ws={ws} profile={profile} refresh={refresh} onClose={onClose} />
+      return (
+        <EditPlanModal
+          ws={ws}
+          profile={profile}
+          refresh={refresh}
+          onClose={onClose}
+        />
+      )
     case 'publish':
-      return <PublishReportModal ws={ws} profile={profile} refresh={refresh} onClose={onClose} />
+      return (
+        <PublishReportModal
+          ws={ws}
+          profile={profile}
+          refresh={refresh}
+          onClose={onClose}
+        />
+      )
     default:
       return null
   }

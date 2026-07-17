@@ -66,7 +66,12 @@ function SessionCard({
     const clone = JSON.parse(JSON.stringify(source)) as WsWorkout
     clone.uid = 'wk-' + Math.round(Math.random() * 1e6)
     rest.workout = clone
-    pushVersion(ctx.ws, `Duplicated ${src.label} workout`, 'Sarah Nolan', `Copied into ${rest.label}`)
+    pushVersion(
+      ctx.ws,
+      `Duplicated ${src.label} workout`,
+      'Sarah Nolan',
+      `Copied into ${rest.label}`,
+    )
     ctx.refresh()
   }
 
@@ -78,11 +83,21 @@ function SessionCard({
     if (wid) {
       const removed = (d.extraWorkouts || []).find((x) => x.uid === wid)
       d.extraWorkouts = (d.extraWorkouts || []).filter((x) => x.uid !== wid)
-      pushVersion(ctx.ws, 'Removed extra workout', 'Sarah Nolan', `${d.label}: ${removed ? removed.name : 'session'} removed`)
+      pushVersion(
+        ctx.ws,
+        'Removed extra workout',
+        'Sarah Nolan',
+        `${d.label}: ${removed ? removed.name : 'session'} removed`,
+      )
     } else {
       d.type = 'rest'
       d.workout = null
-      pushVersion(ctx.ws, `Cleared ${d.label}`, 'Sarah Nolan', 'Set as a rest day')
+      pushVersion(
+        ctx.ws,
+        `Cleared ${d.label}`,
+        'Sarah Nolan',
+        'Set as a rest day',
+      )
     }
     ctx.refresh()
   }
@@ -96,8 +111,18 @@ function SessionCard({
         className="workout-card-body"
         onClick={() =>
           isPast
-            ? ctx.openModal({ kind: 'workoutPreview', weekNum: week.weekNum, dayNum: day.dayNum, wid })
-            : ctx.openModal({ kind: 'workoutEditor', weekNum: week.weekNum, dayNum: day.dayNum, wid })
+            ? ctx.openModal({
+                kind: 'workoutPreview',
+                weekNum: week.weekNum,
+                dayNum: day.dayNum,
+                wid,
+              })
+            : ctx.openModal({
+                kind: 'workoutEditor',
+                weekNum: week.weekNum,
+                dayNum: day.dayNum,
+                wid,
+              })
         }
       >
         <span className="workout-card-name">{wk.name}</span>
@@ -116,7 +141,14 @@ function SessionCard({
         <button
           className="icon-btn sm"
           title="View as client"
-          onClick={() => ctx.openModal({ kind: 'workoutPreview', weekNum: week.weekNum, dayNum: day.dayNum, wid })}
+          onClick={() =>
+            ctx.openModal({
+              kind: 'workoutPreview',
+              weekNum: week.weekNum,
+              dayNum: day.dayNum,
+              wid,
+            })
+          }
         >
           <Icon name="eye" />
         </button>
@@ -125,11 +157,22 @@ function SessionCard({
             <button
               className="icon-btn sm"
               title="Edit"
-              onClick={() => ctx.openModal({ kind: 'workoutEditor', weekNum: week.weekNum, dayNum: day.dayNum, wid })}
+              onClick={() =>
+                ctx.openModal({
+                  kind: 'workoutEditor',
+                  weekNum: week.weekNum,
+                  dayNum: day.dayNum,
+                  wid,
+                })
+              }
             >
               <Icon name="pencil" />
             </button>
-            <button className="icon-btn sm" title="Duplicate to a rest day" onClick={duplicate}>
+            <button
+              className="icon-btn sm"
+              title="Duplicate to a rest day"
+              onClick={duplicate}
+            >
               <Icon name="copy" />
             </button>
             <button
@@ -172,7 +215,13 @@ function DayRow({
           {isPast ? null : (
             <button
               className="link-btn"
-              onClick={() => ctx.openModal({ kind: 'workoutTemplatePicker', weekNum: week.weekNum, dayNum: day.dayNum })}
+              onClick={() =>
+                ctx.openModal({
+                  kind: 'workoutTemplatePicker',
+                  weekNum: week.weekNum,
+                  dayNum: day.dayNum,
+                })
+              }
             >
               <Icon name="plus" />
               Add workout
@@ -184,10 +233,25 @@ function DayRow({
         {hasAny ? (
           <>
             {day.workout ? (
-              <SessionCard ctx={ctx} week={week} day={day} wk={day.workout} wid={null} isPast={isPast} />
+              <SessionCard
+                ctx={ctx}
+                week={week}
+                day={day}
+                wk={day.workout}
+                wid={null}
+                isPast={isPast}
+              />
             ) : null}
             {extras.map((wk) => (
-              <SessionCard key={wk.uid} ctx={ctx} week={week} day={day} wk={wk} wid={wk.uid} isPast={isPast} />
+              <SessionCard
+                key={wk.uid}
+                ctx={ctx}
+                week={week}
+                day={day}
+                wk={wk}
+                wid={wk.uid}
+                isPast={isPast}
+              />
             ))}
           </>
         ) : (
@@ -215,13 +279,20 @@ export function WorkoutTab({ ctx }: { ctx: PwCtx }) {
             ) : null}
           </span>
           <span className="pw-week-detail-meta">
-            {week ? week.days.filter((d) => d.type === 'workout').length : 0} training days
+            {week ? week.days.filter((d) => d.type === 'workout').length : 0}{' '}
+            training days
           </span>
         </div>
         <div className="pw-day-list">
           {week
             ? week.days.map((d) => (
-                <DayRow key={d.dayNum} ctx={ctx} week={week} day={d} isPast={isPast} />
+                <DayRow
+                  key={d.dayNum}
+                  ctx={ctx}
+                  week={week}
+                  day={d}
+                  isPast={isPast}
+                />
               ))
             : null}
         </div>

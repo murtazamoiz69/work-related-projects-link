@@ -42,7 +42,10 @@ export function TimelineAddChooser({
           </span>
           <span className="pw-tl-choice-body">
             <b>Add a diet item</b>
-            <span>Search the recipe library and add a meal or snack at a specific time.</span>
+            <span>
+              Search the recipe library and add a meal or snack at a specific
+              time.
+            </span>
           </span>
         </button>
       </div>

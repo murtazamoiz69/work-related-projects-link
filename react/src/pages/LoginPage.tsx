@@ -88,7 +88,9 @@ export function LoginPage({ redirect }: LoginPageProps) {
           </div>
 
           <h1 className="auth-title">Welcome back</h1>
-          <p className="auth-subtitle">Sign in to your nutritionist dashboard</p>
+          <p className="auth-subtitle">
+            Sign in to your nutritionist dashboard
+          </p>
 
           <form onSubmit={handleSubmit(onSubmit)} noValidate>
             <label className="modal-field">

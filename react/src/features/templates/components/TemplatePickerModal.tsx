@@ -55,7 +55,8 @@ export function TemplatePickerModal({
   }, [templates, query, category, tab])
 
   // Keep the active index within the current list bounds.
-  const safeIndex = activeIndex >= list.length ? Math.max(0, list.length - 1) : activeIndex
+  const safeIndex =
+    activeIndex >= list.length ? Math.max(0, list.length - 1) : activeIndex
   const active = list[safeIndex]
 
   const doInsert = () => {
@@ -239,11 +240,7 @@ export function TemplatePickerModal({
           <span className="chat-mini-card-text" style={{ margin: 0 }}>
             Double-click a template, or select and press Enter
           </span>
-          <button
-            className="btn-primary"
-            disabled={!active}
-            onClick={doInsert}
-          >
+          <button className="btn-primary" disabled={!active} onClick={doInsert}>
             Insert Template
           </button>
         </div>

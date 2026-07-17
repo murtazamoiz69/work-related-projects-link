@@ -26,7 +26,10 @@ export function VersionHistoryModal({
         <ul className="timeline">
           {[...template.versionHistory].reverse().map((v, i) => (
             <li key={i} className="timeline-item">
-              <span className="avatar avatar-xs" style={{ background: '#5B7FA6' }}>
+              <span
+                className="avatar avatar-xs"
+                style={{ background: '#5B7FA6' }}
+              >
                 <Icon name="git-branch" />
               </span>
               <div className="timeline-body">

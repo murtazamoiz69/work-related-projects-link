@@ -24,11 +24,7 @@ export function ProgramDetailHeader({
           <span className={`prog-status-badge status-${p.status}`}>
             {PROGRAM_STATUS_LABEL[p.status]}
           </span>
-          <button
-            className="icon-btn sm"
-            title="Edit Program"
-            onClick={onEdit}
-          >
+          <button className="icon-btn sm" title="Edit Program" onClick={onEdit}>
             <Icon name="pencil" />
           </button>
         </div>

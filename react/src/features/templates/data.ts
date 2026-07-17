@@ -49,7 +49,11 @@ export const TEMPLATE_COVER_GRADIENTS = [
   'linear-gradient(135deg,#5B7FA6,#2E415C)',
 ]
 
-export const TEMPLATE_AUTHORS = ['Sarah Nolan', 'James Okoro, RD', 'Priya Anand']
+export const TEMPLATE_AUTHORS = [
+  'Sarah Nolan',
+  'James Okoro, RD',
+  'Priya Anand',
+]
 
 export const TEMPLATE_VARIABLES: TemplateVariable[] = [
   { key: '{{User Name}}', label: 'User Name', sample: 'Priya' },
@@ -61,8 +65,16 @@ export const TEMPLATE_VARIABLES: TemplateVariable[] = [
     label: 'Program Name',
     sample: '12-Week Weight Loss Kickstart',
   },
-  { key: "{{Today's Workout}}", label: "Today's Workout", sample: 'Leg Day — Lower Body' },
-  { key: "{{Today's Calories}}", label: "Today's Calories", sample: '1,850 kcal' },
+  {
+    key: "{{Today's Workout}}",
+    label: "Today's Workout",
+    sample: 'Leg Day — Lower Body',
+  },
+  {
+    key: "{{Today's Calories}}",
+    label: "Today's Calories",
+    sample: '1,850 kcal',
+  },
 ]
 
 // A minimal HTML-escape for building the highlight/preview HTML strings that get
@@ -105,7 +117,12 @@ export function stripHtmlToText(html: string): string {
 }
 
 // ===================== Seed content =====================
-type TemplateSeed = { title: string; category: string; desc: string; content: string }
+type TemplateSeed = {
+  title: string
+  category: string
+  desc: string
+  content: string
+}
 
 const TEMPLATE_SEED: TemplateSeed[] = [
   {
@@ -258,7 +275,9 @@ export function buildTemplate(index: number): Template {
     usage: {
       timesUsed,
       lastUsed:
-        timesUsed > 0 ? daysAgo(Math.floor(seededRandom(seed * 13) * 10)) : null,
+        timesUsed > 0
+          ? daysAgo(Math.floor(seededRandom(seed * 13) * 10))
+          : null,
       usedInChats,
       usedInBroadcasts,
       favoriteCount,
@@ -268,12 +287,16 @@ export function buildTemplate(index: number): Template {
       {
         version: 'v1.0',
         text: 'Template created',
-        days: Math.round((Date.now() - createdDate.getTime()) / (24 * 3600 * 1000)),
+        days: Math.round(
+          (Date.now() - createdDate.getTime()) / (24 * 3600 * 1000),
+        ),
       },
       {
         version: 'v1.1',
         text: 'Content updated',
-        days: Math.round((Date.now() - updatedDate.getTime()) / (24 * 3600 * 1000)),
+        days: Math.round(
+          (Date.now() - updatedDate.getTime()) / (24 * 3600 * 1000),
+        ),
       },
     ],
   }

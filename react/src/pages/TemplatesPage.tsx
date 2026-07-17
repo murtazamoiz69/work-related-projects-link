@@ -211,7 +211,11 @@ export function TemplatesPage() {
               </select>
             </div>
 
-            <div className="view-toggle" role="tablist" aria-label="Switch view">
+            <div
+              className="view-toggle"
+              role="tablist"
+              aria-label="Switch view"
+            >
               <button
                 className={`view-toggle-btn${view === 'card' ? ' active' : ''}`}
                 role="tab"

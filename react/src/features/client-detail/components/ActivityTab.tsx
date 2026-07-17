@@ -22,7 +22,10 @@ export function ActivityTab({
       <ul className="timeline">
         {sorted.map((t, i) => (
           <li className="timeline-item" key={i}>
-            <span className="avatar avatar-xs" style={{ background: client.color }}>
+            <span
+              className="avatar avatar-xs"
+              style={{ background: client.color }}
+            >
               {client.initials}
             </span>
             <div className="timeline-body">

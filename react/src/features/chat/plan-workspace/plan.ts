@@ -37,7 +37,12 @@ import type {
 } from './types'
 
 // Local subset helper (matches clinical.subset but for the supplements roll).
-function subset(pool: string[], seedBase: number, chanceNone: number, maxCount: number): string[] {
+function subset(
+  pool: string[],
+  seedBase: number,
+  chanceNone: number,
+  maxCount: number,
+): string[] {
   if (seededRandom(seedBase) < chanceNone) return []
   const count =
     1 +
@@ -136,7 +141,9 @@ export function formatTime12(t: string): string {
 
 // ===================== Custom (edited) meals =====================
 export function resolveMeal(ws: Workspace, id: string): Meal | undefined {
-  return (ws.customMeals && ws.customMeals.find((m) => m.id === id)) || mealById(id)
+  return (
+    (ws.customMeals && ws.customMeals.find((m) => m.id === id)) || mealById(id)
+  )
 }
 export function wsDailyTotals(ws: Workspace, day: WsDietDay): MealTotalsLike {
   return day.meals.reduce<MealTotalsLike>(
@@ -179,7 +186,11 @@ function buildClientPlan(client: Client, profile: ClinicalProfile): Workspace {
       if (!d.workout) return
       d.workout.exercises.forEach((slot) => {
         const ex = exerciseById(slot.exerciseId)
-        if (ex && (exerciseHardIssue(ex, profile) || !equipmentAllowed(profile, ex.equipment))) {
+        if (
+          ex &&
+          (exerciseHardIssue(ex, profile) ||
+            !equipmentAllowed(profile, ex.equipment))
+        ) {
           const alt = pickAltExercise(
             ex,
             profile,
@@ -201,9 +212,17 @@ function buildClientPlan(client: Client, profile: ClinicalProfile): Workspace {
   // Personalize meals: rotate through the safe options per category (round-robin).
   const rotation: Record<string, Meal[]> = {}
   MEAL_SLOTS.forEach((slot) => {
-    const clean = mealsByCategory(slot).filter((m) => mealConflicts(m, profile).length === 0)
-    const hardSafe = mealsByCategory(slot).filter((m) => !mealHardConflict(m, profile))
-    rotation[slot] = clean.length ? clean : hardSafe.length ? hardSafe : mealsByCategory(slot)
+    const clean = mealsByCategory(slot).filter(
+      (m) => mealConflicts(m, profile).length === 0,
+    )
+    const hardSafe = mealsByCategory(slot).filter(
+      (m) => !mealHardConflict(m, profile),
+    )
+    rotation[slot] = clean.length
+      ? clean
+      : hardSafe.length
+        ? hardSafe
+        : mealsByCategory(slot)
   })
   const dietWeeks: WsDietWeek[] = workoutWeeks.map((w, wi) => {
     const slots = buildDietWeekSlots(seed + wi * 517)
@@ -216,7 +235,11 @@ function buildClientPlan(client: Client, profile: ClinicalProfile): Workspace {
           day.meals[key] = options[di % options.length].id
         }
       })
-      return { dayNum: day.dayNum, label: day.label, meals: toMealEntries(day.meals) }
+      return {
+        dayNum: day.dayNum,
+        label: day.label,
+        meals: toMealEntries(day.meals),
+      }
     })
     return { weekNum: w.weekNum, days }
   })
@@ -239,10 +262,19 @@ function buildClientPlan(client: Client, profile: ClinicalProfile): Workspace {
 // ===================== Workspace store =====================
 const WORKSPACE_STATE: Record<string, Workspace> = {}
 
-export function getWorkspace(client: Client, profile: ClinicalProfile): Workspace {
+export function getWorkspace(
+  client: Client,
+  profile: ClinicalProfile,
+): Workspace {
   if (!WORKSPACE_STATE[client.id]) {
     const ws = buildClientPlan(client, profile)
-    pushVersion(ws, 'Initial plan', 'Sarah Nolan', 'Generated from client profile & goals', true)
+    pushVersion(
+      ws,
+      'Initial plan',
+      'Sarah Nolan',
+      'Generated from client profile & goals',
+      true,
+    )
     WORKSPACE_STATE[client.id] = ws
   }
   return WORKSPACE_STATE[client.id]
@@ -281,7 +313,10 @@ export function pushVersion(
 }
 
 // ===================== Safety guardrails =====================
-export function validatePlan(profile: ClinicalProfile, ws: Workspace): PwWarning[] {
+export function validatePlan(
+  profile: ClinicalProfile,
+  ws: Workspace,
+): PwWarning[] {
   const warnings: PwWarning[] = []
   const seen: Record<string, number> = {}
   ws.dietWeeks.forEach((w) =>
@@ -377,7 +412,10 @@ export function validatePlan(profile: ClinicalProfile, ws: Workspace): PwWarning
 }
 
 // ===================== Mutation primitives (reachable from the UI) =====================
-export function autoFixDietConflicts(ws: Workspace, profile: ClinicalProfile): number {
+export function autoFixDietConflicts(
+  ws: Workspace,
+  profile: ClinicalProfile,
+): number {
   let fixed = 0
   ws.dietWeeks.forEach((w) =>
     w.days.forEach((day) =>
@@ -399,7 +437,10 @@ export function autoFixDietConflicts(ws: Workspace, profile: ClinicalProfile): n
     )
   return fixed
 }
-export function autoFixWorkoutConflicts(ws: Workspace, profile: ClinicalProfile): number {
+export function autoFixWorkoutConflicts(
+  ws: Workspace,
+  profile: ClinicalProfile,
+): number {
   let fixed = 0
   ws.workoutWeeks.forEach((w) =>
     w.days.forEach((d) => {
@@ -441,10 +482,17 @@ function buildDietWeekFor(profile: ClinicalProfile, seed: number): WsDietDay[] {
       if (meal && mealHardConflict(meal, profile))
         day.meals[key] = pickSafeMeal(slot, profile, meal.id).id
     })
-    return { dayNum: day.dayNum, label: day.label, meals: toMealEntries(day.meals) }
+    return {
+      dayNum: day.dayNum,
+      label: day.label,
+      meals: toMealEntries(day.meals),
+    }
   })
 }
-export function generateEmptyWeek(ws: Workspace, profile: ClinicalProfile): number {
+export function generateEmptyWeek(
+  ws: Workspace,
+  profile: ClinicalProfile,
+): number {
   const last = ws.workoutWeeks[ws.workoutWeeks.length - 1]
   const weekNum = last ? last.weekNum + 1 : 1
   const days = WEEKDAY_LABELS.map((label, i) => ({
@@ -455,7 +503,10 @@ export function generateEmptyWeek(ws: Workspace, profile: ClinicalProfile): numb
     extraWorkouts: [] as WsWorkout[],
   }))
   ws.workoutWeeks.push({ weekNum, days })
-  ws.dietWeeks.push({ weekNum, days: buildDietWeekFor(profile, profile._seed + weekNum * 517) })
+  ws.dietWeeks.push({
+    weekNum,
+    days: buildDietWeekFor(profile, profile._seed + weekNum * 517),
+  })
   return weekNum
 }
 

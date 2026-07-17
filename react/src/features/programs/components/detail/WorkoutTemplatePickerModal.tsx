@@ -29,7 +29,9 @@ export function WorkoutTemplatePickerModal({
   const [muscle, setMuscle] = useState('all')
   const [equipment, setEquipment] = useState('all')
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
-  const [slotsCache, setSlotsCache] = useState<Record<number, WorkoutSlot[]>>({})
+  const [slotsCache, setSlotsCache] = useState<Record<number, WorkoutSlot[]>>(
+    {},
+  )
 
   const types = useMemo(
     () => [...new Set(WORKOUT_TEMPLATES.map((t) => t.muscle))],
@@ -68,8 +70,7 @@ export function WorkoutTemplatePickerModal({
     })
   }
 
-  const activeSlots =
-    activeIndex == null ? [] : (slotsCache[activeIndex] ?? [])
+  const activeSlots = activeIndex == null ? [] : (slotsCache[activeIndex] ?? [])
   const addDisabled = activeIndex == null || activeSlots.length === 0
 
   const updatePreview = (
@@ -295,7 +296,11 @@ export function WorkoutTemplatePickerModal({
           </div>
         </div>
         <div className="modal-foot">
-          <button className="btn-primary" disabled={addDisabled} onClick={commit}>
+          <button
+            className="btn-primary"
+            disabled={addDisabled}
+            onClick={commit}
+          >
             Add to {dayLabel}
           </button>
         </div>

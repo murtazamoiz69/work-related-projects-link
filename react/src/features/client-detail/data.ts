@@ -130,7 +130,8 @@ function pickSubset(
   return items
 }
 
-const clampPct = (v: number): number => Math.max(40, Math.min(99, Math.round(v)))
+const clampPct = (v: number): number =>
+  Math.max(40, Math.min(99, Math.round(v)))
 
 // ---------------------------------------------------------------------
 // Program-history builder — the heart of the page.
@@ -190,14 +191,18 @@ function buildProgramHistory(
   ): Program {
     const bp =
       PROGRAM_BLUEPRINTS[
-        Math.floor(seededRandom(seed * (pIndex + 5) * 1.7) * PROGRAM_BLUEPRINTS.length) %
-          PROGRAM_BLUEPRINTS.length
+        Math.floor(
+          seededRandom(seed * (pIndex + 5) * 1.7) * PROGRAM_BLUEPRINTS.length,
+        ) % PROGRAM_BLUEPRINTS.length
       ]
     const weeks: ProgramWeek[] = []
     for (let w = 1; w <= totalWeeks; w++) {
       const weekDaysAgo = startDaysAgo - (w - 1) * 7
       const weekDate = daysAgo(weekDaysAgo) // negative → a future check-in date
-      const frac = Math.max(0, Math.min(1, (tenureDays - weekDaysAgo) / tenureDays))
+      const frac = Math.max(
+        0,
+        Math.min(1, (tenureDays - weekDaysAgo) / tenureDays),
+      )
 
       let status: WeekStatus
       let submitted: boolean
@@ -237,10 +242,15 @@ function buildProgramHistory(
           side: seededRandom(seed * (w + 2) + pIndex) > 0.05,
           back: seededRandom(seed * (w + 3) + pIndex) > 0.12,
         }
-        dietPct = clampPct(baseAdh + (seededRandom(seed * (w + 4) + pIndex) - 0.5) * 28)
-        workoutPct = clampPct(baseAdh + (seededRandom(seed * (w + 5) + pIndex) - 0.5) * 32)
+        dietPct = clampPct(
+          baseAdh + (seededRandom(seed * (w + 4) + pIndex) - 0.5) * 28,
+        )
+        workoutPct = clampPct(
+          baseAdh + (seededRandom(seed * (w + 5) + pIndex) - 0.5) * 32,
+        )
         if (w === totalWeeks && !isActive) {
-          coachNote = 'Program complete — a real step forward. Ready for the next phase.'
+          coachNote =
+            'Program complete — a real step forward. Ready for the next phase.'
         } else if (seededRandom(seed * (w + 6) + pIndex) > 0.5) {
           coachNote = pick(COACH_NOTE_POOL, seed * (w + 7) + pIndex)
         }
@@ -267,7 +277,11 @@ function buildProgramHistory(
         .find((wk) => wk.submitted && wk.photos)
       const chatPhoto = lastSubmitted && clientChatPhotoDataUri(client)
       if (lastSubmitted && lastSubmitted.photos && chatPhoto) {
-        const slots: Array<'front' | 'side' | 'back'> = ['front', 'side', 'back']
+        const slots: Array<'front' | 'side' | 'back'> = [
+          'front',
+          'side',
+          'back',
+        ]
         const slot = slots.find((s) => lastSubmitted.photos?.[s]) ?? 'front'
         lastSubmitted.photos[slot] = chatPhoto
       }
@@ -280,7 +294,8 @@ function buildProgramHistory(
     // Trailing on-time streak.
     let streak = 0
     for (let w = weeks.length - 1; w >= 0; w--) {
-      if (weeks[w].status === 'current' || weeks[w].status === 'upcoming') continue
+      if (weeks[w].status === 'current' || weeks[w].status === 'upcoming')
+        continue
       if (weeks[w].submitted) streak++
       else break
     }
@@ -297,7 +312,8 @@ function buildProgramHistory(
       status: isActive ? 'active' : 'completed',
       weeks,
       weeksLogged: logged.length,
-      consistency: dueSoFar > 0 ? Math.round((logged.length / dueSoFar) * 100) : null,
+      consistency:
+        dueSoFar > 0 ? Math.round((logged.length / dueSoFar) * 100) : null,
       streak,
       startWeight: first ? first.weightKg : null,
       latestWeight: last ? last.weightKg : null,
@@ -307,7 +323,9 @@ function buildProgramHistory(
           : null,
       waistChange:
         first && last && first.measurements && last.measurements
-          ? Math.round((last.measurements.waist - first.measurements.waist) * 10) / 10
+          ? Math.round(
+              (last.measurements.waist - first.measurements.waist) * 10,
+            ) / 10
           : null,
     }
   }
@@ -317,10 +335,17 @@ function buildProgramHistory(
   let currentWeek =
     client.status === 'new' ? 1 : 3 + Math.floor(seededRandom(seed * 6) * 7) // 3–9
   currentWeek = Math.min(currentWeek, activeTotalWeeks)
-  let activeStartDaysAgo = (currentWeek - 1) * 7 + Math.floor(seededRandom(seed * 7) * 6)
+  let activeStartDaysAgo =
+    (currentWeek - 1) * 7 + Math.floor(seededRandom(seed * 7) * 6)
   activeStartDaysAgo = Math.min(activeStartDaysAgo, tenureDays)
 
-  const active = buildProgram(0, activeStartDaysAgo, activeTotalWeeks, true, currentWeek)
+  const active = buildProgram(
+    0,
+    activeStartDaysAgo,
+    activeTotalWeeks,
+    true,
+    currentWeek,
+  )
 
   // Previous programs fill [join, active-start], oldest → newest, then reversed.
   const prev: Program[] = []
@@ -397,7 +422,10 @@ export function deriveDetail(client: Client): ClientDetail {
       days: (client.checkInDays ?? 0) + 4,
     })
   }
-  timeline.push({ text: `${client.name} joined Nourish with Nourish AI`, days: tenureDays })
+  timeline.push({
+    text: `${client.name} joined Nourish with Nourish AI`,
+    days: tenureDays,
+  })
 
   // ---- AI summary ----
   const goalsText = client.goals.join(' and ').toLowerCase()
@@ -475,7 +503,10 @@ export function weekChipDateRangeLabel(endDate: Date): string {
   const start = new Date(endDate)
   start.setDate(start.getDate() - 6)
   const sameMonth = start.getMonth() === endDate.getMonth()
-  const startFmt = start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  const startFmt = start.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+  })
   const endFmt = endDate.toLocaleDateString(
     'en-US',
     sameMonth ? { day: 'numeric' } : { month: 'short', day: 'numeric' },

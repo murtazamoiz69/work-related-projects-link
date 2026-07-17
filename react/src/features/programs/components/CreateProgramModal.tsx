@@ -30,10 +30,7 @@ export function CreateProgramModal({
       showToast('Give the program a name first')
       return
     }
-    const durationWeeks = Math.min(
-      52,
-      Math.max(1, parseInt(duration, 10) || 4),
-    )
+    const durationWeeks = Math.min(52, Math.max(1, parseInt(duration, 10) || 4))
     const description =
       desc.trim() ||
       `A ${durationWeeks}-week ${difficulty.toLowerCase()} program for ${goal.toLowerCase()} goals.`
@@ -54,7 +51,13 @@ export function CreateProgramModal({
       completionRate: 0,
       workoutWeeks: buildEmptyWorkoutWeeks(durationWeeks),
       dietWeeks: buildEmptyDietWeeks(durationWeeks),
-      nutritionTargets: { calories: 2000, protein: 150, carbs: 200, fat: 65, water: 3 },
+      nutritionTargets: {
+        calories: 2000,
+        protein: 150,
+        carbs: 200,
+        fat: 65,
+        water: 3,
+      },
       notes: [],
       activity: [{ text: 'Program created', days: 0 }],
       versionHistory: [{ version: 'v1.0', text: 'Program created', days: 0 }],

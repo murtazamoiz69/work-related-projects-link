@@ -79,14 +79,28 @@ function ItemActions({
         <button
           className="icon-btn xs"
           title="Edit workout"
-          onClick={() => ctx.openModal({ kind: 'workoutEditor', weekNum: week.weekNum, dayNum: d.dayNum, wid: null })}
+          onClick={() =>
+            ctx.openModal({
+              kind: 'workoutEditor',
+              weekNum: week.weekNum,
+              dayNum: d.dayNum,
+              wid: null,
+            })
+          }
         >
           <Icon name="pencil" />
         </button>
         <button
           className="icon-btn xs"
           title="View as client"
-          onClick={() => ctx.openModal({ kind: 'workoutPreview', weekNum: week.weekNum, dayNum: d.dayNum, wid: null })}
+          onClick={() =>
+            ctx.openModal({
+              kind: 'workoutPreview',
+              weekNum: week.weekNum,
+              dayNum: d.dayNum,
+              wid: null,
+            })
+          }
         >
           <Icon name="eye" />
         </button>
@@ -100,8 +114,15 @@ function ItemActions({
         ?.days.find((x) => x.dayNum === d.dayNum)
       if (!day) return
       const removed = (day.extraWorkouts || []).find((x) => x.uid === item.id)
-      day.extraWorkouts = (day.extraWorkouts || []).filter((x) => x.uid !== item.id)
-      pushVersion(ctx.ws, 'Removed extra workout', 'Sarah Nolan', `${day.label}: ${removed ? removed.name : 'session'} removed`)
+      day.extraWorkouts = (day.extraWorkouts || []).filter(
+        (x) => x.uid !== item.id,
+      )
+      pushVersion(
+        ctx.ws,
+        'Removed extra workout',
+        'Sarah Nolan',
+        `${day.label}: ${removed ? removed.name : 'session'} removed`,
+      )
       ctx.refresh()
     }
     return (
@@ -109,18 +130,36 @@ function ItemActions({
         <button
           className="icon-btn xs"
           title="Edit workout"
-          onClick={() => ctx.openModal({ kind: 'workoutEditor', weekNum: week.weekNum, dayNum: d.dayNum, wid: item.id ?? null })}
+          onClick={() =>
+            ctx.openModal({
+              kind: 'workoutEditor',
+              weekNum: week.weekNum,
+              dayNum: d.dayNum,
+              wid: item.id ?? null,
+            })
+          }
         >
           <Icon name="pencil" />
         </button>
         <button
           className="icon-btn xs"
           title="View"
-          onClick={() => ctx.openModal({ kind: 'workoutPreview', weekNum: week.weekNum, dayNum: d.dayNum, wid: item.id ?? null })}
+          onClick={() =>
+            ctx.openModal({
+              kind: 'workoutPreview',
+              weekNum: week.weekNum,
+              dayNum: d.dayNum,
+              wid: item.id ?? null,
+            })
+          }
         >
           <Icon name="eye" />
         </button>
-        <button className="icon-btn xs danger" title="Remove" onClick={removeExtra}>
+        <button
+          className="icon-btn xs danger"
+          title="Remove"
+          onClick={removeExtra}
+        >
           <Icon name="trash-2" />
         </button>
       </>
@@ -132,7 +171,12 @@ function ItemActions({
     const removed = dietDay.meals.find((e) => e.uid === item.id)
     const meal = removed ? resolveMeal(ctx.ws, removed.mealId) : null
     dietDay.meals = dietDay.meals.filter((e) => e.uid !== item.id)
-    pushVersion(ctx.ws, `Removed ${removed ? removed.slot : 'meal'}`, 'Sarah Nolan', `Wk${week.weekNum} ${d.label}: ${meal ? meal.name : 'meal'} removed`)
+    pushVersion(
+      ctx.ws,
+      `Removed ${removed ? removed.slot : 'meal'}`,
+      'Sarah Nolan',
+      `Wk${week.weekNum} ${d.label}: ${meal ? meal.name : 'meal'} removed`,
+    )
     ctx.refresh()
   }
   return (
@@ -140,19 +184,46 @@ function ItemActions({
       <button
         className="icon-btn xs"
         title="View & swap meal"
-        onClick={() => ctx.openModal({ kind: 'mealPicker', weekNum: week.weekNum, dayNum: d.dayNum, entryUid: item.id ?? null, enforceUpcoming: true })}
+        onClick={() =>
+          ctx.openModal({
+            kind: 'mealPicker',
+            weekNum: week.weekNum,
+            dayNum: d.dayNum,
+            entryUid: item.id ?? null,
+            enforceUpcoming: true,
+          })
+        }
       >
         <Icon name="repeat" />
       </button>
-      <button className="icon-btn xs danger" title="Remove meal" onClick={removeMeal}>
+      <button
+        className="icon-btn xs danger"
+        title="Remove meal"
+        onClick={removeMeal}
+      >
         <Icon name="trash-2" />
       </button>
     </>
   )
 }
 
-function ItemRow({ ctx, week, d, item }: { ctx: PwCtx; week: WsWorkoutWeek; d: WsWorkoutDay; item: TimelineItem }) {
-  const upcoming = isUpcoming(ctx.profile.programStart, week.weekNum, d.dayNum, item.time)
+function ItemRow({
+  ctx,
+  week,
+  d,
+  item,
+}: {
+  ctx: PwCtx
+  week: WsWorkoutWeek
+  d: WsWorkoutDay
+  item: TimelineItem
+}) {
+  const upcoming = isUpcoming(
+    ctx.profile.programStart,
+    week.weekNum,
+    d.dayNum,
+    item.time,
+  )
   return (
     <div className={`pw-tl-item${upcoming ? '' : ' done'}`}>
       {upcoming ? (
@@ -194,7 +265,9 @@ function ItemRow({ ctx, week, d, item }: { ctx: PwCtx; week: WsWorkoutWeek; d: W
         </span>
       )}
       <div className="pw-tl-item-actions">
-        {upcoming ? <ItemActions ctx={ctx} week={week} d={d} item={item} /> : null}
+        {upcoming ? (
+          <ItemActions ctx={ctx} week={week} d={d} item={item} />
+        ) : null}
       </div>
     </div>
   )
@@ -234,7 +307,13 @@ function DayCard({
         {addable ? (
           <button
             className="link-btn pw-tl-add"
-            onClick={() => ctx.openModal({ kind: 'timelineAddChooser', weekNum: week.weekNum, dayNum: d.dayNum })}
+            onClick={() =>
+              ctx.openModal({
+                kind: 'timelineAddChooser',
+                weekNum: week.weekNum,
+                dayNum: d.dayNum,
+              })
+            }
           >
             <Icon name="plus" />
             Add
@@ -244,12 +323,24 @@ function DayCard({
       <div className="pw-tl-item-list">
         {items.length ? (
           items.map((it, idx) => (
-            <ItemRow key={`${it.kind}-${it.id ?? idx}`} ctx={ctx} week={week} d={d} item={it} />
+            <ItemRow
+              key={`${it.kind}-${it.id ?? idx}`}
+              ctx={ctx}
+              week={week}
+              d={d}
+              item={it}
+            />
           ))
         ) : addable ? (
           <div
             className="pw-tl-empty"
-            onClick={() => ctx.openModal({ kind: 'timelineAddChooser', weekNum: week.weekNum, dayNum: d.dayNum })}
+            onClick={() =>
+              ctx.openModal({
+                kind: 'timelineAddChooser',
+                weekNum: week.weekNum,
+                dayNum: d.dayNum,
+              })
+            }
           >
             <Icon name="calendar-x" />
             Nothing scheduled — click to add
@@ -312,7 +403,10 @@ export function TimelineTab({ ctx }: { ctx: PwCtx }) {
             ) : null}
           </span>
           {showJump ? (
-            <button className="link-btn pw-tl-jump" onClick={() => ctx.setActiveWeek(today.weekNum)}>
+            <button
+              className="link-btn pw-tl-jump"
+              onClick={() => ctx.setActiveWeek(today.weekNum)}
+            >
               <Icon name="calendar-check" />
               Jump to today
             </button>
@@ -321,7 +415,14 @@ export function TimelineTab({ ctx }: { ctx: PwCtx }) {
         <div className="pw-tl-day-list" ref={listRef}>
           {week
             ? week.days.map((d) => (
-                <DayCard key={d.dayNum} ctx={ctx} week={week} d={d} today={today} todayRef={todayRef} />
+                <DayCard
+                  key={d.dayNum}
+                  ctx={ctx}
+                  week={week}
+                  d={d}
+                  today={today}
+                  todayRef={todayRef}
+                />
               ))
             : null}
         </div>

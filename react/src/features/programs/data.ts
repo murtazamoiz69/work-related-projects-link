@@ -57,28 +57,182 @@ export const PROGRAM_STATUS_LABEL: Record<ProgramStatus, string> = {
 
 // ===================== Exercise library =====================
 export const EXERCISE_LIBRARY: Exercise[] = [
-  { id: 'ex-1', name: 'Barbell Bench Press', muscle: 'Chest', equipment: 'Barbell', instructions: 'Lower the bar to mid-chest with control, press back up to lockout.' },
-  { id: 'ex-2', name: 'Incline Dumbbell Press', muscle: 'Chest', equipment: 'Dumbbell', instructions: 'Press dumbbells up and slightly inward on a 30° incline bench.' },
-  { id: 'ex-3', name: 'Push-Up', muscle: 'Chest', equipment: 'Bodyweight', instructions: 'Keep a straight line from head to heels, lower chest to just above the floor.' },
-  { id: 'ex-4', name: 'Pull-Up', muscle: 'Back', equipment: 'Bodyweight', instructions: 'Pull chin over the bar, control the descent to full extension.' },
-  { id: 'ex-5', name: 'Barbell Row', muscle: 'Back', equipment: 'Barbell', instructions: 'Hinge at the hips, row the bar to the lower ribs, squeeze shoulder blades.' },
-  { id: 'ex-6', name: 'Lat Pulldown', muscle: 'Back', equipment: 'Cable', instructions: 'Pull the bar to upper chest, lead with the elbows, avoid leaning back excessively.' },
-  { id: 'ex-7', name: 'Back Squat', muscle: 'Legs', equipment: 'Barbell', instructions: 'Sit hips back and down to parallel, drive through mid-foot to stand.' },
-  { id: 'ex-8', name: 'Romanian Deadlift', muscle: 'Legs', equipment: 'Barbell', instructions: 'Hinge at the hips with a soft knee bend, bar stays close to the legs.' },
-  { id: 'ex-9', name: 'Walking Lunge', muscle: 'Legs', equipment: 'Dumbbell', instructions: 'Step forward into a lunge, front knee tracks over the toes, alternate legs.' },
-  { id: 'ex-10', name: 'Leg Press', muscle: 'Legs', equipment: 'Machine', instructions: 'Lower the sled until knees reach 90°, press through the heels.' },
-  { id: 'ex-11', name: 'Overhead Press', muscle: 'Shoulders', equipment: 'Barbell', instructions: 'Press the bar overhead in a straight path, brace the core throughout.' },
-  { id: 'ex-12', name: 'Lateral Raise', muscle: 'Shoulders', equipment: 'Dumbbell', instructions: 'Raise arms to shoulder height with a slight elbow bend, control the descent.' },
-  { id: 'ex-13', name: 'Face Pull', muscle: 'Shoulders', equipment: 'Cable', instructions: 'Pull the rope to eye level, elbows high, focus on external rotation.' },
-  { id: 'ex-14', name: 'Barbell Curl', muscle: 'Arms', equipment: 'Barbell', instructions: 'Curl the bar without swinging, squeeze at the top, lower under control.' },
-  { id: 'ex-15', name: 'Tricep Pushdown', muscle: 'Arms', equipment: 'Cable', instructions: 'Keep elbows pinned to your sides, extend fully, control the return.' },
-  { id: 'ex-16', name: 'Plank', muscle: 'Core', equipment: 'Bodyweight', instructions: 'Keep a straight line from shoulders to ankles, brace the core, breathe steadily.' },
-  { id: 'ex-17', name: 'Hanging Knee Raise', muscle: 'Core', equipment: 'Bodyweight', instructions: 'Raise knees toward the chest without swinging, lower with control.' },
-  { id: 'ex-18', name: 'Cable Woodchop', muscle: 'Core', equipment: 'Cable', instructions: 'Rotate through the torso, pivot the back foot, keep arms extended.' },
-  { id: 'ex-19', name: 'Kettlebell Swing', muscle: 'Full Body', equipment: 'Kettlebell', instructions: 'Hinge and snap the hips forward, let momentum carry the bell to chest height.' },
-  { id: 'ex-20', name: 'Rowing Machine', muscle: 'Cardio', equipment: 'Machine', instructions: 'Drive with the legs first, lean back slightly, pull the handle to the ribs.' },
-  { id: 'ex-21', name: 'Treadmill Intervals', muscle: 'Cardio', equipment: 'Machine', instructions: 'Alternate 60s hard effort with 90s easy pace for the prescribed rounds.' },
-  { id: 'ex-22', name: 'Battle Ropes', muscle: 'Cardio', equipment: 'Bodyweight', instructions: 'Alternate large waves, keep knees soft, brace the core throughout.' },
+  {
+    id: 'ex-1',
+    name: 'Barbell Bench Press',
+    muscle: 'Chest',
+    equipment: 'Barbell',
+    instructions:
+      'Lower the bar to mid-chest with control, press back up to lockout.',
+  },
+  {
+    id: 'ex-2',
+    name: 'Incline Dumbbell Press',
+    muscle: 'Chest',
+    equipment: 'Dumbbell',
+    instructions:
+      'Press dumbbells up and slightly inward on a 30° incline bench.',
+  },
+  {
+    id: 'ex-3',
+    name: 'Push-Up',
+    muscle: 'Chest',
+    equipment: 'Bodyweight',
+    instructions:
+      'Keep a straight line from head to heels, lower chest to just above the floor.',
+  },
+  {
+    id: 'ex-4',
+    name: 'Pull-Up',
+    muscle: 'Back',
+    equipment: 'Bodyweight',
+    instructions:
+      'Pull chin over the bar, control the descent to full extension.',
+  },
+  {
+    id: 'ex-5',
+    name: 'Barbell Row',
+    muscle: 'Back',
+    equipment: 'Barbell',
+    instructions:
+      'Hinge at the hips, row the bar to the lower ribs, squeeze shoulder blades.',
+  },
+  {
+    id: 'ex-6',
+    name: 'Lat Pulldown',
+    muscle: 'Back',
+    equipment: 'Cable',
+    instructions:
+      'Pull the bar to upper chest, lead with the elbows, avoid leaning back excessively.',
+  },
+  {
+    id: 'ex-7',
+    name: 'Back Squat',
+    muscle: 'Legs',
+    equipment: 'Barbell',
+    instructions:
+      'Sit hips back and down to parallel, drive through mid-foot to stand.',
+  },
+  {
+    id: 'ex-8',
+    name: 'Romanian Deadlift',
+    muscle: 'Legs',
+    equipment: 'Barbell',
+    instructions:
+      'Hinge at the hips with a soft knee bend, bar stays close to the legs.',
+  },
+  {
+    id: 'ex-9',
+    name: 'Walking Lunge',
+    muscle: 'Legs',
+    equipment: 'Dumbbell',
+    instructions:
+      'Step forward into a lunge, front knee tracks over the toes, alternate legs.',
+  },
+  {
+    id: 'ex-10',
+    name: 'Leg Press',
+    muscle: 'Legs',
+    equipment: 'Machine',
+    instructions:
+      'Lower the sled until knees reach 90°, press through the heels.',
+  },
+  {
+    id: 'ex-11',
+    name: 'Overhead Press',
+    muscle: 'Shoulders',
+    equipment: 'Barbell',
+    instructions:
+      'Press the bar overhead in a straight path, brace the core throughout.',
+  },
+  {
+    id: 'ex-12',
+    name: 'Lateral Raise',
+    muscle: 'Shoulders',
+    equipment: 'Dumbbell',
+    instructions:
+      'Raise arms to shoulder height with a slight elbow bend, control the descent.',
+  },
+  {
+    id: 'ex-13',
+    name: 'Face Pull',
+    muscle: 'Shoulders',
+    equipment: 'Cable',
+    instructions:
+      'Pull the rope to eye level, elbows high, focus on external rotation.',
+  },
+  {
+    id: 'ex-14',
+    name: 'Barbell Curl',
+    muscle: 'Arms',
+    equipment: 'Barbell',
+    instructions:
+      'Curl the bar without swinging, squeeze at the top, lower under control.',
+  },
+  {
+    id: 'ex-15',
+    name: 'Tricep Pushdown',
+    muscle: 'Arms',
+    equipment: 'Cable',
+    instructions:
+      'Keep elbows pinned to your sides, extend fully, control the return.',
+  },
+  {
+    id: 'ex-16',
+    name: 'Plank',
+    muscle: 'Core',
+    equipment: 'Bodyweight',
+    instructions:
+      'Keep a straight line from shoulders to ankles, brace the core, breathe steadily.',
+  },
+  {
+    id: 'ex-17',
+    name: 'Hanging Knee Raise',
+    muscle: 'Core',
+    equipment: 'Bodyweight',
+    instructions:
+      'Raise knees toward the chest without swinging, lower with control.',
+  },
+  {
+    id: 'ex-18',
+    name: 'Cable Woodchop',
+    muscle: 'Core',
+    equipment: 'Cable',
+    instructions:
+      'Rotate through the torso, pivot the back foot, keep arms extended.',
+  },
+  {
+    id: 'ex-19',
+    name: 'Kettlebell Swing',
+    muscle: 'Full Body',
+    equipment: 'Kettlebell',
+    instructions:
+      'Hinge and snap the hips forward, let momentum carry the bell to chest height.',
+  },
+  {
+    id: 'ex-20',
+    name: 'Rowing Machine',
+    muscle: 'Cardio',
+    equipment: 'Machine',
+    instructions:
+      'Drive with the legs first, lean back slightly, pull the handle to the ribs.',
+  },
+  {
+    id: 'ex-21',
+    name: 'Treadmill Intervals',
+    muscle: 'Cardio',
+    equipment: 'Machine',
+    instructions:
+      'Alternate 60s hard effort with 90s easy pace for the prescribed rounds.',
+  },
+  {
+    id: 'ex-22',
+    name: 'Battle Ropes',
+    muscle: 'Cardio',
+    equipment: 'Bodyweight',
+    instructions:
+      'Alternate large waves, keep knees soft, brace the core throughout.',
+  },
 ]
 
 export function exerciseById(id: string): Exercise | undefined {
@@ -113,12 +267,36 @@ export type WorkoutTemplate = {
 }
 
 export const WORKOUT_TEMPLATES: WorkoutTemplate[] = [
-  { name: 'Push Day — Chest & Shoulders', muscle: 'Push', exerciseIds: ['ex-1', 'ex-2', 'ex-11', 'ex-12', 'ex-15'] },
-  { name: 'Pull Day — Back & Arms', muscle: 'Pull', exerciseIds: ['ex-4', 'ex-5', 'ex-6', 'ex-13', 'ex-14'] },
-  { name: 'Leg Day — Lower Body', muscle: 'Legs', exerciseIds: ['ex-7', 'ex-8', 'ex-9', 'ex-10'] },
-  { name: 'Core & Conditioning', muscle: 'Core', exerciseIds: ['ex-16', 'ex-17', 'ex-18', 'ex-19'] },
-  { name: 'Full Body Strength', muscle: 'Full Body', exerciseIds: ['ex-7', 'ex-1', 'ex-5', 'ex-16'] },
-  { name: 'Cardio & Recovery', muscle: 'Cardio', exerciseIds: ['ex-20', 'ex-21', 'ex-22'] },
+  {
+    name: 'Push Day — Chest & Shoulders',
+    muscle: 'Push',
+    exerciseIds: ['ex-1', 'ex-2', 'ex-11', 'ex-12', 'ex-15'],
+  },
+  {
+    name: 'Pull Day — Back & Arms',
+    muscle: 'Pull',
+    exerciseIds: ['ex-4', 'ex-5', 'ex-6', 'ex-13', 'ex-14'],
+  },
+  {
+    name: 'Leg Day — Lower Body',
+    muscle: 'Legs',
+    exerciseIds: ['ex-7', 'ex-8', 'ex-9', 'ex-10'],
+  },
+  {
+    name: 'Core & Conditioning',
+    muscle: 'Core',
+    exerciseIds: ['ex-16', 'ex-17', 'ex-18', 'ex-19'],
+  },
+  {
+    name: 'Full Body Strength',
+    muscle: 'Full Body',
+    exerciseIds: ['ex-7', 'ex-1', 'ex-5', 'ex-16'],
+  },
+  {
+    name: 'Cardio & Recovery',
+    muscle: 'Cardio',
+    exerciseIds: ['ex-20', 'ex-21', 'ex-22'],
+  },
 ]
 
 export function templateMuscles(t: WorkoutTemplate): string[] {
@@ -146,7 +324,8 @@ export function buildWorkout(
     estimatedMinutes: durationMin,
     difficulty,
     caloriesBurn: 180 + Math.round(seededRandom(seed * 2.1) * 300),
-    warmup: '5 min light cardio + dynamic stretching for the target muscle groups.',
+    warmup:
+      '5 min light cardio + dynamic stretching for the target muscle groups.',
     cooldown: '5 min static stretching, focus on the muscles trained today.',
     exercises,
   }
@@ -192,30 +371,443 @@ function buildWorkoutWeeks(
 
 // ===================== Meal library =====================
 export const MEAL_LIBRARY: Meal[] = [
-  { id: 'meal-1', category: 'Breakfast', name: 'Greek Yogurt & Berry Bowl', calories: 320, protein: 28, carbs: 34, fat: 8, fiber: 5, servingSize: '1 bowl', prepTime: '5 min', ingredients: ['Greek yogurt', 'Mixed berries', 'Honey', 'Granola'], steps: ['Add yogurt to a bowl.', 'Top with berries and granola.', 'Drizzle honey to finish.'] },
-  { id: 'meal-2', category: 'Breakfast', name: 'Veggie Egg White Omelet', calories: 280, protein: 26, carbs: 12, fat: 10, fiber: 3, servingSize: '1 omelet', prepTime: '10 min', ingredients: ['Egg whites', 'Spinach', 'Bell pepper', 'Feta cheese'], steps: ['Whisk egg whites.', 'Sauté vegetables.', 'Pour eggs over vegetables, fold when set.'] },
-  { id: 'meal-3', category: 'Breakfast', name: 'Overnight Protein Oats', calories: 360, protein: 24, carbs: 48, fat: 9, fiber: 7, servingSize: '1 jar', prepTime: '5 min + overnight', ingredients: ['Rolled oats', 'Protein powder', 'Almond milk', 'Chia seeds', 'Banana'], steps: ['Combine all ingredients in a jar.', 'Refrigerate overnight.', 'Stir and serve cold.'] },
-  { id: 'meal-4', category: 'Breakfast', name: 'Avocado Toast & Eggs', calories: 400, protein: 20, carbs: 32, fat: 20, fiber: 8, servingSize: '2 slices', prepTime: '10 min', ingredients: ['Whole grain bread', 'Avocado', 'Eggs', 'Chili flakes'], steps: ['Toast bread.', 'Mash avocado on top.', 'Add fried or poached eggs.'] },
-  { id: 'meal-5', category: 'Lunch', name: 'Grilled Chicken Quinoa Bowl', calories: 520, protein: 42, carbs: 48, fat: 14, fiber: 6, servingSize: '1 bowl', prepTime: '20 min', ingredients: ['Chicken breast', 'Quinoa', 'Mixed greens', 'Cherry tomatoes', 'Olive oil'], steps: ['Grill chicken and slice.', 'Cook quinoa.', 'Combine all ingredients, drizzle with olive oil.'] },
-  { id: 'meal-6', category: 'Lunch', name: 'Vegan Bowl with Greens & Grain', calories: 470, protein: 18, carbs: 62, fat: 16, fiber: 12, servingSize: '1 bowl', prepTime: '20 min', ingredients: ['Chickpeas', 'Brown rice', 'Kale', 'Tahini dressing'], steps: ['Roast chickpeas.', 'Cook rice.', 'Toss kale with dressing and combine.'] },
-  { id: 'meal-7', category: 'Lunch', name: 'Turkey Wrap & Side Salad', calories: 450, protein: 34, carbs: 40, fat: 15, fiber: 6, servingSize: '1 wrap', prepTime: '10 min', ingredients: ['Whole wheat tortilla', 'Turkey breast', 'Lettuce', 'Hummus'], steps: ['Spread hummus on tortilla.', 'Layer turkey and lettuce.', 'Roll tightly and slice.'] },
-  { id: 'meal-8', category: 'Lunch', name: 'Salmon & Roasted Vegetables', calories: 540, protein: 40, carbs: 30, fat: 24, fiber: 7, servingSize: '1 plate', prepTime: '25 min', ingredients: ['Salmon fillet', 'Broccoli', 'Sweet potato', 'Lemon'], steps: ['Roast vegetables at 400°F.', 'Pan-sear salmon.', 'Plate together with a squeeze of lemon.'] },
-  { id: 'meal-9', category: 'Snack', name: 'Apple & Almond Butter', calories: 210, protein: 6, carbs: 24, fat: 11, fiber: 5, servingSize: '1 apple + 1 tbsp', prepTime: '2 min', ingredients: ['Apple', 'Almond butter'], steps: ['Slice apple.', 'Serve with almond butter for dipping.'] },
-  { id: 'meal-10', category: 'Snack', name: 'Protein Shake', calories: 180, protein: 25, carbs: 10, fat: 3, fiber: 1, servingSize: '1 shake', prepTime: '2 min', ingredients: ['Protein powder', 'Water or milk', 'Ice'], steps: ['Blend all ingredients until smooth.'] },
-  { id: 'meal-11', category: 'Snack', name: 'Cottage Cheese & Pineapple', calories: 190, protein: 20, carbs: 18, fat: 3, fiber: 2, servingSize: '1 cup', prepTime: '2 min', ingredients: ['Cottage cheese', 'Pineapple chunks'], steps: ['Combine in a bowl and serve chilled.'] },
-  { id: 'meal-12', category: 'Snack', name: 'Trail Mix', calories: 230, protein: 7, carbs: 20, fat: 15, fiber: 4, servingSize: '1/4 cup', prepTime: '1 min', ingredients: ['Almonds', 'Walnuts', 'Dried cranberries', 'Dark chocolate chips'], steps: ['Portion into a small container.'] },
-  { id: 'meal-13', category: 'Dinner', name: 'Lean Beef Stir-Fry', calories: 560, protein: 38, carbs: 44, fat: 22, fiber: 6, servingSize: '1 plate', prepTime: '25 min', ingredients: ['Lean beef strips', 'Broccoli', 'Bell pepper', 'Brown rice', 'Soy sauce'], steps: ['Sear beef in a hot pan.', 'Stir-fry vegetables.', 'Combine with rice and sauce.'] },
-  { id: 'meal-14', category: 'Dinner', name: 'Baked Cod & Asparagus', calories: 420, protein: 36, carbs: 22, fat: 16, fiber: 5, servingSize: '1 fillet', prepTime: '25 min', ingredients: ['Cod fillet', 'Asparagus', 'Olive oil', 'Garlic', 'Lemon'], steps: ['Season cod and asparagus.', 'Bake at 400°F for 15 min.', 'Finish with lemon juice.'] },
-  { id: 'meal-15', category: 'Dinner', name: 'Lentil & Vegetable Curry', calories: 480, protein: 22, carbs: 60, fat: 14, fiber: 14, servingSize: '1 bowl', prepTime: '30 min', ingredients: ['Red lentils', 'Coconut milk', 'Curry spices', 'Spinach', 'Rice'], steps: ['Simmer lentils with spices and coconut milk.', 'Stir in spinach.', 'Serve over rice.'] },
-  { id: 'meal-16', category: 'Dinner', name: 'Grilled Chicken & Sweet Potato', calories: 500, protein: 42, carbs: 38, fat: 16, fiber: 6, servingSize: '1 plate', prepTime: '25 min', ingredients: ['Chicken thigh', 'Sweet potato', 'Green beans', 'Herbs'], steps: ['Grill chicken with herbs.', 'Roast sweet potato.', 'Steam green beans, plate together.'] },
-  { id: 'meal-17', category: 'Breakfast', name: 'Tofu Scramble & Spinach', calories: 300, protein: 24, carbs: 14, fat: 16, fiber: 4, servingSize: '1 plate', prepTime: '10 min', ingredients: ['Firm tofu', 'Spinach', 'Turmeric', 'Cherry tomatoes'], steps: ['Crumble tofu into a hot pan.', 'Add turmeric and vegetables.', 'Cook until warmed through.'] },
-  { id: 'meal-18', category: 'Breakfast', name: 'Chia & Kiwi Pudding', calories: 300, protein: 12, carbs: 40, fat: 12, fiber: 10, servingSize: '1 jar', prepTime: '5 min + overnight', ingredients: ['Chia seeds', 'Almond milk', 'Kiwi', 'Maple syrup'], steps: ['Stir chia into almond milk.', 'Chill overnight.', 'Top with kiwi to serve.'] },
-  { id: 'meal-19', category: 'Lunch', name: 'Quinoa & Roasted Veg Bowl', calories: 480, protein: 18, carbs: 60, fat: 18, fiber: 9, servingSize: '1 bowl', prepTime: '25 min', ingredients: ['Quinoa', 'Zucchini', 'Carrot', 'Olive oil', 'Pumpkin seeds'], steps: ['Roast zucchini and carrot.', 'Cook quinoa.', 'Combine and top with seeds.'] },
-  { id: 'meal-20', category: 'Lunch', name: 'Tofu Poke Bowl', calories: 520, protein: 28, carbs: 62, fat: 14, fiber: 7, servingSize: '1 bowl', prepTime: '20 min', ingredients: ['Firm tofu', 'Sushi rice', 'Edamame', 'Cucumber', 'Sesame'], steps: ['Cube and sear tofu.', 'Cook rice.', 'Assemble bowl with edamame and cucumber.'] },
-  { id: 'meal-21', category: 'Snack', name: 'Banana & Walnuts', calories: 200, protein: 5, carbs: 24, fat: 11, fiber: 4, servingSize: '1 banana + handful', prepTime: '1 min', ingredients: ['Banana', 'Walnuts'], steps: ['Slice banana and serve with walnuts.'] },
-  { id: 'meal-22', category: 'Snack', name: 'Rice Cakes & Sunflower Butter', calories: 210, protein: 6, carbs: 22, fat: 12, fiber: 3, servingSize: '2 cakes', prepTime: '2 min', ingredients: ['Rice cakes', 'Sunflower seed butter'], steps: ['Spread sunflower butter over rice cakes.'] },
-  { id: 'meal-23', category: 'Dinner', name: 'Tofu & Bok Choy Stir-Fry', calories: 520, protein: 30, carbs: 58, fat: 16, fiber: 8, servingSize: '1 plate', prepTime: '25 min', ingredients: ['Firm tofu', 'Bok choy', 'Carrot', 'Tamari', 'Brown rice'], steps: ['Sear tofu until golden.', 'Stir-fry vegetables with tamari.', 'Serve over brown rice.'] },
-  { id: 'meal-24', category: 'Dinner', name: 'Baked Tempeh & Quinoa', calories: 500, protein: 34, carbs: 50, fat: 16, fiber: 10, servingSize: '1 plate', prepTime: '30 min', ingredients: ['Tempeh', 'Quinoa', 'Green beans', 'Olive oil'], steps: ['Bake seasoned tempeh.', 'Cook quinoa.', 'Steam green beans and plate together.'] },
+  {
+    id: 'meal-1',
+    category: 'Breakfast',
+    name: 'Greek Yogurt & Berry Bowl',
+    calories: 320,
+    protein: 28,
+    carbs: 34,
+    fat: 8,
+    fiber: 5,
+    servingSize: '1 bowl',
+    prepTime: '5 min',
+    ingredients: ['Greek yogurt', 'Mixed berries', 'Honey', 'Granola'],
+    steps: [
+      'Add yogurt to a bowl.',
+      'Top with berries and granola.',
+      'Drizzle honey to finish.',
+    ],
+  },
+  {
+    id: 'meal-2',
+    category: 'Breakfast',
+    name: 'Veggie Egg White Omelet',
+    calories: 280,
+    protein: 26,
+    carbs: 12,
+    fat: 10,
+    fiber: 3,
+    servingSize: '1 omelet',
+    prepTime: '10 min',
+    ingredients: ['Egg whites', 'Spinach', 'Bell pepper', 'Feta cheese'],
+    steps: [
+      'Whisk egg whites.',
+      'Sauté vegetables.',
+      'Pour eggs over vegetables, fold when set.',
+    ],
+  },
+  {
+    id: 'meal-3',
+    category: 'Breakfast',
+    name: 'Overnight Protein Oats',
+    calories: 360,
+    protein: 24,
+    carbs: 48,
+    fat: 9,
+    fiber: 7,
+    servingSize: '1 jar',
+    prepTime: '5 min + overnight',
+    ingredients: [
+      'Rolled oats',
+      'Protein powder',
+      'Almond milk',
+      'Chia seeds',
+      'Banana',
+    ],
+    steps: [
+      'Combine all ingredients in a jar.',
+      'Refrigerate overnight.',
+      'Stir and serve cold.',
+    ],
+  },
+  {
+    id: 'meal-4',
+    category: 'Breakfast',
+    name: 'Avocado Toast & Eggs',
+    calories: 400,
+    protein: 20,
+    carbs: 32,
+    fat: 20,
+    fiber: 8,
+    servingSize: '2 slices',
+    prepTime: '10 min',
+    ingredients: ['Whole grain bread', 'Avocado', 'Eggs', 'Chili flakes'],
+    steps: [
+      'Toast bread.',
+      'Mash avocado on top.',
+      'Add fried or poached eggs.',
+    ],
+  },
+  {
+    id: 'meal-5',
+    category: 'Lunch',
+    name: 'Grilled Chicken Quinoa Bowl',
+    calories: 520,
+    protein: 42,
+    carbs: 48,
+    fat: 14,
+    fiber: 6,
+    servingSize: '1 bowl',
+    prepTime: '20 min',
+    ingredients: [
+      'Chicken breast',
+      'Quinoa',
+      'Mixed greens',
+      'Cherry tomatoes',
+      'Olive oil',
+    ],
+    steps: [
+      'Grill chicken and slice.',
+      'Cook quinoa.',
+      'Combine all ingredients, drizzle with olive oil.',
+    ],
+  },
+  {
+    id: 'meal-6',
+    category: 'Lunch',
+    name: 'Vegan Bowl with Greens & Grain',
+    calories: 470,
+    protein: 18,
+    carbs: 62,
+    fat: 16,
+    fiber: 12,
+    servingSize: '1 bowl',
+    prepTime: '20 min',
+    ingredients: ['Chickpeas', 'Brown rice', 'Kale', 'Tahini dressing'],
+    steps: [
+      'Roast chickpeas.',
+      'Cook rice.',
+      'Toss kale with dressing and combine.',
+    ],
+  },
+  {
+    id: 'meal-7',
+    category: 'Lunch',
+    name: 'Turkey Wrap & Side Salad',
+    calories: 450,
+    protein: 34,
+    carbs: 40,
+    fat: 15,
+    fiber: 6,
+    servingSize: '1 wrap',
+    prepTime: '10 min',
+    ingredients: ['Whole wheat tortilla', 'Turkey breast', 'Lettuce', 'Hummus'],
+    steps: [
+      'Spread hummus on tortilla.',
+      'Layer turkey and lettuce.',
+      'Roll tightly and slice.',
+    ],
+  },
+  {
+    id: 'meal-8',
+    category: 'Lunch',
+    name: 'Salmon & Roasted Vegetables',
+    calories: 540,
+    protein: 40,
+    carbs: 30,
+    fat: 24,
+    fiber: 7,
+    servingSize: '1 plate',
+    prepTime: '25 min',
+    ingredients: ['Salmon fillet', 'Broccoli', 'Sweet potato', 'Lemon'],
+    steps: [
+      'Roast vegetables at 400°F.',
+      'Pan-sear salmon.',
+      'Plate together with a squeeze of lemon.',
+    ],
+  },
+  {
+    id: 'meal-9',
+    category: 'Snack',
+    name: 'Apple & Almond Butter',
+    calories: 210,
+    protein: 6,
+    carbs: 24,
+    fat: 11,
+    fiber: 5,
+    servingSize: '1 apple + 1 tbsp',
+    prepTime: '2 min',
+    ingredients: ['Apple', 'Almond butter'],
+    steps: ['Slice apple.', 'Serve with almond butter for dipping.'],
+  },
+  {
+    id: 'meal-10',
+    category: 'Snack',
+    name: 'Protein Shake',
+    calories: 180,
+    protein: 25,
+    carbs: 10,
+    fat: 3,
+    fiber: 1,
+    servingSize: '1 shake',
+    prepTime: '2 min',
+    ingredients: ['Protein powder', 'Water or milk', 'Ice'],
+    steps: ['Blend all ingredients until smooth.'],
+  },
+  {
+    id: 'meal-11',
+    category: 'Snack',
+    name: 'Cottage Cheese & Pineapple',
+    calories: 190,
+    protein: 20,
+    carbs: 18,
+    fat: 3,
+    fiber: 2,
+    servingSize: '1 cup',
+    prepTime: '2 min',
+    ingredients: ['Cottage cheese', 'Pineapple chunks'],
+    steps: ['Combine in a bowl and serve chilled.'],
+  },
+  {
+    id: 'meal-12',
+    category: 'Snack',
+    name: 'Trail Mix',
+    calories: 230,
+    protein: 7,
+    carbs: 20,
+    fat: 15,
+    fiber: 4,
+    servingSize: '1/4 cup',
+    prepTime: '1 min',
+    ingredients: [
+      'Almonds',
+      'Walnuts',
+      'Dried cranberries',
+      'Dark chocolate chips',
+    ],
+    steps: ['Portion into a small container.'],
+  },
+  {
+    id: 'meal-13',
+    category: 'Dinner',
+    name: 'Lean Beef Stir-Fry',
+    calories: 560,
+    protein: 38,
+    carbs: 44,
+    fat: 22,
+    fiber: 6,
+    servingSize: '1 plate',
+    prepTime: '25 min',
+    ingredients: [
+      'Lean beef strips',
+      'Broccoli',
+      'Bell pepper',
+      'Brown rice',
+      'Soy sauce',
+    ],
+    steps: [
+      'Sear beef in a hot pan.',
+      'Stir-fry vegetables.',
+      'Combine with rice and sauce.',
+    ],
+  },
+  {
+    id: 'meal-14',
+    category: 'Dinner',
+    name: 'Baked Cod & Asparagus',
+    calories: 420,
+    protein: 36,
+    carbs: 22,
+    fat: 16,
+    fiber: 5,
+    servingSize: '1 fillet',
+    prepTime: '25 min',
+    ingredients: ['Cod fillet', 'Asparagus', 'Olive oil', 'Garlic', 'Lemon'],
+    steps: [
+      'Season cod and asparagus.',
+      'Bake at 400°F for 15 min.',
+      'Finish with lemon juice.',
+    ],
+  },
+  {
+    id: 'meal-15',
+    category: 'Dinner',
+    name: 'Lentil & Vegetable Curry',
+    calories: 480,
+    protein: 22,
+    carbs: 60,
+    fat: 14,
+    fiber: 14,
+    servingSize: '1 bowl',
+    prepTime: '30 min',
+    ingredients: [
+      'Red lentils',
+      'Coconut milk',
+      'Curry spices',
+      'Spinach',
+      'Rice',
+    ],
+    steps: [
+      'Simmer lentils with spices and coconut milk.',
+      'Stir in spinach.',
+      'Serve over rice.',
+    ],
+  },
+  {
+    id: 'meal-16',
+    category: 'Dinner',
+    name: 'Grilled Chicken & Sweet Potato',
+    calories: 500,
+    protein: 42,
+    carbs: 38,
+    fat: 16,
+    fiber: 6,
+    servingSize: '1 plate',
+    prepTime: '25 min',
+    ingredients: ['Chicken thigh', 'Sweet potato', 'Green beans', 'Herbs'],
+    steps: [
+      'Grill chicken with herbs.',
+      'Roast sweet potato.',
+      'Steam green beans, plate together.',
+    ],
+  },
+  {
+    id: 'meal-17',
+    category: 'Breakfast',
+    name: 'Tofu Scramble & Spinach',
+    calories: 300,
+    protein: 24,
+    carbs: 14,
+    fat: 16,
+    fiber: 4,
+    servingSize: '1 plate',
+    prepTime: '10 min',
+    ingredients: ['Firm tofu', 'Spinach', 'Turmeric', 'Cherry tomatoes'],
+    steps: [
+      'Crumble tofu into a hot pan.',
+      'Add turmeric and vegetables.',
+      'Cook until warmed through.',
+    ],
+  },
+  {
+    id: 'meal-18',
+    category: 'Breakfast',
+    name: 'Chia & Kiwi Pudding',
+    calories: 300,
+    protein: 12,
+    carbs: 40,
+    fat: 12,
+    fiber: 10,
+    servingSize: '1 jar',
+    prepTime: '5 min + overnight',
+    ingredients: ['Chia seeds', 'Almond milk', 'Kiwi', 'Maple syrup'],
+    steps: [
+      'Stir chia into almond milk.',
+      'Chill overnight.',
+      'Top with kiwi to serve.',
+    ],
+  },
+  {
+    id: 'meal-19',
+    category: 'Lunch',
+    name: 'Quinoa & Roasted Veg Bowl',
+    calories: 480,
+    protein: 18,
+    carbs: 60,
+    fat: 18,
+    fiber: 9,
+    servingSize: '1 bowl',
+    prepTime: '25 min',
+    ingredients: ['Quinoa', 'Zucchini', 'Carrot', 'Olive oil', 'Pumpkin seeds'],
+    steps: [
+      'Roast zucchini and carrot.',
+      'Cook quinoa.',
+      'Combine and top with seeds.',
+    ],
+  },
+  {
+    id: 'meal-20',
+    category: 'Lunch',
+    name: 'Tofu Poke Bowl',
+    calories: 520,
+    protein: 28,
+    carbs: 62,
+    fat: 14,
+    fiber: 7,
+    servingSize: '1 bowl',
+    prepTime: '20 min',
+    ingredients: ['Firm tofu', 'Sushi rice', 'Edamame', 'Cucumber', 'Sesame'],
+    steps: [
+      'Cube and sear tofu.',
+      'Cook rice.',
+      'Assemble bowl with edamame and cucumber.',
+    ],
+  },
+  {
+    id: 'meal-21',
+    category: 'Snack',
+    name: 'Banana & Walnuts',
+    calories: 200,
+    protein: 5,
+    carbs: 24,
+    fat: 11,
+    fiber: 4,
+    servingSize: '1 banana + handful',
+    prepTime: '1 min',
+    ingredients: ['Banana', 'Walnuts'],
+    steps: ['Slice banana and serve with walnuts.'],
+  },
+  {
+    id: 'meal-22',
+    category: 'Snack',
+    name: 'Rice Cakes & Sunflower Butter',
+    calories: 210,
+    protein: 6,
+    carbs: 22,
+    fat: 12,
+    fiber: 3,
+    servingSize: '2 cakes',
+    prepTime: '2 min',
+    ingredients: ['Rice cakes', 'Sunflower seed butter'],
+    steps: ['Spread sunflower butter over rice cakes.'],
+  },
+  {
+    id: 'meal-23',
+    category: 'Dinner',
+    name: 'Tofu & Bok Choy Stir-Fry',
+    calories: 520,
+    protein: 30,
+    carbs: 58,
+    fat: 16,
+    fiber: 8,
+    servingSize: '1 plate',
+    prepTime: '25 min',
+    ingredients: ['Firm tofu', 'Bok choy', 'Carrot', 'Tamari', 'Brown rice'],
+    steps: [
+      'Sear tofu until golden.',
+      'Stir-fry vegetables with tamari.',
+      'Serve over brown rice.',
+    ],
+  },
+  {
+    id: 'meal-24',
+    category: 'Dinner',
+    name: 'Baked Tempeh & Quinoa',
+    calories: 500,
+    protein: 34,
+    carbs: 50,
+    fat: 16,
+    fiber: 10,
+    servingSize: '1 plate',
+    prepTime: '30 min',
+    ingredients: ['Tempeh', 'Quinoa', 'Green beans', 'Olive oil'],
+    steps: [
+      'Bake seasoned tempeh.',
+      'Cook quinoa.',
+      'Steam green beans and plate together.',
+    ],
+  },
 ]
 
 export function mealsByCategory(cat: MealSlot): Meal[] {
@@ -300,12 +892,32 @@ export function dietDayTotals(day: DietDay): MealTotals {
 
 // ===================== Programs =====================
 const PROGRAM_NAME_POOL: Record<ProgramGoal, string[]> = {
-  'Fat Loss': ['12-Week Fat Loss Reset', 'Lean & Strong Fat Loss', 'Metabolic Fat Burn Program'],
-  'Muscle Gain': ['Progressive Muscle Builder', 'Hypertrophy Foundations', 'Mass Gain Blueprint'],
+  'Fat Loss': [
+    '12-Week Fat Loss Reset',
+    'Lean & Strong Fat Loss',
+    'Metabolic Fat Burn Program',
+  ],
+  'Muscle Gain': [
+    'Progressive Muscle Builder',
+    'Hypertrophy Foundations',
+    'Mass Gain Blueprint',
+  ],
   Bulk: ['Clean Bulk Program', 'Strength & Size Bulk', 'Off-Season Bulk Plan'],
-  PCOS: ['PCOS Balance & Strength', 'PCOS-Friendly Reset', 'Hormone Balance Program'],
-  Diabetes: ['Diabetes-Friendly Fitness', 'Blood Sugar Balance Plan', 'Metabolic Health Program'],
-  'General Fitness': ['General Wellness Starter', 'Total Body Fitness', 'Everyday Strength & Mobility'],
+  PCOS: [
+    'PCOS Balance & Strength',
+    'PCOS-Friendly Reset',
+    'Hormone Balance Program',
+  ],
+  Diabetes: [
+    'Diabetes-Friendly Fitness',
+    'Blood Sugar Balance Plan',
+    'Metabolic Health Program',
+  ],
+  'General Fitness': [
+    'General Wellness Starter',
+    'Total Body Fitness',
+    'Everyday Strength & Mobility',
+  ],
 }
 
 const ACTIVITY_TEMPLATES = [
@@ -332,36 +944,42 @@ export function buildProgram(index: number): TrainingProgram {
     status === 'published'
       ? Math.floor(seededRandom(seed * 8.3) * 26)
       : Math.floor(seededRandom(seed * 8.3) * 4)
-  const members: ProgramMember[] = Array.from({ length: memberCount }, (_, i) => {
-    const client = CLIENTS_DATA[(index * 7 + i * 13) % CLIENTS_DATA.length]
-    const currentWeek = 1 + Math.floor(seededRandom(seed * 10 + i) * durationWeeks)
-    const progressPct = Math.min(
-      100,
-      Math.round((currentWeek / durationWeeks) * 100) -
-        Math.floor(seededRandom(seed * 11 + i) * 15),
-    )
-    const memberStatusRoll = seededRandom(seed * 12 + i)
-    return {
-      clientId: client.id,
-      currentWeek: Math.min(currentWeek, durationWeeks),
-      progressPct: Math.max(0, progressPct),
-      currentWeight: 55 + Math.floor(seededRandom(seed * 13 + i) * 45),
-      assignedDate: daysAgo(Math.floor(seededRandom(seed * 14 + i) * 60)),
-      lastActive: Math.floor(seededRandom(seed * 15 + i) * 9),
-      status:
-        memberStatusRoll < 0.78
-          ? 'active'
-          : memberStatusRoll < 0.92
-            ? 'paused'
-            : 'completed',
-      notes: [],
-      overrides: { workouts: 0, meals: 0 },
-    }
-  })
+  const members: ProgramMember[] = Array.from(
+    { length: memberCount },
+    (_, i) => {
+      const client = CLIENTS_DATA[(index * 7 + i * 13) % CLIENTS_DATA.length]
+      const currentWeek =
+        1 + Math.floor(seededRandom(seed * 10 + i) * durationWeeks)
+      const progressPct = Math.min(
+        100,
+        Math.round((currentWeek / durationWeeks) * 100) -
+          Math.floor(seededRandom(seed * 11 + i) * 15),
+      )
+      const memberStatusRoll = seededRandom(seed * 12 + i)
+      return {
+        clientId: client.id,
+        currentWeek: Math.min(currentWeek, durationWeeks),
+        progressPct: Math.max(0, progressPct),
+        currentWeight: 55 + Math.floor(seededRandom(seed * 13 + i) * 45),
+        assignedDate: daysAgo(Math.floor(seededRandom(seed * 14 + i) * 60)),
+        lastActive: Math.floor(seededRandom(seed * 15 + i) * 9),
+        status:
+          memberStatusRoll < 0.78
+            ? 'active'
+            : memberStatusRoll < 0.92
+              ? 'paused'
+              : 'completed',
+        notes: [],
+        overrides: { workouts: 0, meals: 0 },
+      }
+    },
+  )
 
   const activeUsers = members.filter((m) => m.status === 'active').length
   const completionRate = members.length
-    ? Math.round(members.reduce((a, m) => a + m.progressPct, 0) / members.length)
+    ? Math.round(
+        members.reduce((a, m) => a + m.progressPct, 0) / members.length,
+      )
     : 0
 
   return {
@@ -395,19 +1013,26 @@ export function buildProgram(index: number): TrainingProgram {
       const text = pick(ACTIVITY_TEMPLATES, seed * 23 + i)
         .replace('{name}', client ? client.name : 'A client')
         .replace('{week}', m ? String(m.currentWeek) : '1')
-        .replace('{day}', String(1 + Math.floor(seededRandom(seed * 24 + i) * 7)))
+        .replace(
+          '{day}',
+          String(1 + Math.floor(seededRandom(seed * 24 + i) * 7)),
+        )
       return { text, days: Math.floor(seededRandom(seed * 25 + i) * 10) }
     }),
     versionHistory: [
       {
         version: 'v1.0',
         text: 'Program created',
-        days: Math.round((Date.now() - createdDate.getTime()) / (24 * 3600 * 1000)),
+        days: Math.round(
+          (Date.now() - createdDate.getTime()) / (24 * 3600 * 1000),
+        ),
       },
       {
         version: `v1.${Math.floor(seededRandom(seed * 17) * 4)}`,
         text: 'Workout plan updated',
-        days: Math.round((Date.now() - updatedDate.getTime()) / (24 * 3600 * 1000)),
+        days: Math.round(
+          (Date.now() - updatedDate.getTime()) / (24 * 3600 * 1000),
+        ),
       },
     ],
   }
@@ -454,7 +1079,9 @@ export function buildEmptyWorkoutWeeks(durationWeeks: number): WorkoutWeek[] {
   )
 }
 export function buildEmptyDietWeeks(durationWeeks: number): DietWeek[] {
-  return Array.from({ length: durationWeeks }, (_, i) => buildEmptyDietWeek(i + 1))
+  return Array.from({ length: durationWeeks }, (_, i) =>
+    buildEmptyDietWeek(i + 1),
+  )
 }
 
 // ===================== Session persistence =====================

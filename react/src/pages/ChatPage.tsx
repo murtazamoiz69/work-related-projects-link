@@ -23,9 +23,14 @@ export function ChatPage({
   const [planClient, setPlanClient] = useState<Client | null>(null)
 
   const initialId = useMemo(() => {
-    if (initialConversationId && CONVERSATIONS.some((c) => c.id === initialConversationId))
+    if (
+      initialConversationId &&
+      CONVERSATIONS.some((c) => c.id === initialConversationId)
+    )
       return initialConversationId
-    const first = filterConversations(conversationsForTab('inbox'), '')[0] ?? CONVERSATIONS[0]
+    const first =
+      filterConversations(conversationsForTab('inbox'), '')[0] ??
+      CONVERSATIONS[0]
     return first ? first.id : null
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -65,7 +70,10 @@ export function ChatPage({
 
   return (
     <>
-      <Topbar title="Chat" subtitle="Every client conversation, live with Nourish AI" />
+      <Topbar
+        title="Chat"
+        subtitle="Every client conversation, live with Nourish AI"
+      />
       <main className="content chat-content">
         <div className="chat-shell">
           <ConversationList
@@ -105,7 +113,10 @@ export function ChatPage({
       </main>
 
       {planClient ? (
-        <PlanWorkspaceOverlay client={planClient} onClose={() => setPlanClient(null)} />
+        <PlanWorkspaceOverlay
+          client={planClient}
+          onClose={() => setPlanClient(null)}
+        />
       ) : null}
     </>
   )

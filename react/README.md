@@ -1,50 +1,53 @@
-# React + TypeScript + Vite
+# NWS — Nutritionist Panel (React)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The **Nourish with Nourish AI** nutritionist dashboard, ported from the V2
+vanilla-HTML/JS prototype into React + TypeScript. Faithful to V2's green
+"Nourish" design.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Vite · React 18 · TypeScript (strict) · TanStack Router · TanStack Query ·
+react-hook-form + zod · Zustand · Chart.js (react-chartjs-2) · lucide-react ·
+ESLint + Prettier · Vitest. See [CLAUDE.md](CLAUDE.md) for conventions.
 
-## Expanding the ESLint configuration
+The design system is V2's, ported verbatim into `src/styles/tokens.css`
+(design tokens) + `src/styles/app.css` (component styles). Screens emit the
+same class names for pixel-faithful parity; Tailwind is configured for
+incidental utility use.
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+## Commands
 
-- Configure the top-level `parserOptions` property like this:
+```bash
+npm install       # first time
+npm run dev       # dev server (http://localhost:5173)
+npm run build     # tsc -b && vite build
+npm run preview   # preview the production build
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+npm run typecheck # tsc --noEmit
+npm run lint      # eslint
+npm run format    # prettier --write
+npm run test      # vitest (watch)  /  npm run test:run  (once)
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+Demo login: any valid email + a 4+ char password (e.g. `sarah@nourishwithsim.com`).
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+## Screens (routes)
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+| Route | Screen |
+|---|---|
+| `/login` | Sign in (auth-gated app) |
+| `/` | Dashboard — KPIs, Catch Up, cohort charts, plan expiry |
+| `/clients`, `/clients/:id` | Client roster + client detail (Program Journey, charts) |
+| `/chat` | 3-column messaging + full-screen AI Plan Workspace |
+| `/programs`, `/programs/:id` | Program library + program workspace (6 tabs) |
+| `/templates`, `/templates/:id` | Message-template library + editor |
+| `/settings` | Profile / Notifications / Security / Practice |
+
+## Structure
+
+`src/components/{atoms,molecules,organisms,templates}` — shared UI.
+`src/features/<feature>` — per-feature data + components (clients, dashboard,
+client-detail, programs, templates, chat, shell). `src/pages` — route
+containers (lazy-loaded). `src/routes` — TanStack Router tree. `src/store` —
+Zustand stores. `src/lib` — env, axios, query client, router, seed, toast.
+Prototype state is in-memory + `localStorage`/`sessionStorage`; no backend.

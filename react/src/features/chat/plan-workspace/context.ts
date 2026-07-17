@@ -1,5 +1,11 @@
 // Shared lookups + UI types for the Plan Workspace React tree.
-import type { ClinicalProfile, Workspace, WsDietDay, WsWorkout, WsWorkoutDay } from './types'
+import type {
+  ClinicalProfile,
+  Workspace,
+  WsDietDay,
+  WsWorkout,
+  WsWorkoutDay,
+} from './types'
 
 export function getDay(
   ws: Workspace,
@@ -7,7 +13,7 @@ export function getDay(
   dayNum: number,
 ): WsWorkoutDay | null {
   const w = ws.workoutWeeks.find((x) => x.weekNum === weekNum)
-  return w ? w.days.find((d) => d.dayNum === dayNum) ?? null : null
+  return w ? (w.days.find((d) => d.dayNum === dayNum) ?? null) : null
 }
 
 // A day's primary workout OR one of its extra (Timeline-only) sessions.
@@ -29,7 +35,7 @@ export function getDietDay(
   dayNum: number,
 ): WsDietDay | null {
   const w = ws.dietWeeks.find((x) => x.weekNum === weekNum)
-  return w ? w.days.find((d) => d.dayNum === dayNum) ?? null : null
+  return w ? (w.days.find((d) => d.dayNum === dayNum) ?? null) : null
 }
 
 // The full-screen workspace's modal overlays (rendered above the shell).
@@ -42,7 +48,12 @@ export type PwModal =
       enforceUpcoming: boolean
     }
   | { kind: 'workoutTemplatePicker'; weekNum: number; dayNum: number }
-  | { kind: 'workoutEditor'; weekNum: number; dayNum: number; wid: string | null }
+  | {
+      kind: 'workoutEditor'
+      weekNum: number
+      dayNum: number
+      wid: string | null
+    }
   | {
       kind: 'workoutPreview'
       weekNum: number

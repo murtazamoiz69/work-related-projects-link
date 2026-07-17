@@ -1,12 +1,7 @@
 import { useState } from 'react'
 import { Icon } from '@/components/atoms/Icon'
 import { showToast } from '@/lib/toast'
-import {
-  dietDayTotals,
-  formatTime12,
-  mealById,
-  newMealEntry,
-} from '../../data'
+import { dietDayTotals, formatTime12, mealById, newMealEntry } from '../../data'
 import type {
   DietDay,
   Meal,
@@ -20,13 +15,14 @@ import { MealPickerModal } from './MealPickerModal'
 
 type PickerTarget = { dayNum: number; entryUid: string | null }
 
-const NUTRITION_FIELDS: Array<{ key: keyof NutritionTargets; label: string }> = [
-  { key: 'calories', label: 'Daily Calories' },
-  { key: 'protein', label: 'Protein (g)' },
-  { key: 'carbs', label: 'Carbs (g)' },
-  { key: 'fat', label: 'Fat (g)' },
-  { key: 'water', label: 'Water (L)' },
-]
+const NUTRITION_FIELDS: Array<{ key: keyof NutritionTargets; label: string }> =
+  [
+    { key: 'calories', label: 'Daily Calories' },
+    { key: 'protein', label: 'Protein (g)' },
+    { key: 'carbs', label: 'Carbs (g)' },
+    { key: 'fat', label: 'Fat (g)' },
+    { key: 'water', label: 'Water (L)' },
+  ]
 
 export function DietPlanTab({
   program: p,
@@ -106,9 +102,8 @@ export function DietPlanTab({
           .find((d) => d.dayNum === picker.dayNum)
           ?.meals.find((e) => e.uid === picker.entryUid) ?? null)
       : null
-  const pickerDay = picker && week
-    ? week.days.find((d) => d.dayNum === picker.dayNum)
-    : null
+  const pickerDay =
+    picker && week ? week.days.find((d) => d.dayNum === picker.dayNum) : null
 
   return (
     <>
@@ -253,7 +248,9 @@ function DietDayCard({
                   <button
                     className="icon-btn sm danger"
                     title="Remove"
-                    onClick={() => onMealAction('delete', day.dayNum, entry.uid)}
+                    onClick={() =>
+                      onMealAction('delete', day.dayNum, entry.uid)
+                    }
                   >
                     <Icon name="trash-2" />
                   </button>

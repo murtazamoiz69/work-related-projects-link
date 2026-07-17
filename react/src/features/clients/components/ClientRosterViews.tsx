@@ -6,7 +6,8 @@ import { STATUS_LABEL } from '../data'
 import { adherenceTier, formatCheckIn, formatJoinDate } from '../utils'
 
 function AdherenceCell({ client }: { client: Client }) {
-  if (client.adherence === null) return <span className="adherence-empty">—</span>
+  if (client.adherence === null)
+    return <span className="adherence-empty">—</span>
   const tier = adherenceTier(client.adherence)
   return (
     <div className="adherence-cell">

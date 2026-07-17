@@ -57,7 +57,9 @@ export function WorkoutPlanTab({
       return
     }
     if (action === 'duplicate') {
-      const restDay = wk.days.find((d) => d.type === 'rest' && d.dayNum !== dayNum)
+      const restDay = wk.days.find(
+        (d) => d.type === 'rest' && d.dayNum !== dayNum,
+      )
       if (!restDay) {
         showToast('No rest day available this week to duplicate into')
         return
@@ -218,7 +220,11 @@ export function WorkoutPlanTab({
                             className="icon-btn sm danger"
                             title="Delete"
                             onClick={() =>
-                              handleCardAction('delete', resolvedWeek, day.dayNum)
+                              handleCardAction(
+                                'delete',
+                                resolvedWeek,
+                                day.dayNum,
+                              )
                             }
                           >
                             <Icon name="trash-2" />

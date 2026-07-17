@@ -31,7 +31,9 @@ export function PwModalShell({
         if (e.target === e.currentTarget) onClose()
       }}
     >
-      <div className={`modal-card pw-modal-card${cardClassName ? ` ${cardClassName}` : ''}`}>
+      <div
+        className={`modal-card pw-modal-card${cardClassName ? ` ${cardClassName}` : ''}`}
+      >
         <div className="modal-head">
           <h3>{title}</h3>
           <button className="icon-btn sm" onClick={onClose} aria-label="Close">

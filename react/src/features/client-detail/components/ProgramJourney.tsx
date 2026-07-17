@@ -133,7 +133,10 @@ function JourneyHeader({ program }: { program: Program }) {
 
   return (
     <div className="journey-header">
-      <div className="journey-ring" style={{ '--pct': pct } as React.CSSProperties}>
+      <div
+        className="journey-ring"
+        style={{ '--pct': pct } as React.CSSProperties}
+      >
         <span className="journey-ring-val">{ringLabel}</span>
         <span className="journey-ring-sub">{ringSub}</span>
       </div>
@@ -141,7 +144,9 @@ function JourneyHeader({ program }: { program: Program }) {
         <span className="journey-phase">{program.phase}</span>
         <div className="journey-name-row">
           <span className="journey-name">{program.name}</span>
-          <span className={`status-pill ${isActive ? 'status-active' : 'status-paused'}`}>
+          <span
+            className={`status-pill ${isActive ? 'status-active' : 'status-paused'}`}
+          >
             {isActive ? 'Active' : 'Completed'}
           </span>
         </div>
@@ -198,7 +203,11 @@ export function ProgramJourney({
 
       <JourneyHeader program={program} />
 
-      <div className="prog-tabs journey-tabs" role="tablist" aria-label="Journey views">
+      <div
+        className="prog-tabs journey-tabs"
+        role="tablist"
+        aria-label="Journey views"
+      >
         {JOURNEY_TABS.map((t) => (
           <button
             key={t.key}

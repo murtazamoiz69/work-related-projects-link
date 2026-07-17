@@ -14,14 +14,22 @@ import { deriveClinicalProfile } from '../plan-workspace'
 import { chatPlanWeekForDay } from '../data'
 import type { Conversation, ProfileSectionId, WeekDayStat } from '../types'
 
-const PROFILE_SECTIONS: { id: ProfileSectionId; label: string; icon: string }[] = [
+const PROFILE_SECTIONS: {
+  id: ProfileSectionId
+  label: string
+  icon: string
+}[] = [
   { id: 'overview', label: 'Overview', icon: 'target' },
   { id: 'medical', label: 'Medical', icon: 'stethoscope' },
   { id: 'activity', label: 'User Activity', icon: 'activity' },
 ]
 const UPLOADS_PREVIEW_MAX = 6
 
-function dayPopoverText(client: Client, day: WeekDayStat, noun: string): string {
+function dayPopoverText(
+  client: Client,
+  day: WeekDayStat,
+  noun: string,
+): string {
   const week = chatPlanWeekForDay(client, day.daysAgo)
   const header = `Week ${week} — ${client.plan}`
   return day.tier === 'empty'
@@ -74,9 +82,15 @@ export function ClientOverview({
             </Link>
           </div>
 
-          <p className="chat-mini-card-text profile-chat-summary">{convo.chatSummary}</p>
+          <p className="chat-mini-card-text profile-chat-summary">
+            {convo.chatSummary}
+          </p>
 
-          <button className="btn-primary full" onClick={onManagePlan} title="Open the plan workspace">
+          <button
+            className="btn-primary full"
+            onClick={onManagePlan}
+            title="Open the plan workspace"
+          >
             <Icon name="clipboard-list" />
             Manage Plan
           </button>
@@ -173,15 +187,29 @@ function OverviewSection({
           <div className="week-perf">
             <div className="week-perf-row">
               <span className="week-perf-label">Weekly Diet</span>
-              <WeekDots days={dietWeek} client={c} noun="Meals" onEnter={onDotEnter} onLeave={onDotLeave} />
+              <WeekDots
+                days={dietWeek}
+                client={c}
+                noun="Meals"
+                onEnter={onDotEnter}
+                onLeave={onDotLeave}
+              />
             </div>
             <div className="week-perf-row">
               <span className="week-perf-label">Weekly Workout</span>
-              <WeekDots days={workoutWeek} client={c} noun="Workouts" onEnter={onDotEnter} onLeave={onDotLeave} />
+              <WeekDots
+                days={workoutWeek}
+                client={c}
+                noun="Workouts"
+                onEnter={onDotEnter}
+                onLeave={onDotLeave}
+              />
             </div>
           </div>
           <div className={`week-perf-pct tone-${tone}`}>
-            <span className="week-perf-pct-value">{pct === null ? '—' : `${pct}%`}</span>
+            <span className="week-perf-pct-value">
+              {pct === null ? '—' : `${pct}%`}
+            </span>
             <span className="week-perf-pct-label">Adherence</span>
           </div>
         </div>
@@ -205,7 +233,10 @@ function OverviewSection({
               <li className="note-item" key={i}>
                 <span
                   className="avatar avatar-xs"
-                  style={{ background: n.author === 'Sarah Nolan' ? '#2F5D50' : '#5B7FA6' }}
+                  style={{
+                    background:
+                      n.author === 'Sarah Nolan' ? '#2F5D50' : '#5B7FA6',
+                  }}
                 >
                   {n.author
                     .split(' ')
@@ -249,7 +280,8 @@ function MedicalChipRow({
   arr: string[]
   emptyText: string
 }) {
-  if (!arr || !arr.length) return <span className="chat-mini-card-text">{emptyText}</span>
+  if (!arr || !arr.length)
+    return <span className="chat-mini-card-text">{emptyText}</span>
   return (
     <div className="detail-chip-row">
       {arr.map((a, i) => (
@@ -278,7 +310,9 @@ function MedicalSection({ convo }: { convo: Conversation }) {
           <MedicalChipRow arr={p.injuries} emptyText="None reported" />
           {p.pregnancy ? (
             <>
-              <span className="detail-chip-sublabel">Pregnancy / Breastfeeding</span>
+              <span className="detail-chip-sublabel">
+                Pregnancy / Breastfeeding
+              </span>
               <MedicalChipRow arr={[p.pregnancy]} emptyText="" />
             </>
           ) : null}
@@ -318,7 +352,10 @@ function ActivitySection({ convo }: { convo: Conversation }) {
           <ul className="timeline">
             {convo.activity.map((a, i) => (
               <li className="timeline-item" key={i}>
-                <span className="avatar avatar-xs" style={{ background: 'var(--primary)' }}>
+                <span
+                  className="avatar avatar-xs"
+                  style={{ background: 'var(--primary)' }}
+                >
                   <Icon name={a.icon} />
                 </span>
                 <div className="timeline-body">
@@ -355,7 +392,8 @@ function ActivitySection({ convo }: { convo: Conversation }) {
                 params={{ clientId: convo.id }}
                 className="link-btn profile-view-more"
               >
-                View all {convo.uploads.length} uploads <Icon name="arrow-right" />
+                View all {convo.uploads.length} uploads{' '}
+                <Icon name="arrow-right" />
               </Link>
             ) : null}
           </>

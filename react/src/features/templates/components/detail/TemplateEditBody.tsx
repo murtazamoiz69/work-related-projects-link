@@ -4,12 +4,31 @@ import { Icon } from '@/components/atoms/Icon'
 import { TEMPLATE_VARIABLES } from '../../data'
 
 const EMOJI_POOL = [
-  '👍', '🎉', '💪', '🙌', '❤️', '😊', '👏', '🔥',
-  '✅', '😅', '🙏', '⭐', '🥗', '💧', '📅', '💰',
+  '👍',
+  '🎉',
+  '💪',
+  '🙌',
+  '❤️',
+  '😊',
+  '👏',
+  '🔥',
+  '✅',
+  '😅',
+  '🙏',
+  '⭐',
+  '🥗',
+  '💧',
+  '📅',
+  '💰',
 ]
 
 type RteCmd = {
-  cmd: 'bold' | 'italic' | 'underline' | 'insertUnorderedList' | 'insertOrderedList'
+  cmd:
+    | 'bold'
+    | 'italic'
+    | 'underline'
+    | 'insertUnorderedList'
+    | 'insertOrderedList'
   icon: string
   title: string
 }
@@ -190,7 +209,11 @@ export function TemplateEditBody({
           </button>
         ))}
         <span className="rte-divider" />
-        <button type="button" title="Insert link" onClick={() => runCmd('link')}>
+        <button
+          type="button"
+          title="Insert link"
+          onClick={() => runCmd('link')}
+        >
           <Icon name="link" />
         </button>
         <button
@@ -225,7 +248,11 @@ export function TemplateEditBody({
         ? createPortal(
             <div
               className="composer-popup emoji-popup"
-              style={{ position: 'fixed', top: popupPos.top, left: popupPos.left }}
+              style={{
+                position: 'fixed',
+                top: popupPos.top,
+                left: popupPos.left,
+              }}
             >
               {EMOJI_POOL.map((em) => (
                 <button
@@ -248,7 +275,11 @@ export function TemplateEditBody({
         ? createPortal(
             <div
               className="composer-popup template-popup"
-              style={{ position: 'fixed', top: popupPos.top, left: popupPos.left }}
+              style={{
+                position: 'fixed',
+                top: popupPos.top,
+                left: popupPos.left,
+              }}
             >
               {TEMPLATE_VARIABLES.map((v) => (
                 <button

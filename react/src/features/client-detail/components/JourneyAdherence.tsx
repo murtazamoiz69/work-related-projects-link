@@ -4,18 +4,29 @@ import type { ChecklistItem, Program, ProgramWeek } from '../types'
 import { MEAL_ITEMS_BASE, WORKOUT_ITEMS, checklistDoneCount } from '../data'
 import { MiniBar } from './atoms'
 
-function Checklist({ pct, items }: { pct: number | null; items: ChecklistItem[] }) {
+function Checklist({
+  pct,
+  items,
+}: {
+  pct: number | null
+  items: ChecklistItem[]
+}) {
   const doneCount = checklistDoneCount(pct, items.length)
   return (
     <ul className="checklist">
       {items.map((it, i) => {
         const done = i < doneCount
         return (
-          <li className={`checklist-item ${done ? 'done' : 'pending'}`} key={it.name}>
+          <li
+            className={`checklist-item ${done ? 'done' : 'pending'}`}
+            key={it.name}
+          >
             <Icon name={done ? 'check-circle-2' : 'circle'} />
             <div>
               <span className="checklist-name">{it.name}</span>
-              {it.detail ? <span className="checklist-detail">{it.detail}</span> : null}
+              {it.detail ? (
+                <span className="checklist-detail">{it.detail}</span>
+              ) : null}
             </div>
           </li>
         )
@@ -28,7 +39,9 @@ function AdherenceRow({ w }: { w: ProgramWeek }) {
   const [open, setOpen] = useState(false)
   const clickable = w.submitted
   return (
-    <li className={`adh-row${clickable ? '' : ' is-muted'}${open ? ' is-open' : ''}`}>
+    <li
+      className={`adh-row${clickable ? '' : ' is-muted'}${open ? ' is-open' : ''}`}
+    >
       <div
         className="adh-row-head"
         onClick={clickable ? () => setOpen((o) => !o) : undefined}
@@ -77,8 +90,8 @@ export function JourneyAdherence({ program }: { program: Program }) {
   return (
     <>
       <p className="journey-tab-sub">
-        Weekly diet &amp; workout adherence for this program — open a week to see what
-        made up the %.
+        Weekly diet &amp; workout adherence for this program — open a week to
+        see what made up the %.
       </p>
       <ul className="adherence-strip">
         {program.weeks.map((w) => (

@@ -5,12 +5,7 @@
 // in-memory source of truth for the session, mirrored to localStorage.
 
 export type ProgramGoal =
-  | 'Fat Loss'
-  | 'Muscle Gain'
-  | 'Bulk'
-  | 'PCOS'
-  | 'Diabetes'
-  | 'General Fitness'
+  'Fat Loss' | 'Muscle Gain' | 'Bulk' | 'PCOS' | 'Diabetes' | 'General Fitness'
 
 export type ProgramDifficulty = 'Beginner' | 'Intermediate' | 'Advanced'
 

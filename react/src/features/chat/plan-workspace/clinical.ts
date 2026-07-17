@@ -13,21 +13,109 @@ import type { Exercise, Meal, MealSlot } from '@/features/programs'
 import type { ClinicalProfile, Conflict, WsTargets } from './types'
 
 // ===================== Constant pools =====================
-const CUISINES = ['North Indian', 'South Indian', 'Mediterranean', 'Continental', 'East Asian', 'Middle Eastern', 'Mexican']
+const CUISINES = [
+  'North Indian',
+  'South Indian',
+  'Mediterranean',
+  'Continental',
+  'East Asian',
+  'Middle Eastern',
+  'Mexican',
+]
 const BUDGETS = ['Budget-friendly', 'Moderate', 'Premium']
-const MEAL_TIMINGS = ['3 meals / day', '3 meals + 2 snacks', 'Intermittent fasting (16:8)', '5 small meals']
+const MEAL_TIMINGS = [
+  '3 meals / day',
+  '3 meals + 2 snacks',
+  'Intermittent fasting (16:8)',
+  '5 small meals',
+]
 const WORKOUT_LOCATIONS = ['Home', 'Gym']
-const HOME_EQUIPMENT = ['Dumbbells', 'Resistance bands', 'Yoga mat', 'Kettlebell', 'Pull-up bar']
-const GYM_EQUIPMENT = ['Barbell', 'Dumbbell', 'Cable', 'Machine', 'Kettlebell', 'Bodyweight']
-const PREFERRED_TIMES = ['Early morning', 'Mid-morning', 'Lunchtime', 'Evening', 'Late night']
-const INJURY_POOL = ['Lower back strain', 'Left knee (meniscus)', 'Right shoulder impingement', 'Wrist tendinitis', 'Ankle sprain (healed)']
-const SUPPLEMENT_POOL = ['Whey protein', 'Creatine monohydrate', 'Omega-3', 'Multivitamin', 'Magnesium']
-const FOOD_LIKES = ['Paneer', 'Eggs', 'Oats', 'Berries', 'Chicken', 'Rice', 'Avocado', 'Sweet potato', 'Greek yogurt', 'Lentils']
-const FOOD_DISLIKES = ['Mushrooms', 'Broccoli', 'Tofu', 'Beetroot', 'Olives', 'Bell pepper', 'Cottage cheese']
-const ALLERGY_POOL_WS = ['Peanuts', 'Shellfish', 'Dairy', 'Gluten', 'Eggs', 'Soy']
-const INTOLERANCE_POOL = ['Lactose', 'Gluten sensitivity', 'FODMAPs', 'Caffeine']
-const MEDICAL_POOL_WS = ['Type 2 Diabetes', 'Hypertension', 'PCOS', 'Hypothyroidism', 'High cholesterol', 'IBS']
-const ACTIVITY_LEVELS_WS = ['Sedentary', 'Lightly active', 'Moderately active', 'Very active', 'Athlete']
+const HOME_EQUIPMENT = [
+  'Dumbbells',
+  'Resistance bands',
+  'Yoga mat',
+  'Kettlebell',
+  'Pull-up bar',
+]
+const GYM_EQUIPMENT = [
+  'Barbell',
+  'Dumbbell',
+  'Cable',
+  'Machine',
+  'Kettlebell',
+  'Bodyweight',
+]
+const PREFERRED_TIMES = [
+  'Early morning',
+  'Mid-morning',
+  'Lunchtime',
+  'Evening',
+  'Late night',
+]
+const INJURY_POOL = [
+  'Lower back strain',
+  'Left knee (meniscus)',
+  'Right shoulder impingement',
+  'Wrist tendinitis',
+  'Ankle sprain (healed)',
+]
+const SUPPLEMENT_POOL = [
+  'Whey protein',
+  'Creatine monohydrate',
+  'Omega-3',
+  'Multivitamin',
+  'Magnesium',
+]
+const FOOD_LIKES = [
+  'Paneer',
+  'Eggs',
+  'Oats',
+  'Berries',
+  'Chicken',
+  'Rice',
+  'Avocado',
+  'Sweet potato',
+  'Greek yogurt',
+  'Lentils',
+]
+const FOOD_DISLIKES = [
+  'Mushrooms',
+  'Broccoli',
+  'Tofu',
+  'Beetroot',
+  'Olives',
+  'Bell pepper',
+  'Cottage cheese',
+]
+const ALLERGY_POOL_WS = [
+  'Peanuts',
+  'Shellfish',
+  'Dairy',
+  'Gluten',
+  'Eggs',
+  'Soy',
+]
+const INTOLERANCE_POOL = [
+  'Lactose',
+  'Gluten sensitivity',
+  'FODMAPs',
+  'Caffeine',
+]
+const MEDICAL_POOL_WS = [
+  'Type 2 Diabetes',
+  'Hypertension',
+  'PCOS',
+  'Hypothyroidism',
+  'High cholesterol',
+  'IBS',
+]
+const ACTIVITY_LEVELS_WS = [
+  'Sedentary',
+  'Lightly active',
+  'Moderately active',
+  'Very active',
+  'Athlete',
+]
 
 // Ingredient keyword tables — used to detect what a meal actually contains so
 // nothing conflicting with a restriction is ever recommended.
@@ -41,13 +129,33 @@ const ALLERGEN_KEYWORDS: Record<string, string[]> = {
 }
 const INTOLERANCE_KEYWORDS: Record<string, string[]> = {
   Lactose: ['yogurt', 'cheese', 'milk', 'feta', 'cottage', 'whey', 'butter'],
-  'Gluten sensitivity': ['bread', 'tortilla', 'wheat', 'wrap', 'granola', 'pasta', 'oats'],
+  'Gluten sensitivity': [
+    'bread',
+    'tortilla',
+    'wheat',
+    'wrap',
+    'granola',
+    'pasta',
+    'oats',
+  ],
   FODMAPs: ['onion', 'garlic', 'wheat', 'apple', 'lentil', 'chickpea'],
   Caffeine: ['coffee', 'espresso'],
 }
 const MEAT_KEYWORDS = ['chicken', 'beef', 'turkey', 'pork', 'lamb', 'bacon']
 const FISH_KEYWORDS = ['salmon', 'cod', 'tuna', 'fish', 'shrimp', 'prawn']
-const ANIMAL_KEYWORDS = [...MEAT_KEYWORDS, ...FISH_KEYWORDS, 'yogurt', 'cheese', 'milk', 'feta', 'cottage', 'egg', 'honey', 'whey', 'butter']
+const ANIMAL_KEYWORDS = [
+  ...MEAT_KEYWORDS,
+  ...FISH_KEYWORDS,
+  'yogurt',
+  'cheese',
+  'milk',
+  'feta',
+  'cottage',
+  'egg',
+  'honey',
+  'whey',
+  'butter',
+]
 const PORK_KEYWORDS = ['pork', 'bacon', 'ham']
 
 // injury -> exercise muscle groups that could be aggravated
@@ -84,13 +192,15 @@ export function ingredientsText(meal: Meal): string {
 
 // Per-ingredient keyword match with plant-alternative exclusions so "almond
 // milk" / "coconut milk" / "almond butter" are NOT flagged as dairy.
-const PLANT_QUALIFIERS = /(almond|soy|oat|coconut|rice|cashew|peanut|plant|hemp|pea)\b/
+const PLANT_QUALIFIERS =
+  /(almond|soy|oat|coconut|rice|cashew|peanut|plant|hemp|pea)\b/
 function mealHasKeyword(meal: Meal, keywords: string[]): boolean {
   const list = (meal.ingredients || []).map((s) => s.toLowerCase())
   return list.some((ing) =>
     keywords.some((k) => {
       if (!ing.includes(k)) return false
-      if ((k === 'milk' || k === 'butter') && PLANT_QUALIFIERS.test(ing)) return false
+      if ((k === 'milk' || k === 'butter') && PLANT_QUALIFIERS.test(ing))
+        return false
       return true
     }),
   )
@@ -199,7 +309,11 @@ export function deriveClinicalProfile(client: Client): ClinicalProfile {
     workoutDifficulty: goal === 'Muscle Gain' ? 'Intermediate' : 'Beginner',
     preferredTime: pick(PREFERRED_TIMES, seed * 12.3),
     physicalLimitations: subset(
-      ['None reported', 'Limited overhead mobility', 'Avoid high-impact jumping'],
+      [
+        'None reported',
+        'Limited overhead mobility',
+        'Avoid high-impact jumping',
+      ],
       seed * 12.9,
       0.5,
       1,
@@ -236,7 +350,10 @@ export function equipmentAllowed(
 }
 
 // ===================== Conflict guards =====================
-export function mealConflicts(meal: Meal, profile: ClinicalProfile): Conflict[] {
+export function mealConflicts(
+  meal: Meal,
+  profile: ClinicalProfile,
+): Conflict[] {
   const out: Conflict[] = []
   profile.allergies.forEach((a) => {
     if (mealHasKeyword(meal, ALLERGEN_KEYWORDS[a] || [a.toLowerCase()]))
@@ -266,11 +383,17 @@ export function mealConflicts(meal: Meal, profile: ClinicalProfile): Conflict[] 
   })
   return out
 }
-export function mealHardConflict(meal: Meal, profile: ClinicalProfile): boolean {
+export function mealHardConflict(
+  meal: Meal,
+  profile: ClinicalProfile,
+): boolean {
   return mealConflicts(meal, profile).some((c) => c.level === 'hard')
 }
 
-export function exerciseIssues(ex: Exercise, profile: ClinicalProfile): Conflict[] {
+export function exerciseIssues(
+  ex: Exercise,
+  profile: ClinicalProfile,
+): Conflict[] {
   const out: Conflict[] = []
   profile.injuries.forEach((inj) => {
     const key = Object.keys(INJURY_MUSCLE_RISK).find((k) =>
@@ -304,7 +427,9 @@ export function pickSafeMeal(
     (m) => m.id !== avoidId && !mealHardConflict(m, profile),
   )
   if (!pool.length)
-    pool = mealsByCategory(category).filter((m) => !mealHardConflict(m, profile))
+    pool = mealsByCategory(category).filter(
+      (m) => !mealHardConflict(m, profile),
+    )
   if (!pool.length) {
     const fallback = mealById(mealsByCategory(category)[0].id)
     return fallback ?? mealsByCategory(category)[0]
@@ -318,10 +443,15 @@ export function pickSafeMeal(
   if (preferHigherKcal != null) {
     const sorted = from
       .slice()
-      .sort((a, b) => (preferHigherKcal ? b.calories - a.calories : a.calories - b.calories))
+      .sort((a, b) =>
+        preferHigherKcal ? b.calories - a.calories : a.calories - b.calories,
+      )
     return sorted[0]
   }
-  return pick(from, profile._seed + category.length * 7 + (avoidId ? avoidId.length : 0))
+  return pick(
+    from,
+    profile._seed + category.length * 7 + (avoidId ? avoidId.length : 0),
+  )
 }
 export function pickAltExercise(
   ex: Exercise,
@@ -342,13 +472,18 @@ export function pickAltExercise(
     : pool.length
       ? pool
       : EXERCISE_LIBRARY.filter((e) => e.equipment === 'Bodyweight')
-  return from[Math.floor(seededRandom(profile._seed + ex.id.length * 3) * from.length)] || from[0]
+  return (
+    from[
+      Math.floor(seededRandom(profile._seed + ex.id.length * 3) * from.length)
+    ] || from[0]
+  )
 }
 
 // ===================== Nutrition targets =====================
 export function computeTargets(profile: ClinicalProfile): WsTargets {
   const s = profile.gender === 'Male' ? 5 : -161
-  const bmr = 10 * profile.weightKg + 6.25 * profile.heightCm - 5 * profile.age + s
+  const bmr =
+    10 * profile.weightKg + 6.25 * profile.heightCm - 5 * profile.age + s
   const factor =
     (
       {
@@ -366,7 +501,9 @@ export function computeTargets(profile: ClinicalProfile): WsTargets {
   cals = Math.round(cals / 10) * 10
   return {
     calories: cals,
-    protein: Math.round(profile.weightKg * (profile.goal === 'Muscle Gain' ? 2.0 : 1.6)),
+    protein: Math.round(
+      profile.weightKg * (profile.goal === 'Muscle Gain' ? 2.0 : 1.6),
+    ),
     carbs: Math.round((cals * 0.4) / 4),
     fat: Math.round((cals * 0.28) / 9),
     water: Math.max(2, Math.round(profile.weightKg * 0.033 * 10) / 10),

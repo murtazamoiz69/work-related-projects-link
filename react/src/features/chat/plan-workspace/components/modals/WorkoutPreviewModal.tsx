@@ -27,7 +27,8 @@ export function WorkoutPreviewModal({
       }
     >
       <p className="pw-muted">
-        This is roughly what {profile.name.split(' ')[0]} will see in their app — read-only.
+        This is roughly what {profile.name.split(' ')[0]} will see in their app
+        — read-only.
       </p>
       <div className="pw-view-list">
         {workout.exercises.map((slot) => {

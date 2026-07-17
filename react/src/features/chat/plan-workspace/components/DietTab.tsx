@@ -88,7 +88,15 @@ function MealCard({
   )
 }
 
-function DayRow({ ctx, weekNum, day }: { ctx: PwCtx; weekNum: number; day: WsDietDay }) {
+function DayRow({
+  ctx,
+  weekNum,
+  day,
+}: {
+  ctx: PwCtx
+  weekNum: number
+  day: WsDietDay
+}) {
   const totals = wsDailyTotals(ctx.ws, day)
   const sorted = day.meals.slice().sort((a, b) => a.time.localeCompare(b.time))
   return (
@@ -100,7 +108,8 @@ function DayRow({ ctx, weekNum, day }: { ctx: PwCtx; weekNum: number; day: WsDie
         </span>
         <div className="diet-day-head-right">
           <span className="diet-day-totals">
-            {totals.calories} kcal · P{totals.protein}g · C{totals.carbs}g · F{totals.fat}g
+            {totals.calories} kcal · P{totals.protein}g · C{totals.carbs}g · F
+            {totals.fat}g
           </span>
           <button
             className="link-btn"
@@ -122,7 +131,13 @@ function DayRow({ ctx, weekNum, day }: { ctx: PwCtx; weekNum: number; day: WsDie
       <div className="diet-meal-row pw-diet-meal-row">
         {sorted.length ? (
           sorted.map((e) => (
-            <MealCard key={e.uid} ctx={ctx} weekNum={weekNum} day={day} entry={e} />
+            <MealCard
+              key={e.uid}
+              ctx={ctx}
+              weekNum={weekNum}
+              day={day}
+              entry={e}
+            />
           ))
         ) : (
           <p className="pw-muted">No meals yet — add one.</p>
@@ -159,7 +174,12 @@ export function DietTab({ ctx }: { ctx: PwCtx }) {
         <div className="pw-day-list">
           {week
             ? week.days.map((d) => (
-                <DayRow key={d.dayNum} ctx={ctx} weekNum={ctx.activeWeek} day={d} />
+                <DayRow
+                  key={d.dayNum}
+                  ctx={ctx}
+                  weekNum={ctx.activeWeek}
+                  day={d}
+                />
               ))
             : null}
         </div>

@@ -7,7 +7,11 @@ import {
   buildEmptyDietWeek,
   buildEmptyWorkoutWeek,
 } from '../../data'
-import type { ProgramDifficulty, ProgramGoal, TrainingProgram } from '../../types'
+import type {
+  ProgramDifficulty,
+  ProgramGoal,
+  TrainingProgram,
+} from '../../types'
 
 // Header pencil → Edit Program. Extending the timeline adds blank (rest-day,
 // no-meal) weeks; shortening removes weeks from the end, never past an assigned
@@ -38,7 +42,10 @@ export function EditProgramModal({
     p.goal = goal
     p.difficulty = difficulty
 
-    const maxMemberWeek = p.members.reduce((a, m) => Math.max(a, m.currentWeek), 1)
+    const maxMemberWeek = p.members.reduce(
+      (a, m) => Math.max(a, m.currentWeek),
+      1,
+    )
     const requestedWeeks = Math.min(
       24,
       Math.max(maxMemberWeek, Math.round(Number(weeks) || p.durationWeeks)),

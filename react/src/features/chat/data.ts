@@ -30,7 +30,7 @@ const PROGRAM_OPENER: Record<string, string> = {
   'Post-Surgery Recovery':
     'Started reintroducing solid foods today like we discussed at the last check-in.',
   'Endurance Training':
-    'Logged this morning\'s run — legs are pretty sore, any recovery tips?',
+    "Logged this morning's run — legs are pretty sore, any recovery tips?",
   'Body Recomposition':
     "Scale's not moving much this week, is that normal at this stage?",
   'Sports Nutrition':
@@ -60,7 +60,10 @@ export const CLIENT_FOLLOWUPS = [
   "That's a relief to hear, thanks Sarah!",
 ]
 const ATTACHMENT_BY_PROGRAM: Record<string, ChatAttachment> = {
-  'Diabetes Management': { type: 'file', name: 'Glucose_Readings_WeeklyLog.pdf' },
+  'Diabetes Management': {
+    type: 'file',
+    name: 'Glucose_Readings_WeeklyLog.pdf',
+  },
   'Weight Loss': { type: 'image', name: 'Progress_Photo.jpg' },
   'Muscle Gain': { type: 'image', name: 'Progress_Photo.jpg' },
   'Body Recomposition': { type: 'image', name: 'Progress_Photo.jpg' },
@@ -128,11 +131,16 @@ function chatPlanDurationWeeks(client: Client): number {
   return match ? parseInt(match[1], 10) : 12
 }
 function chatDaysSinceJoined(client: Client): number {
-  return Math.floor((Date.now() - client.joinDate.getTime()) / (24 * 60 * 60 * 1000))
+  return Math.floor(
+    (Date.now() - client.joinDate.getTime()) / (24 * 60 * 60 * 1000),
+  )
 }
 export function chatPlanWeekForDay(client: Client, dayOffset: number): number {
   const planWeeks = chatPlanDurationWeeks(client)
-  const daysIntoProgramThen = Math.max(0, chatDaysSinceJoined(client) - dayOffset)
+  const daysIntoProgramThen = Math.max(
+    0,
+    chatDaysSinceJoined(client) - dayOffset,
+  )
   return (Math.floor(daysIntoProgramThen / 7) % planWeeks) + 1
 }
 
@@ -168,7 +176,9 @@ function buildWeekDayStats(
   const days: WeekDayStat[] = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(weekStart)
     d.setDate(weekStart.getDate() + i)
-    const dayOffset = Math.round((today.getTime() - d.getTime()) / (24 * 60 * 60 * 1000))
+    const dayOffset = Math.round(
+      (today.getTime() - d.getTime()) / (24 * 60 * 60 * 1000),
+    )
     const label = d.toLocaleDateString('en-US', { weekday: 'short' })
     if (dayOffset < 0)
       return {
@@ -195,7 +205,10 @@ function buildWeekDayStats(
     else if (r < p * 0.85 + 0.15 && scheduled > 1)
       completed = Math.max(
         1,
-        Math.min(scheduled - 1, Math.round(seededRandom(daySeed * 1.31) * scheduled)),
+        Math.min(
+          scheduled - 1,
+          Math.round(seededRandom(daySeed * 1.31) * scheduled),
+        ),
       )
     else completed = 0
     return {
@@ -313,16 +326,20 @@ function buildConversation(client: Client, index: number): Conversation {
   const workoutsTotal = 4 + Math.floor(seededRandom(seed * 15.2) * 3)
   const workoutsCompleted = Math.max(
     0,
-    Math.min(workoutsTotal, Math.round(seededRandom(seed * 15) * workoutsTotal)),
+    Math.min(
+      workoutsTotal,
+      Math.round(seededRandom(seed * 15) * workoutsTotal),
+    ),
   )
   const dietWeek = buildWeekDayStats(seed, 140, client.adherence, 'meal')
   const workoutWeek = buildWeekDayStats(seed, 150, client.adherence, 'workout')
 
   const flags =
     client.status === 'attention'
-      ? [pick(FLAG_POOL_ATTENTION, seed * 16), pick(FLAG_POOL_ATTENTION, seed * 16.5)].filter(
-          (v, i, a) => a.indexOf(v) === i,
-        )
+      ? [
+          pick(FLAG_POOL_ATTENTION, seed * 16),
+          pick(FLAG_POOL_ATTENTION, seed * 16.5),
+        ].filter((v, i, a) => a.indexOf(v) === i)
       : []
 
   const notes: ChatNote[] = Array.from(
@@ -421,7 +438,10 @@ export function timeAgoShort(date: Date): string {
 }
 
 export function formatTime(date: Date): string {
-  return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+  return date.toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+  })
 }
 
 export function formatDateSep(date: Date): string {
@@ -429,7 +449,9 @@ export function formatDateSep(date: Date): string {
   today.setHours(0, 0, 0, 0)
   const d = new Date(date)
   d.setHours(0, 0, 0, 0)
-  const diffDays = Math.round((today.getTime() - d.getTime()) / (24 * 3600 * 1000))
+  const diffDays = Math.round(
+    (today.getTime() - d.getTime()) / (24 * 3600 * 1000),
+  )
   if (diffDays === 0) return 'Today'
   if (diffDays === 1) return 'Yesterday'
   return d.toLocaleDateString('en-US', {
@@ -476,7 +498,8 @@ export function filterConversations(
 export function randomSuggestions(count: number): string[] {
   const picks: string[] = []
   while (picks.length < count) {
-    const s = AI_SUGGESTION_POOL[Math.floor(Math.random() * AI_SUGGESTION_POOL.length)]
+    const s =
+      AI_SUGGESTION_POOL[Math.floor(Math.random() * AI_SUGGESTION_POOL.length)]
     if (!picks.includes(s)) picks.push(s)
   }
   return picks

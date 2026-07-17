@@ -32,7 +32,9 @@ function EngagementChart({ program: p }: { program: TrainingProgram }) {
     Math.max(
       15,
       Math.round(
-        base - i * (base / (p.durationWeeks + 2)) + (seededRandom(i + 1) - 0.5) * 10,
+        base -
+          i * (base / (p.durationWeeks + 2)) +
+          (seededRandom(i + 1) - 0.5) * 10,
       ),
     ),
   )
@@ -104,19 +106,51 @@ export function AnalyticsTab({ program: p }: { program: TrainingProgram }) {
   return (
     <>
       <div className="ov-summary-grid">
-        <OvStatCard icon="check-circle-2" value={`${p.completionRate}%`} label="Program Completion" tooltip="Average progress percentage across this program's assigned members." />
-        <OvStatCard icon="anchor" value={`${retention}%`} label="Retention" tooltip="Share of assigned members who haven't paused or dropped off." />
-        <OvStatCard icon="trending-down" value={`Wk ${dropoffWeek}`} label="Typical Drop-off" tooltip="The program week where members most commonly disengage." />
-        <OvStatCard icon="activity" value={`${avgAdherence}%`} label="Avg Adherence" tooltip="Blended average of workout and meal completion across all members." />
-        <OvStatCard icon="dumbbell" value={`${workoutCompletion}%`} label="Workout Completion" tooltip="Share of scheduled workouts members mark as completed." />
-        <OvStatCard icon="utensils" value={`${mealCompletion}%`} label="Meal Completion" tooltip="Share of scheduled meals members log as completed." />
+        <OvStatCard
+          icon="check-circle-2"
+          value={`${p.completionRate}%`}
+          label="Program Completion"
+          tooltip="Average progress percentage across this program's assigned members."
+        />
+        <OvStatCard
+          icon="anchor"
+          value={`${retention}%`}
+          label="Retention"
+          tooltip="Share of assigned members who haven't paused or dropped off."
+        />
+        <OvStatCard
+          icon="trending-down"
+          value={`Wk ${dropoffWeek}`}
+          label="Typical Drop-off"
+          tooltip="The program week where members most commonly disengage."
+        />
+        <OvStatCard
+          icon="activity"
+          value={`${avgAdherence}%`}
+          label="Avg Adherence"
+          tooltip="Blended average of workout and meal completion across all members."
+        />
+        <OvStatCard
+          icon="dumbbell"
+          value={`${workoutCompletion}%`}
+          label="Workout Completion"
+          tooltip="Share of scheduled workouts members mark as completed."
+        />
+        <OvStatCard
+          icon="utensils"
+          value={`${mealCompletion}%`}
+          label="Meal Completion"
+          tooltip="Share of scheduled meals members log as completed."
+        />
       </div>
 
       <div className="panel">
         <div className="panel-head">
           <div>
             <h2>Weekly Engagement</h2>
-            <p className="panel-sub">Active members checking in, by program week</p>
+            <p className="panel-sub">
+              Active members checking in, by program week
+            </p>
           </div>
         </div>
         <EngagementChart program={p} />

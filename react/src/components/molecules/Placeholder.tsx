@@ -10,7 +10,12 @@ type PlaceholderProps = {
 
 /** Temporary screen shell for routes not yet ported — keeps the shell fully
  *  navigable while each phase lands. */
-export function Placeholder({ title, subtitle, back, phase }: PlaceholderProps) {
+export function Placeholder({
+  title,
+  subtitle,
+  back,
+  phase,
+}: PlaceholderProps) {
   return (
     <>
       <Topbar title={title} subtitle={subtitle} back={back} />

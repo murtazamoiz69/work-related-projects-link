@@ -39,7 +39,11 @@ function ConvoCard({
         }}
       >
         <span className="convo-avatar-wrap">
-          <Avatar initials={c.client.initials} color={c.client.color} size="sm" />
+          <Avatar
+            initials={c.client.initials}
+            color={c.client.color}
+            size="sm"
+          />
           {c.unread ? <span className="convo-unread-dot" /> : null}
         </span>
         <span className="convo-body">
@@ -49,7 +53,9 @@ function ConvoCard({
               <button
                 className={`convo-star${c.starred ? ' starred' : ''}`}
                 title={c.starred ? 'Unpin from top' : 'Pin to top'}
-                aria-label={c.starred ? 'Unpin conversation' : 'Pin conversation'}
+                aria-label={
+                  c.starred ? 'Unpin conversation' : 'Pin conversation'
+                }
                 onClick={(e) => {
                   e.stopPropagation()
                   onToggleStar(c.id)
@@ -62,7 +68,9 @@ function ConvoCard({
           </span>
           <span className="convo-preview">{preview}</span>
           <span className="convo-row3">
-            <span className={`convo-tag ${needsNutritionist ? 'convo-tag-needs' : 'convo-tag-ai'}`}>
+            <span
+              className={`convo-tag ${needsNutritionist ? 'convo-tag-needs' : 'convo-tag-ai'}`}
+            >
               {needsNutritionist ? (
                 <>
                   <Icon name="user-round" />

@@ -125,9 +125,11 @@ const NEEDS_ATTN_ICON: Record<string, string> = {
   'profile-update': 'user-round',
 }
 
-function deriveNeedsAttentionReason(
-  index: number,
-): { type: string; icon: string; text: string } {
+function deriveNeedsAttentionReason(index: number): {
+  type: string
+  icon: string
+  text: string
+} {
   const seed = dashClientSeed(index)
   const typeRoll = seededRandom(seed * 70)
   const type =
@@ -219,7 +221,8 @@ const NEEDS_ATTN_FILTERS: FilterInternal[] = [
       const d = dashDaysSinceJoined(c)
       return {
         icon: 'user-plus',
-        text: d <= 0 ? 'Joined today' : `Joined ${d} day${d === 1 ? '' : 's'} ago`,
+        text:
+          d <= 0 ? 'Joined today' : `Joined ${d} day${d === 1 ? '' : 's'} ago`,
       }
     },
   },
@@ -238,7 +241,10 @@ const NEEDS_ATTN_FILTERS: FilterInternal[] = [
     label: 'Missed Diet Yesterday',
     icon: 'utensils',
     match: (c, i) => c.checkInDays != null && !dashMealLoggedYesterday(c, i),
-    reason: () => ({ icon: 'utensils', text: "Didn't log any meals yesterday" }),
+    reason: () => ({
+      icon: 'utensils',
+      text: "Didn't log any meals yesterday",
+    }),
   },
   {
     key: 'logged-meal-today',
@@ -256,11 +262,13 @@ const NEEDS_ATTN_FILTERS: FilterInternal[] = [
   },
 ]
 
-export const ATTN_FILTER_DEFS: AttnFilterDef[] = NEEDS_ATTN_FILTERS.map((d) => ({
-  key: d.key,
-  label: d.label,
-  icon: d.icon,
-}))
+export const ATTN_FILTER_DEFS: AttnFilterDef[] = NEEDS_ATTN_FILTERS.map(
+  (d) => ({
+    key: d.key,
+    label: d.label,
+    icon: d.icon,
+  }),
+)
 
 export function dashFilterCounts(): Record<string, number> {
   const counts: Record<string, number> = {}
@@ -273,7 +281,9 @@ export function dashFilterCounts(): Record<string, number> {
   return counts
 }
 
-export function buildFilteredAttentionList(activeKeys: string[]): AttentionRow[] {
+export function buildFilteredAttentionList(
+  activeKeys: string[],
+): AttentionRow[] {
   const defs = NEEDS_ATTN_FILTERS.filter((d) => activeKeys.includes(d.key))
   const out: AttentionRow[] = []
   CLIENTS_DATA.forEach((c, i) => {
@@ -384,7 +394,12 @@ function dashDayCounts(
   const workoutsScheduled = seededRandom(seed * 98) < 0.3 ? 2 : 1
   const mealsScheduled = seededRandom(seed * 100) < 0.4 ? 4 : 3
   if (done === null) {
-    return { workoutsScheduled, workoutsCompleted: 0, mealsScheduled, mealsCompleted: 0 }
+    return {
+      workoutsScheduled,
+      workoutsCompleted: 0,
+      mealsScheduled,
+      mealsCompleted: 0,
+    }
   }
   const workoutsCompleted = done
     ? workoutsScheduled
@@ -393,7 +408,12 @@ function dashDayCounts(
     mealsScheduled,
     Math.round(seededRandom(seed * 101) * mealsScheduled * (done ? 1 : 0.6)),
   )
-  return { workoutsScheduled, workoutsCompleted, mealsScheduled, mealsCompleted }
+  return {
+    workoutsScheduled,
+    workoutsCompleted,
+    mealsScheduled,
+    mealsCompleted,
+  }
 }
 
 function dashDayPopoverText(
@@ -518,7 +538,12 @@ function dashClientProgressWindows(rangeDays: number): Window[] {
       const d = new Date()
       d.setDate(d.getDate() - daysAgo)
       const label = d.toLocaleDateString('en-US', { weekday: 'short' })
-      return { startDaysAgo: daysAgo, endDaysAgo: daysAgo, tick: label, tip: label }
+      return {
+        startDaysAgo: daysAgo,
+        endDaysAgo: daysAgo,
+        tick: label,
+        tip: label,
+      }
     })
   }
   const weekCount = Math.ceil(rangeDays / 7)
@@ -527,7 +552,12 @@ function dashClientProgressWindows(rangeDays: number): Window[] {
     const startDaysAgo = b * 7
     const endDaysAgo = Math.min(startDaysAgo + 6, rangeDays - 1)
     const weekNum = weekCount - b
-    windows.push({ startDaysAgo, endDaysAgo, tick: `W${weekNum}`, tip: `Week ${weekNum}` })
+    windows.push({
+      startDaysAgo,
+      endDaysAgo,
+      tick: `W${weekNum}`,
+      tip: `Week ${weekNum}`,
+    })
   }
   return windows
 }

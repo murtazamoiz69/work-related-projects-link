@@ -1,11 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Icon } from '@/components/atoms/Icon'
 import { showToast } from '@/lib/toast'
-import {
-  MEAL_LIBRARY,
-  MEAL_SLOTS,
-  newMealEntry,
-} from '@/features/programs'
+import { MEAL_LIBRARY, MEAL_SLOTS, newMealEntry } from '@/features/programs'
 import type { MealSlot } from '@/features/programs'
 import { mealConflicts } from '../../clinical'
 import { DEFAULT_MEAL_TIMES, pushVersion, resolveMeal } from '../../plan'
@@ -34,14 +30,19 @@ export function MealPickerModal({
 }) {
   const day = getDietDay(ws, weekNum, dayNum)
   const dayLabel = (getDay(ws, weekNum, dayNum) || day)?.label ?? ''
-  const entry = entryUid && day ? day.meals.find((e) => e.uid === entryUid) : null
+  const entry =
+    entryUid && day ? day.meals.find((e) => e.uid === entryUid) : null
   const currentMeal = entry ? resolveMeal(ws, entry.mealId) : null
   const today = todayWeekDay(profile, ws)
   const isToday = today.weekNum === weekNum && today.dayNum === dayNum
 
   const [query, setQuery] = useState('')
-  const [category, setCategory] = useState<'all' | MealSlot>(entry ? entry.slot : 'all')
-  const [activeId, setActiveId] = useState<string | null>(currentMeal ? currentMeal.id : null)
+  const [category, setCategory] = useState<'all' | MealSlot>(
+    entry ? entry.slot : 'all',
+  )
+  const [activeId, setActiveId] = useState<string | null>(
+    currentMeal ? currentMeal.id : null,
+  )
   const [time, setTime] = useState(
     entry ? entry.time : isToday ? roundToNext15(new Date()) : '12:00',
   )
@@ -66,8 +67,12 @@ export function MealPickerModal({
     if (activeId == null || !day) return
     const picked = MEAL_LIBRARY.find((m) => m.id === activeId)
     if (!picked) return
-    const chosenTime = time || DEFAULT_MEAL_TIMES[picked.category.toLowerCase()] || '12:00'
-    if (enforceUpcoming && !isUpcoming(profile.programStart, weekNum, dayNum, chosenTime)) {
+    const chosenTime =
+      time || DEFAULT_MEAL_TIMES[picked.category.toLowerCase()] || '12:00'
+    if (
+      enforceUpcoming &&
+      !isUpcoming(profile.programStart, weekNum, dayNum, chosenTime)
+    ) {
       showToast('Pick a time later than now — meals must stay upcoming')
       return
     }
@@ -76,10 +81,20 @@ export function MealPickerModal({
       entry.mealId = picked.id
       entry.slot = picked.category
       entry.time = chosenTime
-      pushVersion(ws, 'Swapped meal', 'Sarah Nolan', `Wk${weekNum} ${dayLabel}: ${prevName} → ${picked.name}`)
+      pushVersion(
+        ws,
+        'Swapped meal',
+        'Sarah Nolan',
+        `Wk${weekNum} ${dayLabel}: ${prevName} → ${picked.name}`,
+      )
     } else {
       day.meals.push(newMealEntry(picked.id, picked.category, chosenTime))
-      pushVersion(ws, 'Added meal', 'Sarah Nolan', `Wk${weekNum} ${dayLabel}: ${picked.name} added`)
+      pushVersion(
+        ws,
+        'Added meal',
+        'Sarah Nolan',
+        `Wk${weekNum} ${dayLabel}: ${picked.name} added`,
+      )
     }
     refresh()
     onClose()
@@ -190,7 +205,11 @@ export function MealPickerModal({
           </div>
         </div>
         <div className="modal-foot">
-          <button className="btn-primary" disabled={activeId == null} onClick={commit}>
+          <button
+            className="btn-primary"
+            disabled={activeId == null}
+            onClick={commit}
+          >
             {entry ? `Swap ${entry.slot}` : `Add to ${dayLabel}`}
           </button>
         </div>
@@ -241,10 +260,13 @@ function MealPreview({
         </div>
       </div>
       {conflicts.length ? (
-        <div className={`pw-meal-conflict-note ${conflicts.some((c) => c.level === 'hard') ? 'hard' : 'soft'}`}>
+        <div
+          className={`pw-meal-conflict-note ${conflicts.some((c) => c.level === 'hard') ? 'hard' : 'soft'}`}
+        >
           <Icon name="alert-triangle" />
           <div>
-            <b>For {profile.name.split(' ')[0]}:</b> {conflicts.map((c) => c.reason).join(' · ')}
+            <b>For {profile.name.split(' ')[0]}:</b>{' '}
+            {conflicts.map((c) => c.reason).join(' · ')}
           </div>
         </div>
       ) : null}

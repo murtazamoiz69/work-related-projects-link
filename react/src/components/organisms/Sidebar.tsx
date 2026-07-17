@@ -44,7 +44,9 @@ export function Sidebar() {
           >
             <Icon name={item.icon} />
             <span>{item.label}</span>
-            {item.badge ? <span className="nav-badge">{item.badge}</span> : null}
+            {item.badge ? (
+              <span className="nav-badge">{item.badge}</span>
+            ) : null}
           </Link>
         ))}
       </nav>

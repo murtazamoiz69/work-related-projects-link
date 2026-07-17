@@ -1,6 +1,9 @@
 import { Icon } from '@/components/atoms/Icon'
 import { formatCheckIn } from '@/features/clients'
-import { extractTemplateVariables, highlightTemplateVariables } from '../../data'
+import {
+  extractTemplateVariables,
+  highlightTemplateVariables,
+} from '../../data'
 import type { Template } from '../../types'
 
 export function TemplateViewBody({ template: t }: { template: Template }) {

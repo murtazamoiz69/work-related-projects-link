@@ -101,7 +101,9 @@ export function MemberDrawer({
         <div className="drawer-head">
           <div>
             <h3>Member Profile</h3>
-            <p className="panel-sub">Assigned {formatJoinDate(m.assignedDate)}</p>
+            <p className="panel-sub">
+              Assigned {formatJoinDate(m.assignedDate)}
+            </p>
           </div>
           <button className="icon-btn sm" onClick={onClose} aria-label="Close">
             <Icon name="x" />
@@ -113,7 +115,9 @@ export function MemberDrawer({
             <div>
               <span className="profile-card-name">{c.name}</span>
               <span className="profile-card-sub">{c.program}</span>
-              <span className={`status-pill ${statusClass}`}>{statusLabel}</span>
+              <span className={`status-pill ${statusClass}`}>
+                {statusLabel}
+              </span>
             </div>
           </div>
           <div

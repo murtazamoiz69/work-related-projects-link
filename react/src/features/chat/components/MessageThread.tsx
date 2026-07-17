@@ -33,7 +33,11 @@ function Attachment({
       <div className="chat-attachment chat-attachment-photo">
         <img src={att.dataUrl} alt={att.name} />
         {removable ? (
-          <button className="icon-btn sm chat-attachment-remove" title="Remove" onClick={onRemove}>
+          <button
+            className="icon-btn sm chat-attachment-remove"
+            title="Remove"
+            onClick={onRemove}
+          >
             <Icon name="x" />
           </button>
         ) : null}
@@ -47,7 +51,11 @@ function Attachment({
       </span>
       <span className="chat-attachment-name">{att.name}</span>
       {removable ? (
-        <button className="icon-btn sm chat-attachment-remove" title="Remove" onClick={onRemove}>
+        <button
+          className="icon-btn sm chat-attachment-remove"
+          title="Remove"
+          onClick={onRemove}
+        >
           <Icon name="x" />
         </button>
       ) : null}
@@ -124,7 +132,11 @@ function Thread({
               <Icon name="bot" />
             </span>
           ) : (
-            <Avatar initials={convo.client.initials} color={convo.client.color} size="xs" />
+            <Avatar
+              initials={convo.client.initials}
+              color={convo.client.color}
+              size="xs"
+            />
           )}
           <div className="typing-dots">
             <span />
@@ -150,8 +162,11 @@ export function MessageThread({
   const firstName = c.name.split(' ')[0]
 
   const [input, setInput] = useState('')
-  const [pendingAttachment, setPendingAttachment] = useState<ChatAttachment | null>(null)
-  const [suggestions, setSuggestions] = useState<string[]>(() => randomSuggestions(3))
+  const [pendingAttachment, setPendingAttachment] =
+    useState<ChatAttachment | null>(null)
+  const [suggestions, setSuggestions] = useState<string[]>(() =>
+    randomSuggestions(3),
+  )
   const [typing, setTyping] = useState<'client' | 'ai' | null>(null)
   const [emojiOpen, setEmojiOpen] = useState(false)
   const [templatesOpen, setTemplatesOpen] = useState(false)
@@ -188,17 +203,32 @@ export function MessageThread({
   // A conversation Nourish AI is still handling keeps moving while the
   // nutritionist watches — one live exchange per view.
   useEffect(() => {
-    if (convo.handledBy !== 'ai' || convo.status !== 'active' || convo.liveSimulated) return
+    if (
+      convo.handledBy !== 'ai' ||
+      convo.status !== 'active' ||
+      convo.liveSimulated
+    )
+      return
     convo.liveSimulated = true
     const t1 = setTimeout(
       () => {
-        convo.messages.push({ from: 'client', text: randOf(CLIENT_FOLLOWUPS), time: new Date(), attachment: null })
+        convo.messages.push({
+          from: 'client',
+          text: randOf(CLIENT_FOLLOWUPS),
+          time: new Date(),
+          attachment: null,
+        })
         refresh()
         setTyping('ai')
         const t2 = setTimeout(
           () => {
             setTyping(null)
-            convo.messages.push({ from: 'ai', text: randOf(COACH_REPLIES), time: new Date(), attachment: null })
+            convo.messages.push({
+              from: 'ai',
+              text: randOf(COACH_REPLIES),
+              time: new Date(),
+              attachment: null,
+            })
             refresh()
           },
           1300 + Math.random() * 1100,
@@ -216,7 +246,12 @@ export function MessageThread({
     const delay = 1100 + Math.random() * 1300
     const t = setTimeout(() => {
       setTyping(null)
-      convo.messages.push({ from: 'client', text: randOf(CLIENT_FOLLOWUPS), time: new Date(), attachment: null })
+      convo.messages.push({
+        from: 'client',
+        text: randOf(CLIENT_FOLLOWUPS),
+        time: new Date(),
+        attachment: null,
+      })
       refresh()
     }, delay)
     timers.current.push(t)
@@ -224,8 +259,14 @@ export function MessageThread({
 
   const sendMessage = () => {
     const text = input.trim()
-    if ((!text && !pendingAttachment) || convo.handledBy !== 'nutritionist') return
-    convo.messages.push({ from: 'coach', text, time: new Date(), attachment: pendingAttachment })
+    if ((!text && !pendingAttachment) || convo.handledBy !== 'nutritionist')
+      return
+    convo.messages.push({
+      from: 'coach',
+      text,
+      time: new Date(),
+      attachment: pendingAttachment,
+    })
     setInput('')
     setPendingAttachment(null)
     convo.unread = 0
@@ -236,13 +277,23 @@ export function MessageThread({
 
   const takeOver = () => {
     convo.handledBy = 'nutritionist'
-    convo.messages.push({ from: 'system', text: 'Sarah Nolan took over this conversation', time: new Date(), attachment: null })
+    convo.messages.push({
+      from: 'system',
+      text: 'Sarah Nolan took over this conversation',
+      time: new Date(),
+      attachment: null,
+    })
     showToast(`You're now chatting live with ${c.name}`)
     refresh()
   }
   const handBack = () => {
     convo.handledBy = 'ai'
-    convo.messages.push({ from: 'system', text: 'Handed the conversation back to Nourish AI', time: new Date(), attachment: null })
+    convo.messages.push({
+      from: 'system',
+      text: 'Handed the conversation back to Nourish AI',
+      time: new Date(),
+      attachment: null,
+    })
     showToast(`Nourish AI is handling ${c.name} again`)
     refresh()
   }
@@ -251,7 +302,10 @@ export function MessageThread({
     const plain = stripHtmlToText(template.content)
     setInput(`${template.title}\n\n${plain}`)
     if (template.cover.type === 'image') {
-      setPendingAttachment({ type: 'image', name: `${template.title} — cover image` })
+      setPendingAttachment({
+        type: 'image',
+        name: `${template.title} — cover image`,
+      })
     }
     window.requestAnimationFrame(() => {
       autoGrow()
@@ -261,13 +315,18 @@ export function MessageThread({
 
   const onFile = (file: File) => {
     const isImage = /^image\//.test(file.type)
-    const att: ChatAttachment = { type: isImage ? 'image' : 'file', name: file.name }
+    const att: ChatAttachment = {
+      type: isImage ? 'image' : 'file',
+      name: file.name,
+    }
     setPendingAttachment(att)
     if (isImage) {
       const reader = new FileReader()
       reader.onload = () => {
         setPendingAttachment((cur) =>
-          cur && cur.name === file.name ? { ...cur, dataUrl: String(reader.result) } : cur,
+          cur && cur.name === file.name
+            ? { ...cur, dataUrl: String(reader.result) }
+            : cur,
         )
       }
       reader.readAsDataURL(file)
@@ -280,10 +339,17 @@ export function MessageThread({
         <div className="chat-header-meta">
           <span className="chat-header-name">{c.name}</span>
           <span className="chat-header-sub">
-            {c.program} · <span className={`status-pill status-${c.status}`}>{STATUS_LABEL[c.status]}</span>
+            {c.program} ·{' '}
+            <span className={`status-pill status-${c.status}`}>
+              {STATUS_LABEL[c.status]}
+            </span>
           </span>
         </div>
-        <button className="btn-secondary sm" onClick={onManagePlan} title="Open the plan workspace">
+        <button
+          className="btn-secondary sm"
+          onClick={onManagePlan}
+          title="Open the plan workspace"
+        >
           <Icon name="clipboard-list" />
           Manage Plan
         </button>
@@ -295,8 +361,9 @@ export function MessageThread({
             <Icon name="bot" />
           </span>
           <span className="chat-handoff-text">
-            <strong>Nourish AI</strong> is chatting with {firstName} live — you&apos;re watching the
-            conversation. Take over below to message them yourself.
+            <strong>Nourish AI</strong> is chatting with {firstName} live —
+            you&apos;re watching the conversation. Take over below to message
+            them yourself.
           </span>
         </div>
       ) : (
@@ -304,7 +371,9 @@ export function MessageThread({
           <span className="chat-handoff-icon">
             <Icon name="user-check" />
           </span>
-          <span className="chat-handoff-text">You&apos;re chatting live with {firstName}.</span>
+          <span className="chat-handoff-text">
+            You&apos;re chatting live with {firstName}.
+          </span>
           <button className="link-btn" onClick={handBack}>
             Hand back to Nourish AI
           </button>
@@ -320,7 +389,8 @@ export function MessageThread({
           <div className="composer-locked-msg">
             <Icon name="lock" />
             <span>
-              Nourish AI is handling this conversation. Take over to message {firstName} yourself.
+              Nourish AI is handling this conversation. Take over to message{' '}
+              {firstName} yourself.
             </span>
           </div>
           <button className="btn-primary" onClick={takeOver}>
@@ -359,7 +429,11 @@ export function MessageThread({
           </div>
           {pendingAttachment ? (
             <div className="chat-pending-attachment">
-              <Attachment att={pendingAttachment} removable onRemove={() => setPendingAttachment(null)} />
+              <Attachment
+                att={pendingAttachment}
+                removable
+                onRemove={() => setPendingAttachment(null)}
+              />
             </div>
           ) : null}
           <div className="chat-composer">
@@ -374,17 +448,29 @@ export function MessageThread({
                   e.target.value = ''
                 }}
               />
-              <button className="icon-btn sm" title="Attach file" onClick={() => fileRef.current?.click()}>
+              <button
+                className="icon-btn sm"
+                title="Attach file"
+                onClick={() => fileRef.current?.click()}
+              >
                 <Icon name="paperclip" />
               </button>
               <div style={{ position: 'relative' }}>
-                <button className="icon-btn sm" title="Emoji" onClick={() => setEmojiOpen((o) => !o)}>
+                <button
+                  className="icon-btn sm"
+                  title="Emoji"
+                  onClick={() => setEmojiOpen((o) => !o)}
+                >
                   <Icon name="smile" />
                 </button>
                 {emojiOpen ? (
                   <div
                     className="composer-popup emoji-popup"
-                    style={{ position: 'absolute', bottom: 'calc(100% + 8px)', left: 0 }}
+                    style={{
+                      position: 'absolute',
+                      bottom: 'calc(100% + 8px)',
+                      left: 0,
+                    }}
                   >
                     {EMOJI_PICKER_POOL.map((em) => (
                       <button
@@ -405,7 +491,11 @@ export function MessageThread({
                   </div>
                 ) : null}
               </div>
-              <button className="icon-btn sm" title="Templates" onClick={() => setTemplatesOpen(true)}>
+              <button
+                className="icon-btn sm"
+                title="Templates"
+                onClick={() => setTemplatesOpen(true)}
+              >
                 <Icon name="notebook-text" />
               </button>
             </div>
@@ -427,7 +517,11 @@ export function MessageThread({
                 }
               }}
             />
-            <button className="chat-send-btn" aria-label="Send message" onClick={sendMessage}>
+            <button
+              className="chat-send-btn"
+              aria-label="Send message"
+              onClick={sendMessage}
+            >
               <Icon name="send" />
             </button>
           </div>

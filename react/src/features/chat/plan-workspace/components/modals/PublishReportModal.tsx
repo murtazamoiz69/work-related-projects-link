@@ -44,7 +44,12 @@ export function PublishReportModal({
   }
   const publish = () => {
     ws.published = true
-    pushVersion(ws, 'Published to client', 'Sarah Nolan', `Plan published to ${profile.name}`)
+    pushVersion(
+      ws,
+      'Published to client',
+      'Sarah Nolan',
+      `Plan published to ${profile.name}`,
+    )
     showToast(`Plan published to ${profile.name}`)
     refresh()
     onClose()
@@ -60,7 +65,11 @@ export function PublishReportModal({
           <button className="link-btn" onClick={onClose}>
             Close
           </button>
-          <button className="btn-primary" disabled={!canPublish} onClick={publish}>
+          <button
+            className="btn-primary"
+            disabled={!canPublish}
+            onClick={publish}
+          >
             <Icon name="send" />
             {canPublish ? 'Publish to Client' : 'Resolve blockers first'}
           </button>
@@ -70,14 +79,18 @@ export function PublishReportModal({
       {!warnings.length ? (
         <div className="pw-guard-clear">
           <Icon name="shield-check" />
-          <p>All safety checks passed. This plan is clear to publish to {profile.name}.</p>
+          <p>
+            All safety checks passed. This plan is clear to publish to{' '}
+            {profile.name}.
+          </p>
         </div>
       ) : (
         <>
           {hard.length ? (
             <div className="pw-guard-block">
               <Icon name="octagon-x" />
-              {hard.length} blocking issue{hard.length > 1 ? 's' : ''} must be fixed before publishing.
+              {hard.length} blocking issue{hard.length > 1 ? 's' : ''} must be
+              fixed before publishing.
             </div>
           ) : null}
           {hard.length ? (
@@ -101,7 +114,10 @@ export function PublishReportModal({
             </>
           ) : null}
           {hard.length ? (
-            <button className="btn-secondary sm pw-guard-autofix" onClick={autofix}>
+            <button
+              className="btn-secondary sm pw-guard-autofix"
+              onClick={autofix}
+            >
               <Icon name="wand-2" />
               Auto-fix all blocking issues
             </button>

@@ -31,7 +31,9 @@ export function WorkoutEditorModal({
   const [exercises, setExercises] = useState<WorkoutSlot[]>(() =>
     wk ? wk.exercises.map((s) => ({ ...s })) : [],
   )
-  const [picker, setPicker] = useState<{ replaceIndex: number | null } | null>(null)
+  const [picker, setPicker] = useState<{ replaceIndex: number | null } | null>(
+    null,
+  )
   const dragIndex = useRef<number | null>(null)
 
   if (!wk) return null
@@ -39,29 +41,50 @@ export function WorkoutEditorModal({
   const commit = () => {
     wk.name = name.trim() || wk.name
     wk.exercises = exercises
-    pushVersion(ws, `Edited ${day ? day.label : ''} workout`, 'Sarah Nolan', `Week ${weekNum} ${day ? day.label : ''} updated`)
+    pushVersion(
+      ws,
+      `Edited ${day ? day.label : ''} workout`,
+      'Sarah Nolan',
+      `Week ${weekNum} ${day ? day.label : ''} updated`,
+    )
     refresh()
     onClose()
   }
 
-  const updateField = (i: number, field: 'sets' | 'reps' | 'rest', value: string) => {
+  const updateField = (
+    i: number,
+    field: 'sets' | 'reps' | 'rest',
+    value: string,
+  ) => {
     setExercises((prev) =>
       prev.map((s, idx) =>
         idx === i
-          ? { ...s, [field]: field === 'sets' ? Math.max(1, parseInt(value, 10) || 1) : value }
+          ? {
+              ...s,
+              [field]:
+                field === 'sets'
+                  ? Math.max(1, parseInt(value, 10) || 1)
+                  : value,
+            }
           : s,
       ),
     )
   }
-  const removeExercise = (i: number) => setExercises((prev) => prev.filter((_, idx) => idx !== i))
+  const removeExercise = (i: number) =>
+    setExercises((prev) => prev.filter((_, idx) => idx !== i))
 
   const handlePick = (exId: string) => {
     if (!picker) return
     if (picker.replaceIndex != null) {
       const i = picker.replaceIndex
-      setExercises((prev) => prev.map((s, idx) => (idx === i ? { ...s, exerciseId: exId } : s)))
+      setExercises((prev) =>
+        prev.map((s, idx) => (idx === i ? { ...s, exerciseId: exId } : s)),
+      )
     } else {
-      setExercises((prev) => [...prev, makeSlot(exId, profile._seed + prev.length, prev.length)])
+      setExercises((prev) => [
+        ...prev,
+        makeSlot(exId, profile._seed + prev.length, prev.length),
+      ])
     }
     setPicker(null)
   }
@@ -98,10 +121,15 @@ export function WorkoutEditorModal({
           <div className="modal-body pw-modal-body">
             <label className="pw-modal-field">
               Workout name
-              <input type="text" value={name} onChange={(e) => setName(e.target.value)} />
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
             </label>
             <p className="pw-muted pw-edit-hint">
-              Drag <Icon name="grip-vertical" className="inline-icon" /> to reorder exercises.
+              Drag <Icon name="grip-vertical" className="inline-icon" /> to
+              reorder exercises.
             </p>
             <div className="pw-edit-list">
               {exercises.map((slot, i) => {
@@ -113,7 +141,11 @@ export function WorkoutEditorModal({
                     key={slot.uid}
                     className={`pw-edit-row${issues.some((x) => x.level === 'hard') ? ' risk' : ''}`}
                     draggable
-                    title={issues.length ? issues.map((x) => x.reason).join('; ') : undefined}
+                    title={
+                      issues.length
+                        ? issues.map((x) => x.reason).join('; ')
+                        : undefined
+                    }
                     onDragStart={() => {
                       dragIndex.current = i
                     }}
@@ -162,7 +194,9 @@ export function WorkoutEditorModal({
                             min={1}
                             max={8}
                             value={slot.sets}
-                            onChange={(e) => updateField(i, 'sets', e.target.value)}
+                            onChange={(e) =>
+                              updateField(i, 'sets', e.target.value)
+                            }
                           />
                         </label>
                         <label className="pw-edit-field">
@@ -170,7 +204,9 @@ export function WorkoutEditorModal({
                           <input
                             type="text"
                             value={slot.reps}
-                            onChange={(e) => updateField(i, 'reps', e.target.value)}
+                            onChange={(e) =>
+                              updateField(i, 'reps', e.target.value)
+                            }
                           />
                         </label>
                         <label className="pw-edit-field">
@@ -178,7 +214,9 @@ export function WorkoutEditorModal({
                           <input
                             type="text"
                             value={slot.rest}
-                            onChange={(e) => updateField(i, 'rest', e.target.value)}
+                            onChange={(e) =>
+                              updateField(i, 'rest', e.target.value)
+                            }
                           />
                         </label>
                       </div>
@@ -187,7 +225,10 @@ export function WorkoutEditorModal({
                 )
               })}
             </div>
-            <button className="btn-secondary sm" onClick={() => setPicker({ replaceIndex: null })}>
+            <button
+              className="btn-secondary sm"
+              onClick={() => setPicker({ replaceIndex: null })}
+            >
               <Icon name="plus" />
               Add exercise
             </button>

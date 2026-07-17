@@ -1,9 +1,5 @@
 import { create } from 'zustand'
-import {
-  DEFAULT_TEMPLATE_CATEGORIES,
-  TEMPLATES,
-  saveTemplates,
-} from './data'
+import { DEFAULT_TEMPLATE_CATEGORIES, TEMPLATES, saveTemplates } from './data'
 import type { Template, UsageContext } from './types'
 
 // V2 mutated the in-memory TEMPLATES array in place and re-rendered the page
@@ -19,9 +15,7 @@ type TemplatesState = {
   /** Persist + force a re-render after mutating a template object in place. */
   commit: () => void
   /** Replace the template list (create / duplicate / delete), then persist. */
-  setTemplates: (
-    next: Template[] | ((prev: Template[]) => Template[]),
-  ) => void
+  setTemplates: (next: Template[] | ((prev: Template[]) => Template[])) => void
   /** Add a new category if it isn't already present. */
   addCategory: (name: string) => void
 }

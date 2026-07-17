@@ -32,7 +32,13 @@ const METRICS: Array<{ key: JourneyMetric; label: string }> = [
 ]
 
 // A quiet, single-series line chart — no legend, muted axis, one accent color.
-function MetricChart({ program, metric }: { program: Program; metric: JourneyMetric }) {
+function MetricChart({
+  program,
+  metric,
+}: {
+  program: Program
+  metric: JourneyMetric
+}) {
   const labels = program.weeks.map((w) => `W${w.week}`)
   const series = program.weeks.map((w) => {
     if (!w.submitted) return null
@@ -116,8 +122,14 @@ export function JourneyMeasurements({ program }: { program: Program }) {
 
       <div className="measure-chart">
         <div className="measurement-chart-head">
-          <span className="progress-title">Trend across {program.totalWeeks} weeks</span>
-          <div className="view-toggle text-toggle" role="tablist" aria-label="Switch metric">
+          <span className="progress-title">
+            Trend across {program.totalWeeks} weeks
+          </span>
+          <div
+            className="view-toggle text-toggle"
+            role="tablist"
+            aria-label="Switch metric"
+          >
             {METRICS.map((m) => (
               <button
                 key={m.key}
@@ -169,7 +181,9 @@ export function JourneyMeasurements({ program }: { program: Program }) {
                   <td>{m ? m.hips : '—'}</td>
                   <td>
                     {dWaist != null ? (
-                      <span className={`delta-pill delta-${deltaTone(dWaist, true)}`}>
+                      <span
+                        className={`delta-pill delta-${deltaTone(dWaist, true)}`}
+                      >
                         {fmtDelta(dWaist, '')}
                       </span>
                     ) : (
