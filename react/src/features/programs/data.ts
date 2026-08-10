@@ -1011,7 +1011,7 @@ export function buildProgram(index: number): TrainingProgram {
       const m = members[i % Math.max(members.length, 1)]
       const client = m ? CLIENTS_DATA.find((c) => c.id === m.clientId) : null
       const text = pick(ACTIVITY_TEMPLATES, seed * 23 + i)
-        .replace('{name}', client ? client.name : 'A client')
+        .replace('{name}', client ? client.name : 'A user')
         .replace('{week}', m ? String(m.currentWeek) : '1')
         .replace(
           '{day}',

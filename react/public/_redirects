@@ -1,0 +1,6 @@
+# Netlify SPA fallback. The normal build uses browser history (see
+# src/lib/router.ts), so paths like /chat or /clients/c-6 are client-side
+# routes with no file behind them — without this rewrite they 404 on a reload
+# or a shared deep link. 200 (not 301) serves index.html while keeping the
+# requested URL, so the router can read it and render the right route.
+/*    /index.html   200

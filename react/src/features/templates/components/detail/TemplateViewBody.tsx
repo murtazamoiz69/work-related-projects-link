@@ -5,45 +5,63 @@ import {
   highlightTemplateVariables,
 } from '../../data'
 import type { Template } from '../../types'
+import { PollPreview } from './PollEditor'
 
 export function TemplateViewBody({ template: t }: { template: Template }) {
   const vars = extractTemplateVariables(t.content)
   return (
     <div className="split-row split-row-alt ov-split">
       <div className="panel">
-        <div className="panel-head">
-          <div>
-            <h2>Content</h2>
-            <p className="panel-sub">
-              Variables highlight as chips until they&apos;re filled in and sent
-            </p>
-          </div>
-        </div>
-        <div
-          className="tpl-content-display"
-          dangerouslySetInnerHTML={{
-            __html: highlightTemplateVariables(t.content),
-          }}
-        />
-        <div className="drawer-section-head" style={{ marginTop: 18 }}>
-          <h4>
-            <Icon name="braces" />
-            Variables Used
-          </h4>
-        </div>
-        <div className="detail-chip-row">
-          {vars.length ? (
-            vars.map((v) => (
-              <span key={v} className="client-tag client-tag-diet">
-                {v}
-              </span>
-            ))
-          ) : (
-            <span className="chat-mini-card-text" style={{ margin: 0 }}>
-              No variables used
-            </span>
-          )}
-        </div>
+        {t.templateType === 'poll' ? (
+          <>
+            <div className="panel-head">
+              <div>
+                <h2>Poll</h2>
+                <p className="panel-sub">
+                  How this poll appears when sent to a user
+                </p>
+              </div>
+            </div>
+            <PollPreview poll={t.poll} />
+          </>
+        ) : (
+          <>
+            <div className="panel-head">
+              <div>
+                <h2>Content</h2>
+                <p className="panel-sub">
+                  Variables highlight as chips until they&apos;re filled in and
+                  sent
+                </p>
+              </div>
+            </div>
+            <div
+              className="tpl-content-display"
+              dangerouslySetInnerHTML={{
+                __html: highlightTemplateVariables(t.content),
+              }}
+            />
+            <div className="drawer-section-head" style={{ marginTop: 18 }}>
+              <h4>
+                <Icon name="braces" />
+                Variables Used
+              </h4>
+            </div>
+            <div className="detail-chip-row">
+              {vars.length ? (
+                vars.map((v) => (
+                  <span key={v} className="client-tag client-tag-diet">
+                    {v}
+                  </span>
+                ))
+              ) : (
+                <span className="chat-mini-card-text" style={{ margin: 0 }}>
+                  No variables used
+                </span>
+              )}
+            </div>
+          </>
+        )}
       </div>
 
       <div className="panel">

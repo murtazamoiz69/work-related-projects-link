@@ -5,7 +5,24 @@
 // a template survives a navigation between the library and the workspace.
 import { daysAgo, pick, seededRandom } from '@/lib/seed'
 import { CLIENTS_DATA } from '@/features/clients'
-import type { Template, TemplateVariable } from './types'
+import type { PollContent, Template, TemplateVariable } from './types'
+
+let pollOptionSeq = 0
+export function newPollOption(text = ''): { id: string; text: string } {
+  pollOptionSeq += 1
+  return { id: `poll-opt-${Date.now()}-${pollOptionSeq}`, text }
+}
+
+// Every template carries a `poll` slot even when it's a 'message' template —
+// keeps the shape uniform so switching Template Type in the editor never has
+// to conjure the field from nothing.
+export function defaultPoll(): PollContent {
+  return {
+    question: '',
+    optionType: 'single',
+    options: [newPollOption(), newPollOption()],
+  }
+}
 
 // Categories seed a mutable list (nutritionists can add their own from the
 // Create/Edit screen) — the live list lives in the store; this is the default.
@@ -41,12 +58,12 @@ export function categoryIcon(category: string): string {
 export const TEMPLATE_COVER_GRADIENTS = [
   'linear-gradient(135deg,#2F5D50,#16302A)',
   'linear-gradient(135deg,#3B6FA6,#1F3B5C)',
-  'linear-gradient(135deg,#C7594A,#7A362C)',
+  'linear-gradient(135deg,#C44F3F,#7A362C)',
   'linear-gradient(135deg,#7A5AA8,#40305C)',
-  'linear-gradient(135deg,#C77F3B,#7A4E22)',
-  'linear-gradient(135deg,#3F8F7A,#1E4A3E)',
-  'linear-gradient(135deg,#B0598A,#652F4E)',
-  'linear-gradient(135deg,#5B7FA6,#2E415C)',
+  'linear-gradient(135deg,#A3672E,#7A4E22)',
+  'linear-gradient(135deg,#39816E,#1E4A3E)',
+  'linear-gradient(135deg,#AF5688,#652F4E)',
+  'linear-gradient(135deg,#55789D,#2E415C)',
 ]
 
 export const TEMPLATE_AUTHORS = [
@@ -128,13 +145,13 @@ const TEMPLATE_SEED: TemplateSeed[] = [
   {
     title: 'Welcome Message',
     category: 'Welcome',
-    desc: 'Sent the moment a new client signs up.',
+    desc: 'Sent the moment a new user signs up.',
     content: `<p>Hi {{User Name}} 👋</p><p>Welcome to <strong>{{Program Name}}</strong>! I'm {{Coach Name}}, and I'll be your nutritionist for this journey. I'm really excited to help you work toward {{Goal}}.</p><p>I'll check in regularly, but feel free to message me anytime — no question is too small.</p>`,
   },
   {
     title: 'Diet Reminder',
     category: 'Diet',
-    desc: "Nudge for clients who haven't logged a meal today.",
+    desc: "Nudge for users who haven't logged a meal today.",
     content: `<p>Hey {{User Name}}, just a friendly reminder to log today's meals when you get a chance 🥗</p><p>Your target for today is <strong>{{Today's Calories}}</strong> — staying consistent with logging really helps us fine-tune {{Program Name}} for you.</p>`,
   },
   {
@@ -182,13 +199,13 @@ const TEMPLATE_SEED: TemplateSeed[] = [
   {
     title: 'Plan Renewal',
     category: 'Payment',
-    desc: 'Prompt clients to renew an expiring plan.',
+    desc: 'Prompt users to renew an expiring plan.',
     content: `<p>Hi {{User Name}}, your plan on {{Program Name}} is wrapping up soon.</p><p>You've made great progress toward {{Goal}} — want to renew and keep the momentum going?</p>`,
   },
   {
     title: 'Missed Check-in Follow-up',
     category: 'Reminder',
-    desc: 'Re-engage a client who has gone quiet.',
+    desc: 'Re-engage a user who has gone quiet.',
     content: `<p>Hey {{User Name}}, haven't heard from you in a bit — just checking in!</p><p>No pressure at all, just want to make sure {{Program Name}} is still working for you and see how {{Goal}} is going.</p>`,
   },
   {
@@ -212,7 +229,7 @@ const TEMPLATE_SEED: TemplateSeed[] = [
   {
     title: 'Holiday Hours Notice',
     category: 'General',
-    desc: 'Let clients know about a schedule change.',
+    desc: 'Let users know about a schedule change.',
     content: `<p>Hi {{User Name}}, just a quick note that {{Coach Name}}'s hours will be a little different this week.</p><p>I'll still be checking messages, so don't hesitate to reach out.</p>`,
   },
 ]
@@ -266,6 +283,8 @@ export function buildTemplate(index: number): Template {
       type: 'gradient',
       value: TEMPLATE_COVER_GRADIENTS[index % TEMPLATE_COVER_GRADIENTS.length],
     },
+    templateType: 'message',
+    poll: defaultPoll(),
     status,
     trashed: false,
     favorite: seededRandom(seed * 2.2) < 0.3,
@@ -317,6 +336,8 @@ export function buildBlankTemplate(categories: string[]): Template {
           Math.floor(Math.random() * TEMPLATE_COVER_GRADIENTS.length)
         ],
     },
+    templateType: 'message',
+    poll: defaultPoll(),
     status: 'draft',
     trashed: false,
     favorite: false,

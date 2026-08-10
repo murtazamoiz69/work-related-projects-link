@@ -7,13 +7,20 @@ export type KpiCounts = {
   workoutsLogged: number
 }
 
-export type WeekDayTier = 'done' | 'partial' | 'missed' | 'empty'
+export type WeekDayTier =
+  'done' | 'partial' | 'missed' | 'empty' | 'not-joined' | 'joined-today'
 
 export type WeekDay = {
   daysAgo: number
   isToday: boolean
   tier: WeekDayTier
   popover: string
+  /** 'Mon' — opens the tooltip, since the dot itself carries no label. */
+  dayLabel: string
+  /** 'Jul 27' — used in the tooltip. */
+  dateLabel: string
+  /** '27' — swapped in under the dot when the date toggle is on. */
+  dateShort: string
 }
 
 export type AttentionRow = {

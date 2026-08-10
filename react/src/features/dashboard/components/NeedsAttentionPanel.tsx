@@ -1,52 +1,89 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { Avatar } from '@/components/atoms/Avatar'
+import { CONVERSATIONS } from '@/features/chat'
 import { Icon } from '@/components/atoms/Icon'
 import { ClientActions } from '@/components/molecules/ClientActions'
+import { WeekDayHeader, WeekDots } from '@/components/molecules/WeekDots'
 import { useMiniTooltip } from '@/hooks/useMiniTooltip'
 import {
   ATTN_FILTER_DEFS,
   buildFilteredAttentionList,
-  buildNeedsAttentionList,
   dashCurrentWeekRangeLabel,
   dashFilterCounts,
   dashWeeklyProgress,
 } from '../data'
-import type { AttentionRow } from '../types'
+
+const PAGE_SIZE = 8
 
 export function NeedsAttentionPanel() {
-  const [activeFilters, setActiveFilters] = useState<Set<string>>(
-    () => new Set(['needs-attention']),
-  )
+  const [activeFilter, setActiveFilter] = useState('needs-attention')
+  const [search, setSearch] = useState('')
+  const [showAll, setShowAll] = useState(false)
+  const panelRef = useRef<HTMLDivElement>(null)
+  const scrollOnCollapse = useRef(false)
   const { show, hide, tooltip } = useMiniTooltip()
+
+  // Scrolling here has to wait until *after* the collapsed (shorter) list
+  // has actually committed to the DOM — scrolling before that targets the
+  // still-expanded layout and lands short, stranding the user mid-page.
+  useEffect(() => {
+    if (!showAll && scrollOnCollapse.current) {
+      scrollOnCollapse.current = false
+      panelRef.current?.scrollIntoView({ block: 'start' })
+    }
+  }, [showAll])
 
   const counts = useMemo(() => dashFilterCounts(), [])
   const weekRange = useMemo(() => dashCurrentWeekRangeLabel(), [])
 
-  const filtered = activeFilters.size > 0
-  const matches: AttentionRow[] = filtered
-    ? buildFilteredAttentionList([...activeFilters])
-    : buildNeedsAttentionList()
-  const shown = matches.slice(0, filtered ? 8 : 6)
+  const matches = useMemo(() => {
+    const all = buildFilteredAttentionList([activeFilter])
+    const q = search.trim().toLowerCase()
+    return q
+      ? all.filter((row) => row.client.name.toLowerCase().includes(q))
+      : all
+  }, [activeFilter, search])
+  const shown = showAll ? matches : matches.slice(0, PAGE_SIZE)
 
-  const toggle = (key: string) => {
-    setActiveFilters((prev) => {
-      const next = new Set(prev)
-      if (next.has(key)) next.delete(key)
-      else next.add(key)
-      return next
-    })
+  const selectFilter = (key: string) => {
+    setActiveFilter(key)
+    setShowAll(false)
+  }
+
+  // Collapsing the list shrinks the page above wherever the user had
+  // scrolled to, leaving them stranded over unrelated content further down
+  // — scroll back to the panel once it's actually collapsed (see the effect
+  // above) so they land somewhere sensible instead.
+  const collapse = () => {
+    scrollOnCollapse.current = true
+    setShowAll(false)
   }
 
   return (
-    <div className="panel needs-attention">
+    <div className="panel needs-attention" ref={panelRef}>
       <div className="panel-head">
         <div>
           <h2>Catch Up</h2>
           <p className="panel-sub">
-            Clients with an open chat request, unread messages, or recent
-            activity
+            Users with an open chat request, unread messages, or recent activity
           </p>
+        </div>
+        {/* Search sits in the head, opposite the title, rather than in the
+            filter row: it acts on the whole panel, and out of the chip row it
+            no longer competes with the chips for one line. */}
+        <div className="clients-search attn-head-search">
+          <Icon name="search" />
+          <input
+            type="text"
+            placeholder="Search by user name…"
+            autoComplete="off"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value)
+              setShowAll(false)
+            }}
+          />
         </div>
       </div>
 
@@ -54,31 +91,33 @@ export function NeedsAttentionPanel() {
         {ATTN_FILTER_DEFS.map((chip) => (
           <button
             key={chip.key}
-            className={`chip-filter${activeFilters.has(chip.key) ? ' active' : ''}`}
-            onClick={() => toggle(chip.key)}
+            className={`chip-filter${activeFilter === chip.key ? ' active' : ''}`}
+            onClick={() => selectFilter(chip.key)}
           >
             {chip.label}
             <span className="chip-count">{counts[chip.key]}</span>
           </button>
         ))}
-        {activeFilters.size > 0 ? (
-          <button
-            className="link-btn attn-filter-clear"
-            onClick={() => setActiveFilters(new Set())}
-          >
-            Clear all
-          </button>
-        ) : null}
       </div>
 
       <div className="clients-table-wrap">
         <table className="client-table attn-table">
           <thead>
             <tr>
-              <th>Client</th>
+              <th>User</th>
               <th>Why They&apos;re Here</th>
-              <th>
-                Weekly Progress <span className="th-note">({weekRange})</span>
+              {/* One weekday-letter row here instead of every row repeating
+                  its own — every row's dots below line up under these same
+                  seven columns (WeekDayHeader and WeekDots share the same
+                  default 'md' column geometry). */}
+              <th className="th-week">
+                <div className="th-week-inner">
+                  <span>
+                    Weekly Progress{' '}
+                    <span className="th-note">({weekRange})</span>
+                  </span>
+                  <WeekDayHeader />
+                </div>
               </th>
               <th>Actions</th>
             </tr>
@@ -103,22 +142,32 @@ export function NeedsAttentionPanel() {
                       </div>
                     </td>
                     <td>
-                      <div className="attn-why">
+                      {/* The reason is the row's headline, so it's the thing
+                          you click. Every reason here — an unanswered chat, a
+                          missed workout, a logged meal — is answered on the
+                          client's chat thread, which is also where the row's
+                          message button goes. A real Link (not an onClick) so
+                          middle-click and "open in new tab" behave. */}
+                      <Link
+                        to="/chat"
+                        search={{
+                          c: CONVERSATIONS.find(
+                            (cv) => cv.client.id === client.id,
+                          )?.id,
+                        }}
+                        className="attn-why"
+                        title={`Open ${client.name}'s chat`}
+                      >
                         <Icon name={icon} />
                         {text}
-                      </div>
+                      </Link>
                     </td>
                     <td>
-                      <div className="week-dots">
-                        {week.map((d) => (
-                          <span
-                            key={d.daysAgo}
-                            className={`week-dot tier-${d.tier}${d.isToday ? ' is-today' : ''}`}
-                            onMouseEnter={(e) => show(e, d.popover)}
-                            onMouseLeave={hide}
-                          />
-                        ))}
-                      </div>
+                      <WeekDots
+                        days={week}
+                        onDotEnter={show}
+                        onDotLeave={hide}
+                      />
                     </td>
                     <td>
                       <ClientActions client={client} />
@@ -129,9 +178,7 @@ export function NeedsAttentionPanel() {
             ) : (
               <tr>
                 <td colSpan={4}>
-                  <p className="pw-muted">
-                    No clients match {filtered ? 'these filters' : 'right now'}.
-                  </p>
+                  <p className="pw-muted">No users match your filters.</p>
                 </td>
               </tr>
             )}
@@ -139,14 +186,17 @@ export function NeedsAttentionPanel() {
         </table>
       </div>
 
-      {!filtered ? (
-        <Link className="link-btn view-all" to="/clients">
-          View all {matches.length} clients needing attention{' '}
-          <Icon name="arrow-right" />
-        </Link>
+      {!showAll && matches.length > shown.length ? (
+        <button className="link-btn view-all" onClick={() => setShowAll(true)}>
+          Show all {matches.length} users <Icon name="arrow-right" />
+        </button>
+      ) : showAll && matches.length > PAGE_SIZE ? (
+        <button className="link-btn view-all" onClick={collapse}>
+          Show fewer users
+        </button>
       ) : (
         <p className="pw-muted view-all">
-          {matches.length} client{matches.length === 1 ? '' : 's'} match
+          {matches.length} user{matches.length === 1 ? '' : 's'} match
           {matches.length === 1 ? 'es' : ''} your filters
         </p>
       )}

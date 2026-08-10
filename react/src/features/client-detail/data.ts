@@ -61,7 +61,7 @@ const NOTE_AUTHORS = [
   'James Okoro, RD',
 ]
 const NOTE_TEMPLATES = [
-  'Client mentioned scheduling conflicts on weekday mornings — consider shifting check-in reminders later in the day.',
+  'User mentioned scheduling conflicts on weekday mornings — consider shifting check-in reminders later in the day.',
   'Flagged mild knee discomfort during last call — avoiding high-impact cardio until follow-up.',
   'Really responsive over chat — prefers quick voice notes over long text replies.',
   'Requested more variety in meal suggestions — has expressed some flavor fatigue with current rotation.',
@@ -366,9 +366,16 @@ function buildProgramHistory(
   return { programs, heightCm, endWeight }
 }
 
-export function deriveDetail(client: Client): ClientDetail {
+// Deterministic per-client seed, shared by deriveDetail and the tracker
+// generator so a client's whole profile (including the daily log) is
+// derived from one consistent number.
+export function clientSeed(client: Client): number {
   const idNum = parseInt(String(client.id).replace('c-', ''), 10) || 1
-  const seed = idNum * 7.13 + 3
+  return idNum * 7.13 + 3
+}
+
+export function deriveDetail(client: Client): ClientDetail {
+  const seed = clientSeed(client)
 
   const hist = buildProgramHistory(client, seed)
   const heightCm = hist.heightCm
@@ -428,13 +435,28 @@ export function deriveDetail(client: Client): ClientDetail {
   })
 
   // ---- AI summary ----
+  // Tone and content follow the client's actual weekly data (adherence, weight
+  // trend, and which of diet/workout logging is the weaker of the two) rather
+  // than a single canned line, so an "attention" client reads like a coaching
+  // nudge and a healthy one reads like a celebration.
   const goalsText = client.goals.join(' and ').toLowerCase()
+  const activeProgram = hist.programs[0]
+  const submittedWeeks = activeProgram.weeks.filter((w) => w.submitted)
+  const latestWeek = submittedWeeks[submittedWeeks.length - 1] ?? null
+  const dietPct = latestWeek?.dietPct ?? null
+  const workoutPct = latestWeek?.workoutPct ?? null
+  const weightChange = activeProgram.weightChange
+
   let aiSummary: string[]
   if (client.status === 'attention') {
+    const dietIsWeaker =
+      dietPct !== null && workoutPct !== null ? dietPct <= workoutPct : true
     aiSummary = [
-      `Adherence has dropped to ${client.adherence}% — last check-in was ${formatCheckInLower(client.checkInDays)}.`,
-      `On the ${client.program} program, working toward ${goalsText}.`,
-      `A quick check-in from you could help get them back on track before it slips further.`,
+      `Adherence has decreased to ${client.adherence}%, mainly due to missed ${dietIsWeaker ? 'evening meals' : 'workouts'}.`,
+      dietIsWeaker
+        ? 'Workout consistency remains good.'
+        : 'Meal logging remains consistent.',
+      `A quick check-in about ${dietIsWeaker ? 'evening routines' : 'workout scheduling'} may help improve overall consistency.`,
     ]
   } else if (client.status === 'new') {
     aiSummary = [
@@ -449,9 +471,23 @@ export function deriveDetail(client: Client): ClientDetail {
       `Consider a re-engagement message to see if they're ready to pick back up.`,
     ]
   } else {
+    const workoutClause =
+      workoutPct === null
+        ? 'steady workout completion'
+        : workoutPct >= 95
+          ? 'all planned workouts completed'
+          : workoutPct >= 80
+            ? 'most planned workouts completed'
+            : `${workoutPct}% of planned workouts completed`
+    const weightClause =
+      weightChange !== null && weightChange !== 0
+        ? `Weight is ${weightChange < 0 ? 'down' : 'up'} ${Math.abs(weightChange)} kg and meal logging is consistent.`
+        : 'Meal logging has been consistent this week.'
+    const firstName = client.name.split(' ')[0]
     aiSummary = [
-      `${client.adherence}% adherence, with a check-in ${formatCheckInLower(client.checkInDays)}.`,
-      `On track with the ${client.program} program, progressing toward ${goalsText}.`,
+      `Excellent consistency this week with ${client.adherence}% adherence and ${workoutClause}.`,
+      weightClause,
+      `Consider recommending increased workout intensity next week if ${firstName} feels ready.`,
     ]
   }
 
@@ -471,12 +507,29 @@ export function deriveDetail(client: Client): ClientDetail {
   }
 }
 
-// formatCheckIn lowercased — the AI summary reads it mid-sentence.
-function formatCheckInLower(days: number | null | undefined): string {
-  if (days === null || days === undefined) return '—'
-  if (days === 0) return 'today'
-  if (days === 1) return 'yesterday'
-  return `${days} days ago`
+// AI-style digest of the internal-notes thread — surfaces what the care team
+// has actually flagged (the note content itself) rather than who logged it or
+// when, so a nutritionist can read the substance without author/date noise.
+export function summarizeNotes(notes: InternalNote[]): string[] {
+  if (!notes.length) {
+    return [
+      'No internal notes yet — anything your care team logs will be summarized here.',
+    ]
+  }
+  const uniqueTexts = Array.from(
+    new Set(notes.map((n) => n.text).filter(Boolean)),
+  )
+  const attachments = notes.filter((n) => n.attachment)
+
+  const lines = uniqueTexts.slice(0, 4)
+  if (attachments.length) {
+    lines.push(
+      `${attachments.length} document${attachments.length === 1 ? '' : 's'} attached for reference — ${attachments
+        .map((n) => n.attachment?.name)
+        .join(', ')}.`,
+    )
+  }
+  return lines
 }
 
 // ---------------------------------------------------------------------

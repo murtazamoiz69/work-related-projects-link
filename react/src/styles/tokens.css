@@ -2,49 +2,124 @@
    Single source of truth per CLAUDE.md. Consumed as var(--token) across app.css
    and components. */
 
-:root{
+:root {
   /* Neutrals */
-  --bg: #F5F6F3;
-  --surface: #FFFFFF;
-  --surface-alt: #FBFAF7;
-  --border: #E7E9E3;
-  --border-soft: #EEF0EA;
+  --bg: #f5f6f3;
+  --surface: #ffffff;
+  --surface-alt: #fbfaf7;
+  --border: #e7e9e3;
+  --border-soft: #eef0ea;
 
-  --text-primary: #202B24;
-  --text-secondary: #5B675E;
-  --text-muted: #8B9389;
+  --text-primary: #202b24;
+  --text-secondary: #5b675e;
+  /* Was #8B9389, which measured 3.17:1 on white and only 2.70:1 on
+     --primary-light — under the WCAG AA 4.5:1 floor on every surface it is
+     used on, and it carries real content (page subtitles, panel
+     descriptions, roles, timestamps). #626E66 clears 4.5:1 on all four
+     backgrounds it lands on. De-emphasis now comes from size and weight
+     rather than from a contrast gap that failed. */
+  --text-muted: #626e66;
 
   /* Brand */
-  --primary: #2F5D50;
-  --primary-dark: #1F4438;
-  --primary-light: #E6EFEA;
+  --primary: #2f5d50;
+  --primary-dark: #1f4438;
+  --primary-light: #e6efea;
 
-  /* Semantic */
-  --green: #2F9E6E;
-  --green-light: #E7F5EE;
-  --amber: #B8760B;
-  --amber-light: #FBF1DF;
-  --red: #C6392E;
-  --red-light: #FBEAE8;
-  --blue: #3B6FA6;
-  --blue-light: #EAF1F8;
-  --coral: #C7593F;
-  --coral-light: #FBEAE4;
-  --purple: #7A5AA8;
-  --purple-light: #F0EBF7;
+  /* Semantic. Each family has three roles:
+       --x        fill / stroke / chart series (identity, unchanged)
+       --x-light  tinted background
+       --x-text   the same hue darkened until it is legible as TEXT
+     The base hues are tuned to look right as fills, which left them between
+     3.0:1 and 4.3:1 when used as small label text on white or on their own
+     tint. Status badges, KPI labels and due badges all do exactly that, so
+     they use the -text variant; nothing that is a fill changed. */
+  --green: #2f9e6e;
+  --green-light: #e7f5ee;
+  --green-text: #1b6e4a;
+  --amber: #b8760b;
+  --amber-light: #fbf1df;
+  --amber-text: #8a5804;
+  --red: #c6392e;
+  --red-light: #fbeae8;
+  --red-text: #a62b22;
+  --blue: #3b6fa6;
+  --blue-light: #eaf1f8;
+  --blue-text: #2e5b8a;
+  --coral: #c7593f;
+  --coral-light: #fbeae4;
+  --coral-text: #a34430;
+  --purple: #7a5aa8;
+  --purple-light: #f0ebf7;
+  --purple-text: #64478e;
 
   /* Elevation */
-  --shadow-xs: 0 1px 2px rgba(24,32,26,0.04);
-  --shadow-sm: 0 2px 6px rgba(24,32,26,0.05), 0 1px 2px rgba(24,32,26,0.04);
-  --shadow-md: 0 8px 20px rgba(24,32,26,0.07), 0 2px 6px rgba(24,32,26,0.05);
-  --shadow-lg: 0 20px 48px rgba(24,32,26,0.12), 0 4px 12px rgba(24,32,26,0.06);
+  --shadow-xs: 0 1px 2px rgba(24, 32, 26, 0.04);
+  --shadow-sm:
+    0 2px 6px rgba(24, 32, 26, 0.05), 0 1px 2px rgba(24, 32, 26, 0.04);
+  --shadow-md:
+    0 8px 20px rgba(24, 32, 26, 0.07), 0 2px 6px rgba(24, 32, 26, 0.05);
+  --shadow-lg:
+    0 20px 48px rgba(24, 32, 26, 0.12), 0 4px 12px rgba(24, 32, 26, 0.06);
   --shadow-ring: 0 0 0 3px var(--primary-light);
 
-  /* Radii */
-  --r-lg: 22px;
-  --r-md: 16px;
-  --r-sm: 11px;
-  --r-xs: 8px;
+  /* Radii — one geometric scale, ~1.3x per step. Tightened from 22/16/11/8:
+     at 22px a panel corner reads soft and consumer-ish, and next to the 11px
+     controls inside it the two curvatures visibly disagreed. 18/14/10/7 keeps
+     the family coherent and reads as precision instrument rather than app
+     card. Change these four values to restyle every corner in the app. */
+  --r-lg: 18px;
+  --r-md: 14px;
+  --r-sm: 10px;
+  --r-xs: 7px;
+
+  /* Spacing — the 8px grid CLAUDE.md specifies. It was documented but never
+     actually declared, so component padding drifted to hand-picked values
+     (26px 28px, 14px 24px, 11px 12px...). New work uses these. */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* Type scale. The app's real base is 13-14px (dense practitioner tooling,
+     not a marketing page), so the scale is built around that rather than
+     16px, and the display sizes carry negative tracking because Plus Jakarta
+     Sans sets loose at large sizes. */
+  --text-xs: 11px;
+  --text-sm: 12.5px;
+  --text-base: 13.5px;
+  --text-md: 15px;
+  --text-lg: 17px;
+  --text-xl: 20px;
+  --text-2xl: 25px;
+  --text-3xl: 31px;
+
+  --tracking-tight: -0.02em;
+  --tracking-snug: -0.01em;
+  --tracking-wide: 0.04em;
+
+  /* Motion. 150-250ms is the band that reads responsive without feeling
+     abrupt; the standard ease is a decelerate curve so movement settles
+     rather than stopping dead. Every transition in the app should reference
+     these so timing stays consistent, and so reduced-motion has one place
+     to override. */
+  --duration-fast: 120ms;
+  --duration-normal: 180ms;
+  --duration-slow: 260ms;
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Focus. One ring for the whole app: a 2px primary outline for shape plus a
+     soft tinted halo so it stays visible on white, on --surface-alt, and on
+     --primary-light. */
+  --focus-outline: 2px solid var(--primary);
+  --focus-offset: 2px;
+  --focus-halo: 0 0 0 4px rgba(47, 93, 80, 0.16);
 
   --font-display: 'Plus Jakarta Sans', 'Inter', sans-serif;
   --font-body: 'Inter', sans-serif;

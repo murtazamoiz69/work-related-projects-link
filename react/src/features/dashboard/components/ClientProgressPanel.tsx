@@ -1,6 +1,7 @@
 import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Icon } from '@/components/atoms/Icon'
 import { useMiniTooltip } from '@/hooks/useMiniTooltip'
+import { CLIENTS_DATA } from '@/features/clients'
 import { buildClientProgress } from '../data'
 
 function roundedTopBarPath(
@@ -33,9 +34,16 @@ function BarChart({ values, ticks, tips, colorVar }: BarChartProps) {
   useLayoutEffect(() => {
     const el = ref.current
     if (!el) return
-    const update = () => setContainerWidth(el.clientWidth)
-    update()
-    const ro = new ResizeObserver(update)
+    setContainerWidth(el.clientWidth)
+    // Read the width the observer already measured (`contentRect`) instead of
+    // re-querying `el.clientWidth` inside the callback: that forces a
+    // synchronous reflow on every notification, and combined with a grid
+    // track that could still grow to fit its content, turned into a runaway
+    // resize -> re-render -> resize loop that visibly inflated the chart.
+    const ro = new ResizeObserver(([entry]) => {
+      const width = Math.round(entry.contentRect.width)
+      setContainerWidth((prev) => (prev === width ? prev : width))
+    })
     ro.observe(el)
     return () => ro.disconnect()
   }, [])
@@ -96,18 +104,39 @@ function BarChart({ values, ticks, tips, colorVar }: BarChartProps) {
 
 export function ClientProgressPanel() {
   const [rangeDays, setRangeDays] = useState(30)
-  const data = useMemo(() => buildClientProgress(rangeDays), [rangeDays])
+  const [program, setProgram] = useState('all')
+  const programs = useMemo(
+    () => Array.from(new Set(CLIENTS_DATA.map((c) => c.program))).sort(),
+    [],
+  )
+  const data = useMemo(
+    () => buildClientProgress(rangeDays, program),
+    [rangeDays, program],
+  )
 
   return (
     <section className="panel">
       <div className="panel-head">
         <div>
-          <h2>Client Progress</h2>
+          <h2>User Progress</h2>
           <p className="panel-sub">
-            Cohort-wide trends across your {data.activeClients} active clients
+            Cohort-wide trends across your {data.activeClients} active users
           </p>
         </div>
         <div className="panel-head-actions">
+          <select
+            className="select-range"
+            value={program}
+            onChange={(e) => setProgram(e.target.value)}
+            aria-label="Filter by program"
+          >
+            <option value="all">All Programs</option>
+            {programs.map((p) => (
+              <option key={p} value={p}>
+                {p}
+              </option>
+            ))}
+          </select>
           <select
             className="select-range"
             value={rangeDays}

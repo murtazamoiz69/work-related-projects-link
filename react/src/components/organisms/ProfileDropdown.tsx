@@ -1,17 +1,12 @@
-import { useNavigate } from '@tanstack/react-router'
 import { Avatar } from '@/components/atoms/Avatar'
 import { Icon } from '@/components/atoms/Icon'
 import { SWITCH_PROFILES } from '@/features/shell/data'
 import { showToast } from '@/lib/toast'
 import { useAuthStore } from '@/store/useAuthStore'
 
-type ProfileDropdownProps = { onClose: () => void }
-
-export function ProfileDropdown({ onClose }: ProfileDropdownProps) {
-  const navigate = useNavigate()
+export function ProfileDropdown() {
   const activeProfile = useAuthStore((s) => s.activeProfile)
   const switchProfile = useAuthStore((s) => s.switchProfile)
-  const logout = useAuthStore((s) => s.logout)
 
   return (
     <div
@@ -43,37 +38,6 @@ export function ProfileDropdown({ onClose }: ProfileDropdownProps) {
           </li>
         ))}
       </ul>
-      <div className="shell-dropdown-divider" />
-      <button
-        className="shell-dropdown-action"
-        onClick={() => {
-          showToast('Opening your profile…')
-          onClose()
-        }}
-      >
-        <Icon name="user" />
-        View Profile
-      </button>
-      <button
-        className="shell-dropdown-action"
-        onClick={() => {
-          onClose()
-          navigate({ to: '/settings' })
-        }}
-      >
-        <Icon name="settings" />
-        Settings
-      </button>
-      <button
-        className="shell-dropdown-action shell-dropdown-danger"
-        onClick={() => {
-          logout()
-          navigate({ to: '/login' })
-        }}
-      >
-        <Icon name="log-out" />
-        Log Out
-      </button>
     </div>
   )
 }

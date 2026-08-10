@@ -2,27 +2,12 @@ import { useState } from 'react'
 import { Icon } from '@/components/atoms/Icon'
 import { showToast } from '@/lib/toast'
 import { dietDayTotals, formatTime12, mealById, newMealEntry } from '../../data'
-import type {
-  DietDay,
-  Meal,
-  MealEntry,
-  NutritionTargets,
-  TrainingProgram,
-} from '../../types'
+import type { DietDay, Meal, MealEntry, TrainingProgram } from '../../types'
 import { WeekRail } from './atoms'
 import { resolveActiveWeek } from './weekUtils'
 import { MealPickerModal } from './MealPickerModal'
 
 type PickerTarget = { dayNum: number; entryUid: string | null }
-
-const NUTRITION_FIELDS: Array<{ key: keyof NutritionTargets; label: string }> =
-  [
-    { key: 'calories', label: 'Daily Calories' },
-    { key: 'protein', label: 'Protein (g)' },
-    { key: 'carbs', label: 'Carbs (g)' },
-    { key: 'fat', label: 'Fat (g)' },
-    { key: 'water', label: 'Water (L)' },
-  ]
 
 export function DietPlanTab({
   program: p,
@@ -39,11 +24,6 @@ export function DietPlanTab({
 
   const resolvedWeek = resolveActiveWeek(p.dietWeeks, activeWeek)
   const week = p.dietWeeks.find((w) => w.weekNum === resolvedWeek)
-
-  const setTarget = (key: keyof NutritionTargets, value: string) => {
-    p.nutritionTargets[key] = parseInt(value, 10) || 0
-    flashSaved()
-  }
 
   const handleMealAction = (
     action: 'edit' | 'duplicate' | 'delete',
@@ -107,28 +87,6 @@ export function DietPlanTab({
 
   return (
     <>
-      <div className="panel">
-        <div className="panel-head">
-          <div>
-            <h2>Nutrition Summary</h2>
-            <p className="panel-sub">
-              Daily targets for every client on this program
-            </p>
-          </div>
-        </div>
-        <div className="nutrition-summary-grid">
-          {NUTRITION_FIELDS.map((f) => (
-            <label className="modal-field" key={f.key}>
-              <span>{f.label}</span>
-              <input
-                type="number"
-                value={p.nutritionTargets[f.key]}
-                onChange={(e) => setTarget(f.key, e.target.value)}
-              />
-            </label>
-          ))}
-        </div>
-      </div>
       <div className="panel">
         <div className="panel-head">
           <div>

@@ -4,25 +4,36 @@ import { Icon } from '@/components/atoms/Icon'
 import { Topbar } from '@/components/organisms/Topbar'
 import { showToast } from '@/lib/toast'
 import {
-  TEMPLATE_COVER_GRADIENTS,
   buildBlankTemplate,
   bumpVersion,
+  defaultPoll,
   recordTemplateUsage,
   renderTemplateWithSampleData,
   stripHtmlToText,
   useTemplatesStore,
 } from '@/features/templates'
-import type { Template } from '@/features/templates'
+import type { PollContent, Template, TemplateKind } from '@/features/templates'
 import { TemplateDetailHeader } from '@/features/templates/components/detail/TemplateDetailHeader'
 import { TemplateViewBody } from '@/features/templates/components/detail/TemplateViewBody'
 import { TemplateEditBody } from '@/features/templates/components/detail/TemplateEditBody'
-import { CropCoverModal } from '@/features/templates/components/detail/CropCoverModal'
 import { VersionHistoryModal } from '@/features/templates/components/detail/VersionHistoryModal'
 import { ConfirmDialog } from '@/features/templates/components/ConfirmDialog'
 
-type Props = { templateId: string; initialEdit?: boolean }
+type Props = {
+  templateId: string
+  initialEdit?: boolean
+  /** Set when this "Create Template" flow was launched from the Broadcast
+   *  composer's "+" button — every exit path (Cancel, Save Draft, Publish)
+   *  returns there instead of the Templates list, and a freshly created
+   *  template gets passed back to preselect in the composer's dropdown. */
+  returnBroadcastId?: string
+}
 
-export function TemplateDetailPage({ templateId, initialEdit = false }: Props) {
+export function TemplateDetailPage({
+  templateId,
+  initialEdit = false,
+  returnBroadcastId,
+}: Props) {
   const navigate = useNavigate()
   const templates = useTemplatesStore((s) => s.templates)
   const categories = useTemplatesStore((s) => s.categories)
@@ -34,6 +45,13 @@ export function TemplateDetailPage({ templateId, initialEdit = false }: Props) {
   // Reading `rev` subscribes this page to the store's mutation nonce, so it
   // re-renders (and re-runs the lookup) after in-place template edits.
   void rev
+
+  const backTarget = returnBroadcastId
+    ? {
+        to: `/broadcast/${returnBroadcastId}`,
+        label: 'Back to Broadcast Messages',
+      }
+    : { to: '/templates', label: 'Back to Templates' }
 
   const isNew = templateId === 'new'
   const [draft] = useState<Template>(() => buildBlankTemplate(categories))
@@ -47,6 +65,9 @@ export function TemplateDetailPage({ templateId, initialEdit = false }: Props) {
   const [editTitle, setEditTitle] = useState('')
   const [editCategory, setEditCategory] = useState('')
   const [editDescription, setEditDescription] = useState('')
+  const [editTemplateType, setEditTemplateType] =
+    useState<TemplateKind>('message')
+  const [editPoll, setEditPoll] = useState<PollContent>(() => defaultPoll())
   const editorRef = useRef<HTMLDivElement>(null)
 
   const [saved, setSaved] = useState(false)
@@ -54,7 +75,6 @@ export function TemplateDetailPage({ templateId, initialEdit = false }: Props) {
     undefined,
   )
 
-  const [cropOpen, setCropOpen] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
 
@@ -70,6 +90,8 @@ export function TemplateDetailPage({ templateId, initialEdit = false }: Props) {
       setEditTitle(target.title)
       setEditCategory(target.category)
       setEditDescription(target.description)
+      setEditTemplateType(target.templateType)
+      setEditPoll(JSON.parse(JSON.stringify(target.poll)))
     }
   }, [templateId, initialEdit, draft])
 
@@ -87,13 +109,13 @@ export function TemplateDetailPage({ templateId, initialEdit = false }: Props) {
   if (!template) {
     return (
       <>
-        <Topbar back={{ to: '/templates', label: 'Back to Templates' }} />
+        <Topbar back={backTarget} />
         <main className="content">
           <div className="clients-empty">
             <Icon name="layout-template" />
             <p>Template not found</p>
-            <Link className="link-btn" to="/templates">
-              Back to Templates
+            <Link className="link-btn" to={backTarget.to}>
+              {backTarget.label}
             </Link>
           </div>
         </main>
@@ -113,6 +135,8 @@ export function TemplateDetailPage({ templateId, initialEdit = false }: Props) {
     t.title = editTitle.trim() || t.title
     t.category = editCategory
     t.description = editDescription.trim()
+    t.templateType = editTemplateType
+    t.poll = editPoll
     t.content = editorRef.current?.innerHTML ?? t.content
     t.updatedDate = new Date()
   }
@@ -121,6 +145,8 @@ export function TemplateDetailPage({ templateId, initialEdit = false }: Props) {
     setEditTitle(t.title)
     setEditCategory(t.category)
     setEditDescription(t.description)
+    setEditTemplateType(t.templateType)
+    setEditPoll(JSON.parse(JSON.stringify(t.poll)))
     setMode('edit')
   }
 
@@ -136,12 +162,21 @@ export function TemplateDetailPage({ templateId, initialEdit = false }: Props) {
     })
     if (isNew) {
       setTemplates((prev) => [t, ...prev])
-      navigate({
-        to: '/templates/$templateId',
-        params: { templateId: t.id },
-        search: { edit: true },
-        replace: true,
-      })
+      if (returnBroadcastId) {
+        navigate({
+          to: '/broadcast/$broadcastId',
+          params: { broadcastId: returnBroadcastId },
+          search: { edit: true, newTemplateId: t.id },
+          replace: true,
+        })
+      } else {
+        navigate({
+          to: '/templates/$templateId',
+          params: { templateId: t.id },
+          search: { edit: true },
+          replace: true,
+        })
+      }
     } else {
       commit()
     }
@@ -161,11 +196,20 @@ export function TemplateDetailPage({ templateId, initialEdit = false }: Props) {
     })
     if (isNew) {
       setTemplates((prev) => [t, ...prev])
-      navigate({
-        to: '/templates/$templateId',
-        params: { templateId: t.id },
-        replace: true,
-      })
+      if (returnBroadcastId) {
+        navigate({
+          to: '/broadcast/$broadcastId',
+          params: { broadcastId: returnBroadcastId },
+          search: { edit: true, newTemplateId: t.id },
+          replace: true,
+        })
+      } else {
+        navigate({
+          to: '/templates/$templateId',
+          params: { templateId: t.id },
+          replace: true,
+        })
+      }
     } else {
       commit()
       setMode('view')
@@ -176,7 +220,15 @@ export function TemplateDetailPage({ templateId, initialEdit = false }: Props) {
 
   const cancelEdit = () => {
     if (isNew) {
-      navigate({ to: '/templates' })
+      if (returnBroadcastId) {
+        navigate({
+          to: '/broadcast/$broadcastId',
+          params: { broadcastId: returnBroadcastId },
+          search: { edit: true },
+        })
+      } else {
+        navigate({ to: '/templates' })
+      }
       return
     }
     setMode('view')
@@ -220,37 +272,6 @@ export function TemplateDetailPage({ templateId, initialEdit = false }: Props) {
     navigate({ to: '/templates/$templateId', params: { templateId: copy.id } })
   }
 
-  const coverFile = (file: File) => {
-    const reader = new FileReader()
-    reader.onload = () => {
-      t.cover = { type: 'image', value: String(reader.result) }
-      commit()
-      flashSaved()
-    }
-    reader.readAsDataURL(file)
-  }
-
-  const removeCover = () => {
-    t.cover = {
-      type: 'gradient',
-      value:
-        TEMPLATE_COVER_GRADIENTS[
-          Math.floor(Math.random() * TEMPLATE_COVER_GRADIENTS.length)
-        ],
-    }
-    commit()
-    flashSaved()
-  }
-
-  const applyCrop = (focalPoint: string, zoom: number) => {
-    t.coverFocalPoint = focalPoint
-    t.coverZoom = zoom
-    commit()
-    setCropOpen(false)
-    flashSaved()
-    showToast('Cover image cropped')
-  }
-
   const newCategory = () => {
     const name = window.prompt('New category name:')
     const trimmed = name?.trim()
@@ -269,10 +290,7 @@ export function TemplateDetailPage({ templateId, initialEdit = false }: Props) {
 
   return (
     <>
-      <Topbar
-        back={{ to: '/templates', label: 'Back to Templates' }}
-        status={autosavePill}
-      />
+      <Topbar back={backTarget} status={autosavePill} />
       <main className="content">
         <TemplateDetailHeader
           template={t}
@@ -283,9 +301,6 @@ export function TemplateDetailPage({ templateId, initialEdit = false }: Props) {
           onSaveDraft={saveDraft}
           onPublish={publish}
           onCancelEdit={cancelEdit}
-          onCoverFile={coverFile}
-          onCropCover={() => setCropOpen(true)}
-          onRemoveCover={removeCover}
           onDuplicate={duplicate}
           onHistory={() => setHistoryOpen(true)}
           onDelete={() => setConfirmDelete(true)}
@@ -302,6 +317,10 @@ export function TemplateDetailPage({ templateId, initialEdit = false }: Props) {
             onDescriptionChange={setEditDescription}
             categories={categories}
             onNewCategory={newCategory}
+            templateType={editTemplateType}
+            onTemplateTypeChange={setEditTemplateType}
+            poll={editPoll}
+            onPollChange={setEditPoll}
             initialContent={t.content}
             editorRef={editorRef}
             onDirty={flashSaved}
@@ -310,14 +329,6 @@ export function TemplateDetailPage({ templateId, initialEdit = false }: Props) {
           <TemplateViewBody template={t} />
         )}
       </main>
-
-      {cropOpen && t.cover.type === 'image' ? (
-        <CropCoverModal
-          template={t}
-          onApply={applyCrop}
-          onClose={() => setCropOpen(false)}
-        />
-      ) : null}
 
       {historyOpen ? (
         <VersionHistoryModal

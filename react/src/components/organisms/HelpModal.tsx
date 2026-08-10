@@ -6,7 +6,7 @@ import { useShellStore } from '@/store/useShellStore'
 
 const FAQS = [
   {
-    q: 'How do I assign a program to a client?',
+    q: 'How do I assign a program to a user?',
     a: 'Open the program from the Programs page and use "Assign Users" to search, select, and confirm.',
   },
   {
@@ -14,7 +14,7 @@ const FAQS = [
     a: 'Yes — open the conversation in Chat and click "Take over" in the banner under the header.',
   },
   {
-    q: "Where do I edit a client's workout or meal plan?",
+    q: "Where do I edit a user's workout or meal plan?",
     a: "Inside a program's Workout Plan / Diet Plan tabs — changes autosave as you edit.",
   },
 ]

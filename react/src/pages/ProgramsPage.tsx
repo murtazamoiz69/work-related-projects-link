@@ -145,7 +145,7 @@ export function ProgramsPage() {
     <>
       <Topbar
         title="Programs"
-        subtitle="Reusable workout & diet programs you can assign to any client"
+        subtitle="Reusable workout & diet programs you can assign to any user"
       />
       <main className="content">
         <section className="panel programs-toolbar">
@@ -277,15 +277,15 @@ export function ProgramsPage() {
             </div>
           ) : view === 'table' ? (
             <div className="clients-table-wrap">
-              <table className="client-table prog-table">
+              <table className="client-table prog-table programs-table">
                 <colgroup>
                   <col style={{ width: '28%' }} />
                   <col style={{ width: '11%' }} />
                   <col style={{ width: '16%' }} />
                   <col style={{ width: '8%' }} />
                   <col style={{ width: '8%' }} />
-                  <col style={{ width: '10%' }} />
-                  <col style={{ width: '10%' }} />
+                  <col style={{ width: '15%' }} />
+                  <col style={{ width: '11%' }} />
                   <col style={{ width: '130px' }} />
                 </colgroup>
                 <thead>
@@ -295,7 +295,7 @@ export function ProgramsPage() {
                     <th>Coach</th>
                     <th>Assigned</th>
                     <th>Active</th>
-                    <th>Completion</th>
+                    <th>Avg Completion Rate</th>
                     <th>Updated</th>
                     <th>Actions</th>
                   </tr>

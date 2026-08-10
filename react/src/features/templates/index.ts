@@ -17,6 +17,8 @@ export {
   seedTemplates,
   saveTemplates,
   templateById,
+  defaultPoll,
+  newPollOption,
 } from './data'
 export { useTemplatesStore, recordTemplateUsage } from './store'
 export { TemplatePickerModal } from './components/TemplatePickerModal'

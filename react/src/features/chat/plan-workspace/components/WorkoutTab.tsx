@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { Icon } from '@/components/atoms/Icon'
 import { exerciseById } from '@/features/programs'
 import { showToast } from '@/lib/toast'
@@ -8,8 +9,19 @@ import type { PwCtx } from '../context'
 import type { WsWorkout, WsWorkoutDay, WsWorkoutWeek } from '../types'
 
 function WeekRail({ ctx, activeWeek }: { ctx: PwCtx; activeWeek: number }) {
+  const railRef = useRef<HTMLDivElement>(null)
+
+  // Land on the Workout Plan tab with the ongoing week already scrolled into
+  // view — the rail can run to 13+ weeks, and nobody wants to hunt for the
+  // one that's actually in progress.
+  useEffect(() => {
+    railRef.current
+      ?.querySelector('.pw-week-chip.current')
+      ?.scrollIntoView({ inline: 'center', block: 'nearest' })
+  }, [])
+
   return (
-    <div className="pw-week-rail">
+    <div className="pw-week-rail" ref={railRef}>
       {ctx.ws.workoutWeeks.map((w) => (
         <button
           key={w.weekNum}
@@ -75,7 +87,21 @@ function SessionCard({
     ctx.refresh()
   }
 
+  // Removing a session takes training away from a plan the user is following,
+  // so it asks first. Adding and editing stay immediate.
   const remove = () => {
+    ctx.confirm({
+      title: wid ? 'Remove this workout?' : `Clear ${day.label}?`,
+      message: wid
+        ? `"${wk.name}" will be taken off ${day.label} in Week ${week.weekNum}.`
+        : `${day.label} in Week ${week.weekNum} becomes a rest day, and "${wk.name}" is removed.`,
+      confirmText: wid ? 'Remove workout' : 'Make it a rest day',
+      danger: true,
+      onConfirm: applyRemove,
+    })
+  }
+
+  const applyRemove = () => {
     const d = ctx.ws.workoutWeeks
       .find((x) => x.weekNum === week.weekNum)
       ?.days.find((x) => x.dayNum === day.dayNum)
@@ -140,7 +166,7 @@ function SessionCard({
       <div className="workout-card-actions">
         <button
           className="icon-btn sm"
-          title="View as client"
+          title="View as user"
           onClick={() =>
             ctx.openModal({
               kind: 'workoutPreview',

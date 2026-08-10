@@ -379,7 +379,7 @@ export function mealConflicts(
     out.push({ level: 'hard', reason: 'Not halal (pork)' })
   profile.foodDislikes.forEach((d) => {
     if (mealHasKeyword(meal, [d.toLowerCase()]))
-      out.push({ level: 'soft', reason: `Client dislikes ${d.toLowerCase()}` })
+      out.push({ level: 'soft', reason: `User dislikes ${d.toLowerCase()}` })
   })
   return out
 }

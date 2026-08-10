@@ -76,13 +76,13 @@ export const SWITCH_PROFILES: Profile[] = [
     name: 'James Okoro, RD',
     role: 'Nutritionist',
     initials: 'JO',
-    color: '#5B7FA6',
+    color: '#55789D',
   },
   {
     name: 'Priya Anand',
     role: 'Nutritionist',
     initials: 'PA',
-    color: '#B0598A',
+    color: '#AF5688',
   },
 ]
 

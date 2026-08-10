@@ -16,15 +16,15 @@ export function KpiRow() {
       accent: 'blue',
       icon: 'users',
       value: k.total,
-      label: 'Total Clients',
-      tooltip: 'Every client currently assigned to your caseload.',
+      label: 'Total Users',
+      tooltip: 'Every user currently assigned to your caseload.',
     },
     {
       accent: 'green',
       icon: 'user-plus',
       value: k.newToday,
-      label: 'New Clients (24h)',
-      tooltip: 'Clients who joined in the last 24 hours.',
+      label: 'New Users (24h)',
+      tooltip: 'Users who joined in the last 24 hours.',
     },
     {
       accent: 'amber',
@@ -32,7 +32,7 @@ export function KpiRow() {
       value: `${k.mealsLogged} / ${k.total}`,
       label: 'Logged Meals Today',
       tooltip:
-        "Clients who've logged at least one meal today, out of your total caseload.",
+        "Users who've logged at least one meal today, out of your total caseload.",
     },
     {
       accent: 'coral',
@@ -40,12 +40,12 @@ export function KpiRow() {
       value: `${k.workoutsLogged} / ${k.total}`,
       label: 'Logged Workouts Today',
       tooltip:
-        "Clients who've logged a workout today, out of your total caseload.",
+        "Users who've logged a workout today, out of your total caseload.",
     },
   ]
 
   return (
-    <div className="dash-kpi-grid" aria-label="Client roster snapshot">
+    <div className="dash-kpi-grid" aria-label="User roster snapshot">
       {cards.map((c) => (
         <div className={`dash-kpi-card accent-${c.accent}`} key={c.label}>
           <button

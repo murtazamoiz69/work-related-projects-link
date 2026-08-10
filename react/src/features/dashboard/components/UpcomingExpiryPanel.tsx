@@ -20,7 +20,7 @@ export function UpcomingExpiryPanel() {
         <table className="client-table">
           <thead>
             <tr>
-              <th>Client</th>
+              <th>User</th>
               <th>Type</th>
               <th>Due</th>
               <th>Actions</th>
@@ -78,7 +78,7 @@ export function UpcomingExpiryPanel() {
         </table>
       </div>
       <Link className="link-btn view-all" to="/clients">
-        View all clients <Icon name="arrow-right" />
+        View all users <Icon name="arrow-right" />
       </Link>
     </section>
   )

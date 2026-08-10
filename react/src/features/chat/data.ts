@@ -5,6 +5,12 @@
 import { pick, seededRandom, daysAgo } from '@/lib/seed'
 import { CLIENTS_DATA } from '@/features/clients'
 import type { Client } from '@/features/clients'
+import {
+  MEAL_SLOTS,
+  WORKOUT_TEMPLATES,
+  mealsByCategory,
+} from '@/features/programs'
+import type { MealSlot } from '@/features/programs'
 import type {
   ChatActivityItem,
   ChatAttachment,
@@ -13,7 +19,6 @@ import type {
   ChatTab,
   Conversation,
   ConversationStatus,
-  WeekDayStat,
 } from './types'
 
 const PROGRAM_OPENER: Record<string, string> = {
@@ -59,15 +64,67 @@ export const CLIENT_FOLLOWUPS = [
   "Perfect, I'll try that today.",
   "That's a relief to hear, thanks Sarah!",
 ]
-const ATTACHMENT_BY_PROGRAM: Record<string, ChatAttachment> = {
-  'Diabetes Management': {
-    type: 'file',
-    name: 'Glucose_Readings_WeeklyLog.pdf',
-  },
-  'Weight Loss': { type: 'image', name: 'Progress_Photo.jpg' },
-  'Muscle Gain': { type: 'image', name: 'Progress_Photo.jpg' },
-  'Body Recomposition': { type: 'image', name: 'Progress_Photo.jpg' },
-  'Cardiac Health': { type: 'file', name: 'BP_Readings.pdf' },
+// What a user is plausibly sending in, by program. Each conversation draws a
+// couple of these so the thread has real material to pin: progress photos,
+// meal shots, screenshots of a tracker, and clinical documents.
+const ATTACHMENT_BY_PROGRAM: Record<string, ChatAttachment[]> = {
+  'Diabetes Management': [
+    { type: 'file', name: 'Glucose_Readings_WeeklyLog.pdf', size: '186 KB' },
+    { type: 'image', name: 'CGM_App_Screenshot.png' },
+    { type: 'file', name: 'HbA1c_Lab_Result.pdf', size: '312 KB' },
+  ],
+  'Weight Loss': [
+    { type: 'image', name: 'Progress_Photo_Week6.jpg' },
+    { type: 'image', name: 'Scale_Reading.jpg' },
+    { type: 'file', name: 'Food_Diary_Export.pdf', size: '94 KB' },
+  ],
+  'Muscle Gain': [
+    { type: 'image', name: 'Progress_Photo_Week6.jpg' },
+    { type: 'image', name: 'Gym_Tracker_Screenshot.png' },
+  ],
+  'Body Recomposition': [
+    { type: 'image', name: 'Progress_Photo_Week6.jpg' },
+    { type: 'file', name: 'Body_Composition_Scan.pdf', size: '421 KB' },
+  ],
+  'Cardiac Health': [
+    { type: 'file', name: 'BP_Readings.pdf', size: '128 KB' },
+    { type: 'image', name: 'BP_Monitor_Photo.jpg' },
+  ],
+  'Prenatal Nutrition': [
+    { type: 'file', name: 'Prenatal_Bloodwork.pdf', size: '265 KB' },
+    { type: 'image', name: 'Lunch_Today.jpg' },
+  ],
+  'Post-Surgery Recovery': [
+    { type: 'file', name: 'Discharge_Summary.pdf', size: '338 KB' },
+    { type: 'image', name: 'Incision_Check.jpg' },
+  ],
+  'PCOS Management': [
+    { type: 'file', name: 'Hormone_Panel.pdf', size: '204 KB' },
+    { type: 'image', name: 'Symptom_Tracker_Screenshot.png' },
+  ],
+  'Sports Nutrition': [
+    { type: 'image', name: 'Race_Day_Fuel_Plan.png' },
+    { type: 'file', name: 'VO2_Max_Test.pdf', size: '157 KB' },
+  ],
+  'General Wellness': [
+    { type: 'image', name: 'Breakfast_Today.jpg' },
+    { type: 'file', name: 'Annual_Bloodwork.pdf', size: '241 KB' },
+  ],
+  'Endurance Training': [
+    { type: 'image', name: 'Long_Run_Splits.png' },
+    { type: 'file', name: 'Training_Block_Summary.pdf', size: '176 KB' },
+  ],
+}
+
+// Documents render as a plain file card (icon + name + size) rather than a
+// generated preview image — there is no real file behind them in this
+// prototype, so a WhatsApp-style file chip reads as more honest than a fake
+// page thumbnail.
+
+// One id per attachment occurrence, so a pinned item can be matched back to
+// the exact message it came from even though attachments are plain values.
+export function attachmentKey(name: string, sentAt: Date): string {
+  return `${name}::${sentAt.getTime()}`
 }
 const FLAG_POOL_ATTENTION = [
   'Missed 3 consecutive check-ins',
@@ -126,24 +183,6 @@ function conversationStatus(client: Client): ConversationStatus {
   return 'active'
 }
 
-function chatPlanDurationWeeks(client: Client): number {
-  const match = /^(\d+)-Week/i.exec(client.plan)
-  return match ? parseInt(match[1], 10) : 12
-}
-function chatDaysSinceJoined(client: Client): number {
-  return Math.floor(
-    (Date.now() - client.joinDate.getTime()) / (24 * 60 * 60 * 1000),
-  )
-}
-export function chatPlanWeekForDay(client: Client, dayOffset: number): number {
-  const planWeeks = chatPlanDurationWeeks(client)
-  const daysIntoProgramThen = Math.max(
-    0,
-    chatDaysSinceJoined(client) - dayOffset,
-  )
-  return (Math.floor(daysIntoProgramThen / 7) % planWeeks) + 1
-}
-
 // This prototype has no real file storage, so a mock photo attachment renders
 // a consistent placeholder image (deterministic per seed) instead of an icon.
 function placeholderPhotoDataUri(seed: number): string {
@@ -157,93 +196,180 @@ function placeholderPhotoDataUri(seed: number): string {
   return `data:image/svg+xml,${encodeURIComponent(svg)}`
 }
 
-// Tri-state daily dot (done / partial / missed) for the profile card's Weekly
-// Diet and Weekly Workout rows. Biased by the client's own adherence score so
-// the dots and the "Adherence" figure never disagree. Days run Sun-Sat of the
-// current calendar week; a day later than today renders empty.
-function buildWeekDayStats(
+// A separate placeholder for logged meals — a recognizable food emoji on a
+// soft tinted card, distinct from placeholderPhotoDataUri's person
+// silhouette (progress photos), so the two never look like the same
+// generic "avatar" icon. There's no real photo pipeline in this prototype,
+// so this is the closest deterministic stand-in for an actual recipe photo.
+const MEAL_SLOT_EMOJI: Record<MealSlot, string[]> = {
+  Breakfast: ['🍳', '🥣', '🥞', '🧇'],
+  Lunch: ['🥗', '🍱', '🌯', '🥙'],
+  Snack: ['🍎', '🥜', '🍌', '🧀'],
+  Dinner: ['🍲', '🍛', '🍝', '🥘'],
+}
+function mealPhotoDataUri(seed: number, slot: MealSlot): string {
+  const hue = Math.floor(seededRandom(seed) * 360)
+  const emoji = pick(MEAL_SLOT_EMOJI[slot], seed * 1.3)
+  const svg =
+    `<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="0 0 240 240">` +
+    `<rect width="240" height="240" rx="26" fill="hsl(${hue},55%,91%)"/>` +
+    `<text x="120" y="150" font-size="118" text-anchor="middle">${emoji}</text>` +
+    `</svg>`
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`
+}
+
+// ===================== User activity log =====================
+// Spans today plus the last week so the "Recent Activity" panel (today only)
+// and the "View all activity" modal (the full span) read from one consistent
+// log instead of two disagreeing mock sources.
+const ACTIVITY_SPAN_DAYS = 8
+const UPCOMING_DAYS = 3
+const MEAL_SLOT_TIME: Record<MealSlot, string> = {
+  Breakfast: '08:00',
+  Lunch: '13:00',
+  Snack: '16:00',
+  Dinner: '19:00',
+}
+
+function activityTime(daysBack: number, hhmm: string): Date {
+  const [h, m] = hhmm.split(':').map(Number)
+  const d = new Date()
+  d.setDate(d.getDate() - daysBack)
+  d.setHours(h, m, 0, 0)
+  return d
+}
+
+function buildActivityLog(
+  client: Client,
   seed: number,
-  mult: number,
-  adherencePct: number | null,
-  kind: 'meal' | 'workout',
-): WeekDayStat[] {
-  const p = (adherencePct ?? 70) / 100
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  const weekStart = new Date(today)
-  weekStart.setDate(weekStart.getDate() - weekStart.getDay())
+  mealPct: number,
+  workoutsCompleted: number,
+  workoutsTotal: number,
+): ChatActivityItem[] {
+  const items: ChatActivityItem[] = []
 
-  const days: WeekDayStat[] = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(weekStart)
-    d.setDate(weekStart.getDate() + i)
-    const dayOffset = Math.round(
-      (today.getTime() - d.getTime()) / (24 * 60 * 60 * 1000),
-    )
-    const label = d.toLocaleDateString('en-US', { weekday: 'short' })
-    if (dayOffset < 0)
-      return {
-        label,
-        daysAgo: dayOffset,
-        scheduled: 0,
-        completed: 0,
-        isToday: false,
-        tier: 'empty',
-      }
-
-    const daySeed = seed * mult + dayOffset * 3.7
-    const scheduled =
-      kind === 'meal'
-        ? seededRandom(daySeed * 1.11) < 0.4
-          ? 4
-          : 3
-        : seededRandom(daySeed * 1.13) < 0.3
-          ? 2
-          : 1
-    const r = seededRandom(daySeed)
-    let completed: number
-    if (r < p * 0.85) completed = scheduled
-    else if (r < p * 0.85 + 0.15 && scheduled > 1)
-      completed = Math.max(
-        1,
-        Math.min(
-          scheduled - 1,
-          Math.round(seededRandom(daySeed * 1.31) * scheduled),
-        ),
-      )
-    else completed = 0
-    return {
-      label,
-      daysAgo: dayOffset,
-      scheduled,
-      completed,
-      isToday: dayOffset === 0,
-      tier: 'empty',
-    }
-  })
-
-  // Guarantee at least one partial day among the days that have happened.
-  const happened = days.filter((d) => d.daysAgo >= 0)
-  if (
-    happened.length &&
-    !happened.some((d) => d.completed > 0 && d.completed < d.scheduled)
-  ) {
-    const forced =
-      happened[Math.floor(seededRandom(seed * mult * 1.7) * happened.length)]
-    forced.scheduled = Math.max(2, forced.scheduled)
-    forced.completed = Math.max(1, Math.floor(forced.scheduled / 2))
+  if (client.checkInDays !== null && client.checkInDays !== undefined) {
+    items.push({
+      kind: 'checkin',
+      icon: client.status === 'attention' ? 'alert-circle' : 'check-circle-2',
+      title:
+        client.status === 'attention'
+          ? 'Missed a scheduled check-in'
+          : 'Completed a check-in',
+      detail: '',
+      time: activityTime(
+        Math.min(client.checkInDays, ACTIVITY_SPAN_DAYS - 1),
+        '09:00',
+      ),
+    })
   }
 
-  return days.map((d) => ({
-    ...d,
-    tier:
-      d.daysAgo < 0
-        ? 'empty'
-        : d.completed <= 0
-          ? 'missed'
-          : d.completed >= d.scheduled
-            ? 'done'
-            : 'partial',
-  }))
+  const mealChance = mealPct / 100
+  for (let day = 0; day < ACTIVITY_SPAN_DAYS; day++) {
+    MEAL_SLOTS.forEach((slot, si) => {
+      if (seededRandom(seed * 130 + day * 5 + si) >= mealChance) return
+      const meal = pick(mealsByCategory(slot), seed * 131 + day * 7 + si)
+      items.push({
+        kind: 'meal',
+        icon: 'utensils',
+        title: meal.name,
+        detail: `${slot} · ${meal.calories} kcal`,
+        time: activityTime(day, MEAL_SLOT_TIME[slot]),
+        photos: [mealPhotoDataUri(seed * 140 + day * 11 + si, slot)],
+        category: slot,
+      })
+    })
+  }
+
+  const workoutChance =
+    workoutsTotal > 0 ? workoutsCompleted / workoutsTotal : 0
+  for (let day = 0; day < ACTIVITY_SPAN_DAYS; day++) {
+    if (seededRandom(seed * 150 + day) >= workoutChance) continue
+    const tmpl = pick(WORKOUT_TEMPLATES, seed * 151 + day)
+    const exerciseCount = tmpl.exerciseIds.length
+    items.push({
+      kind: 'workout',
+      icon: 'dumbbell',
+      title: tmpl.name,
+      detail: `${exerciseCount} exercises · ${exerciseCount * 12} min`,
+      time: activityTime(day, '17:30'),
+      category: tmpl.muscle,
+    })
+  }
+
+  // Weight check-ins every ~3 days, trending toward the client's own goal —
+  // matching the direction used for the chatSummary's weight-change line.
+  const wantsBuildMuscle = client.goals.includes('Build muscle')
+  let weight = Math.round((60 + seededRandom(seed * 160) * 35) * 10) / 10
+  for (let day = ACTIVITY_SPAN_DAYS - 1; day >= 0; day -= 3) {
+    const prevWeight = weight
+    const step =
+      Math.round((0.1 + seededRandom(seed * 161 + day) * 0.6) * 10) / 10
+    weight = Math.round((weight + (wantsBuildMuscle ? step : -step)) * 10) / 10
+    if (day === ACTIVITY_SPAN_DAYS - 1) continue // seeds the trend, not a loggable entry
+    const direction: 'up' | 'down' = weight >= prevWeight ? 'up' : 'down'
+    items.push({
+      kind: 'weight',
+      icon: 'scale',
+      title: 'Weight updated',
+      detail: `${prevWeight} kg → ${weight} kg`,
+      time: activityTime(day, '08:15'),
+      delta: {
+        text: `${direction === 'up' ? '↑' : '↓'} ${Math.abs(Math.round((weight - prevWeight) * 10) / 10)} kg`,
+        direction,
+      },
+    })
+  }
+
+  const uploadCount = 1 + Math.floor(seededRandom(seed * 170) * 3)
+  for (let i = 0; i < uploadCount; i++) {
+    const day = Math.floor(seededRandom(seed * 171 + i) * ACTIVITY_SPAN_DAYS)
+    const photoCount = 2 + Math.floor(seededRandom(seed * 172 + i) * 3)
+    items.push({
+      kind: 'photo',
+      icon: 'image',
+      title: 'Uploaded progress photos',
+      detail: photoCount === 1 ? '1 photo' : `${photoCount} photos`,
+      time: activityTime(day, '10:24'),
+      photos: Array.from({ length: photoCount }, (_, p) =>
+        placeholderPhotoDataUri(seed * 173 + i * 5 + p),
+      ),
+    })
+  }
+
+  // Upcoming (not-yet-happened) plan schedule — the next few days' meals and
+  // workouts, so the log doesn't stop dead at today. No adherence gating
+  // here (nothing has been skipped yet); every scheduled slot shows up.
+  for (let aheadDays = 1; aheadDays <= UPCOMING_DAYS; aheadDays++) {
+    MEAL_SLOTS.forEach((slot, si) => {
+      const meal = pick(mealsByCategory(slot), seed * 180 + aheadDays * 7 + si)
+      items.push({
+        kind: 'meal',
+        icon: 'utensils',
+        title: meal.name,
+        detail: `${slot} · ${meal.calories} kcal`,
+        time: activityTime(-aheadDays, MEAL_SLOT_TIME[slot]),
+        upcoming: true,
+        category: slot,
+      })
+    })
+    if (seededRandom(seed * 185 + aheadDays) < 0.6) {
+      const tmpl = pick(WORKOUT_TEMPLATES, seed * 186 + aheadDays)
+      const exerciseCount = tmpl.exerciseIds.length
+      items.push({
+        kind: 'workout',
+        icon: 'dumbbell',
+        title: tmpl.name,
+        detail: `${exerciseCount} exercises · ${exerciseCount * 12} min`,
+        time: activityTime(-aheadDays, '17:30'),
+        upcoming: true,
+        category: tmpl.muscle,
+      })
+    }
+  }
+
+  items.sort((a, b) => b.time.getTime() - a.time.getTime())
+  return items
 }
 
 function buildConversation(client: Client, index: number): Conversation {
@@ -266,20 +392,20 @@ function buildConversation(client: Client, index: number): Conversation {
     client.status === 'new'
       ? NEW_CLIENT_OPENER(client.program)
       : PROGRAM_OPENER[client.program] || 'Hey, quick question about my plan!'
-  const attachPool = ATTACHMENT_BY_PROGRAM[client.program]
+  // Photos get a person-placeholder preview image; documents render as a
+  // plain file card with no image behind them (see the comment above).
+  const attachPool = ATTACHMENT_BY_PROGRAM[client.program] ?? []
+  const withPreview = (att: ChatAttachment, s: number): ChatAttachment =>
+    att.type === 'image' ? { ...att, dataUrl: placeholderPhotoDataUri(s) } : att
   const attached =
-    attachPool && seededRandom(seed * 4) < 0.4 ? attachPool : null
-  const photoDataUrl =
-    attached && attached.type === 'image'
-      ? placeholderPhotoDataUri(seed * 4.6)
+    attachPool.length && seededRandom(seed * 4) < 0.72
+      ? withPreview(pick(attachPool, seed * 4.2), seed * 4.6)
       : null
   messages.push({
     from: 'client',
     text: opener,
     time: hoursAgo(t),
-    attachment: attached
-      ? { ...attached, ...(photoDataUrl ? { dataUrl: photoDataUrl } : {}) }
-      : null,
+    attachment: attached,
   })
   t -= 0.4 + seededRandom(seed * 5) * 1.5
 
@@ -292,11 +418,20 @@ function buildConversation(client: Client, index: number): Conversation {
     })
     t -= 0.3 + seededRandom(seed * 7) * 2
     if (seededRandom(seed * 8) < 0.6) {
+      // A second upload later in the thread, so pinning is not a one-shot
+      // interaction confined to the very first message. Drawn from the
+      // remaining pool entries so it is never a duplicate of the opener's
+      // file, which would put two identically-named rows in Saved.
+      const rest = attachPool.filter((a) => a.name !== attached?.name)
+      const second =
+        rest.length && seededRandom(seed * 8.4) < 0.55
+          ? withPreview(pick(rest, seed * 8.7), seed * 8.9)
+          : null
       messages.push({
         from: 'client',
         text: pick(CLIENT_FOLLOWUPS, seed * 9),
         time: hoursAgo(Math.max(t, 0.05)),
-        attachment: null,
+        attachment: second,
       })
       t -= 0.2 + seededRandom(seed * 10) * 1
     }
@@ -331,9 +466,6 @@ function buildConversation(client: Client, index: number): Conversation {
       Math.round(seededRandom(seed * 15) * workoutsTotal),
     ),
   )
-  const dietWeek = buildWeekDayStats(seed, 140, client.adherence, 'meal')
-  const workoutWeek = buildWeekDayStats(seed, 150, client.adherence, 'workout')
-
   const flags =
     client.status === 'attention'
       ? [
@@ -357,44 +489,60 @@ function buildConversation(client: Client, index: number): Conversation {
   )
   const uploads = uploadDaysAgo.map((d) => ({ date: daysAgo(d) }))
 
-  const activity: ChatActivityItem[] = []
-  if (client.checkInDays !== null && client.checkInDays !== undefined) {
-    activity.push({
-      icon: client.status === 'attention' ? 'alert-circle' : 'check-circle-2',
-      text:
-        client.status === 'attention'
-          ? 'Missed a scheduled check-in'
-          : 'Completed a check-in',
-      days: client.checkInDays,
-    })
-  }
-  activity.push({
-    icon: 'utensils',
-    text: `Logged meals — ${mealPct}% of targets hit this week`,
-    days: 0,
-  })
-  activity.push({
-    icon: 'dumbbell',
-    text: `Completed ${workoutsCompleted} of ${workoutsTotal} workouts this week`,
-    days: 1,
-  })
-  uploadDaysAgo.forEach((d, i) =>
-    activity.push({
-      icon: i % 2 === 0 ? 'image' : 'file-text',
-      text: 'Uploaded a progress update',
-      days: d,
-    }),
+  const activity = buildActivityLog(
+    client,
+    seed,
+    mealPct,
+    workoutsCompleted,
+    workoutsTotal,
   )
-  activity.sort((a, b) => a.days - b.days)
 
-  const chatSummary =
+  // Nutritionist-facing digest (not addressed to the client) — bullet points
+  // driven by this week's actual adherence, weight trend, and meal/workout
+  // completion, mirroring the tone used on the full client-detail Overview tab.
+  const workoutCompletionPct =
+    workoutsTotal > 0
+      ? Math.round((workoutsCompleted / workoutsTotal) * 100)
+      : 0
+  const dietIsWeaker = mealPct <= workoutCompletionPct
+  const firstName = client.name.split(' ')[0]
+  // Weight should trend toward the client's own goal — up for muscle gain,
+  // down otherwise — so the "good news" framing stays directionally correct.
+  const wantsBuildMuscle = client.goals.includes('Build muscle')
+  const weightChangeMag =
+    Math.round((0.2 + seededRandom(seed * 23) * 1.1) * 10) / 10
+  const weightChange = wantsBuildMuscle ? weightChangeMag : -weightChangeMag
+  const workoutClause =
+    workoutCompletionPct >= 95
+      ? 'all planned workouts completed'
+      : workoutCompletionPct >= 80
+        ? 'most planned workouts completed'
+        : `${workoutCompletionPct}% of planned workouts completed`
+
+  const chatSummary: string[] =
     client.status === 'attention'
-      ? `${client.name} needs a reply — adherence has dropped to ${client.adherence}% and their last message is still open.`
+      ? [
+          `Adherence has decreased to ${client.adherence}%, mainly due to missed ${dietIsWeaker ? 'evening meals' : 'workouts'}.`,
+          dietIsWeaker
+            ? 'Workout consistency remains good.'
+            : 'Meal logging remains consistent.',
+          `A quick check-in about ${dietIsWeaker ? 'evening routines' : 'workout scheduling'} may help improve overall consistency.`,
+        ]
       : client.status === 'new'
-        ? `${client.name} just joined for ${client.program}. A warm welcome message goes a long way here.`
+        ? [
+            `Just joined for ${client.program} and hasn't started their plan yet.`,
+            `A warm welcome message goes a long way here.`,
+          ]
         : client.status === 'paused'
-          ? `${client.name}'s plan is paused — the conversation could use a re-engagement nudge.`
-          : `${client.name} is on track with ${client.program} — ${client.adherence}% adherence and the conversation is up to date.`
+          ? [
+              `Plan is currently paused.`,
+              `The conversation could use a re-engagement nudge.`,
+            ]
+          : [
+              `Excellent consistency this week with ${client.adherence}% adherence and ${workoutClause}.`,
+              `Weight is ${weightChange < 0 ? 'down' : 'up'} ${Math.abs(weightChange)} kg, meal logging is consistent.`,
+              `Consider recommending increased workout intensity next week if ${firstName} feels ready.`,
+            ]
 
   return {
     id: client.id,
@@ -409,13 +557,12 @@ function buildConversation(client: Client, index: number): Conversation {
       workoutDone,
       workoutsCompleted,
       workoutsTotal,
-      dietWeek,
-      workoutWeek,
     },
     flags,
     notes,
     uploads,
     activity,
+    saved: [],
     chatSummary,
     liveSimulated: false,
   }
@@ -424,6 +571,31 @@ function buildConversation(client: Client, index: number): Conversation {
 // The session's conversations — mutated in place across the screen's lifetime
 // (starring, take-over, new messages) exactly like V2's CONVERSATIONS array.
 export const CONVERSATIONS: Conversation[] = CLIENTS_DATA.map(buildConversation)
+
+// AI-style digest of the care-team notes thread — surfaces what's actually
+// been flagged (the note content) rather than who logged it or when, so a
+// nutritionist can read the substance without author/date noise.
+export function summarizeNotes(notes: ChatNote[]): string[] {
+  if (!notes.length) {
+    return [
+      'No care-team notes yet — anything logged below will be summarized here.',
+    ]
+  }
+  const uniqueTexts = Array.from(
+    new Set(notes.map((n) => n.text).filter(Boolean)),
+  )
+  const attachments = notes.filter((n) => n.attachment)
+
+  const lines = uniqueTexts.slice(0, 4)
+  if (attachments.length) {
+    lines.push(
+      `${attachments.length} document${attachments.length === 1 ? '' : 's'} attached for reference — ${attachments
+        .map((n) => n.attachment?.name)
+        .join(', ')}.`,
+    )
+  }
+  return lines
+}
 
 // ===================== Time helpers =====================
 export function timeAgoShort(date: Date): string {
@@ -461,6 +633,15 @@ export function formatDateSep(date: Date): string {
   })
 }
 
+export function isToday(date: Date): boolean {
+  const today = new Date()
+  return (
+    date.getFullYear() === today.getFullYear() &&
+    date.getMonth() === today.getMonth() &&
+    date.getDate() === today.getDate()
+  )
+}
+
 // ===================== Conversation list =====================
 // "new" filters on the client's own status (a just-joined client); starred
 // (pinned) conversations always float to the top, each group ordered by most
@@ -471,7 +652,9 @@ export function conversationsForTab(tab: ChatTab): Conversation[] {
       ? CONVERSATIONS
       : tab === 'new'
         ? CONVERSATIONS.filter((c) => c.client.status === 'new')
-        : CONVERSATIONS.filter((c) => c.status === tab)
+        : tab === 'starred'
+          ? CONVERSATIONS.filter((c) => c.starred)
+          : CONVERSATIONS.filter((c) => c.status === tab)
   return base.slice().sort((a, b) => {
     if (a.starred !== b.starred) return a.starred ? -1 : 1
     return (

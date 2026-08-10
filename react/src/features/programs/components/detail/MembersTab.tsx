@@ -123,7 +123,7 @@ export function MembersTab({
                       onChange={(e) => toggleAll(e.target.checked)}
                     />
                   </th>
-                  <th>Client</th>
+                  <th>User</th>
                   <th>Current Week</th>
                   <th>Progress</th>
                   <th>Weight</th>
@@ -152,7 +152,7 @@ export function MembersTab({
             <Icon name="user-x" />
             <p>No members assigned yet</p>
             <button className="link-btn" onClick={onAssign}>
-              Assign your first client
+              Assign your first user
             </button>
           </div>
         )}

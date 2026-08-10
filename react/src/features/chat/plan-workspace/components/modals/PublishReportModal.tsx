@@ -46,7 +46,7 @@ export function PublishReportModal({
     ws.published = true
     pushVersion(
       ws,
-      'Published to client',
+      'Published to user',
       'Sarah Nolan',
       `Plan published to ${profile.name}`,
     )
@@ -71,7 +71,7 @@ export function PublishReportModal({
             onClick={publish}
           >
             <Icon name="send" />
-            {canPublish ? 'Publish to Client' : 'Resolve blockers first'}
+            {canPublish ? 'Publish to User' : 'Resolve blockers first'}
           </button>
         </>
       }

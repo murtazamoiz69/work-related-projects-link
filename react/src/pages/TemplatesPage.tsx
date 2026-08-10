@@ -5,27 +5,16 @@ import { Topbar } from '@/components/organisms/Topbar'
 import { showToast } from '@/lib/toast'
 import {
   TEMPLATE_AUTHORS,
-  categoryIcon,
   stripHtmlToText,
   useTemplatesStore,
 } from '@/features/templates'
 import type { Template } from '@/features/templates'
 import {
-  TemplateCard,
   TemplateListRow,
   type TemplateAction,
 } from '@/features/templates'
 
 type SortKey = 'updated' | 'recentlyUsed' | 'mostUsed' | 'name'
-type View = 'card' | 'list'
-
-function initialView(): View {
-  try {
-    return localStorage.getItem('tplView') === 'list' ? 'list' : 'card'
-  } catch {
-    return 'card'
-  }
-}
 
 export function TemplatesPage() {
   const navigate = useNavigate()
@@ -39,7 +28,6 @@ export function TemplatesPage() {
   const [createdBy, setCreatedBy] = useState('all')
   const [status, setStatus] = useState('all')
   const [sort, setSort] = useState<SortKey>('updated')
-  const [view, setView] = useState<View>(initialView)
 
   const list = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -82,15 +70,6 @@ export function TemplatesPage() {
   }, [templates, query, category, createdBy, status, sort])
 
   const totalActive = templates.filter((t) => !t.trashed).length
-
-  const changeView = (v: View) => {
-    setView(v)
-    try {
-      localStorage.setItem('tplView', v)
-    } catch {
-      /* ignore */
-    }
-  }
 
   const handleAction = (action: TemplateAction, t: Template) => {
     if (action === 'view') {
@@ -211,31 +190,6 @@ export function TemplatesPage() {
               </select>
             </div>
 
-            <div
-              className="view-toggle"
-              role="tablist"
-              aria-label="Switch view"
-            >
-              <button
-                className={`view-toggle-btn${view === 'card' ? ' active' : ''}`}
-                role="tab"
-                aria-selected={view === 'card'}
-                title="Card view"
-                onClick={() => changeView('card')}
-              >
-                <Icon name="layout-grid" />
-              </button>
-              <button
-                className={`view-toggle-btn${view === 'list' ? ' active' : ''}`}
-                role="tab"
-                aria-selected={view === 'list'}
-                title="List view"
-                onClick={() => changeView('list')}
-              >
-                <Icon name="rows-3" />
-              </button>
-            </div>
-
             <button
               className="btn-primary"
               onClick={() =>
@@ -263,7 +217,6 @@ export function TemplatesPage() {
                 className={`prog-meta-chip tpl-cat-chip${category === c ? ' is-active' : ''}`}
                 onClick={() => setCategory(c)}
               >
-                <Icon name={categoryIcon(c)} />
                 {c}
               </button>
             ))}
@@ -298,16 +251,10 @@ export function TemplatesPage() {
                 </button>
               )}
             </div>
-          ) : view === 'card' ? (
-            <div className="prog-grid">
-              {list.map((t) => (
-                <TemplateCard key={t.id} template={t} onAction={handleAction} />
-              ))}
-            </div>
           ) : (
             <div className="tpl-list-wrap">
               <div className="clients-table-wrap">
-                <table className="client-table prog-table">
+                <table className="client-table prog-table templates-table">
                   <colgroup>
                     <col style={{ width: '32%' }} />
                     <col style={{ width: '15%' }} />

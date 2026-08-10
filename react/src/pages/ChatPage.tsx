@@ -10,17 +10,20 @@ import { ConversationList } from '@/features/chat/components/ConversationList'
 import { MessageThread } from '@/features/chat/components/MessageThread'
 import { ClientOverview } from '@/features/chat/components/ClientOverview'
 import { PlanWorkspaceOverlay } from '@/features/chat/plan-workspace'
+import { ProgramProgressModal } from '@/features/chat/components/ProgramProgressModal'
 import type { ChatTab } from '@/features/chat/types'
 
 export function ChatPage({
   initialConversationId,
+  openPlanWorkspace,
 }: {
   initialConversationId?: string
+  openPlanWorkspace?: boolean
 }) {
   const [tab, setTab] = useState<ChatTab>('inbox')
   const [query, setQuery] = useState('')
   const [, refresh] = useReducer((x: number) => x + 1, 0)
-  const [planClient, setPlanClient] = useState<Client | null>(null)
+  const [programClient, setProgramClient] = useState<Client | null>(null)
 
   const initialId = useMemo(() => {
     if (
@@ -36,6 +39,15 @@ export function ChatPage({
   }, [])
 
   const [selectedId, setSelectedId] = useState<string | null>(initialId)
+  // Arriving from a "Manage Plan" action opens the workspace immediately, on
+  // the conversation the link selected. Seeded as initial state rather than in
+  // an effect so closing the overlay can't re-trigger it.
+  const [planClient, setPlanClient] = useState<Client | null>(
+    () =>
+      (openPlanWorkspace &&
+        CONVERSATIONS.find((c) => c.id === initialId)?.client) ||
+      null,
+  )
 
   useEffect(() => {
     document.body.classList.add('chat-page')
@@ -70,10 +82,10 @@ export function ChatPage({
 
   return (
     <>
-      <Topbar
-        title="Chat"
-        subtitle="Every client conversation, live with Nourish AI"
-      />
+      {/* No title/subtitle: the thread header already names who you're talking
+          to, and "Chat" over a chat screen was a label for a label. The Topbar
+          stays for the account chip. */}
+      <Topbar />
       <main className="content chat-content">
         <div className="chat-shell">
           <ConversationList
@@ -92,6 +104,7 @@ export function ChatPage({
               convo={current}
               refresh={refresh}
               onManagePlan={() => setPlanClient(current.client)}
+              onViewProgram={() => setProgramClient(current.client)}
             />
           ) : (
             <section className="chat-center-col" />
@@ -101,7 +114,6 @@ export function ChatPage({
             <ClientOverview
               key={`overview-${current.id}`}
               convo={current}
-              onManagePlan={() => setPlanClient(current.client)}
               refresh={refresh}
             />
           ) : (
@@ -116,6 +128,13 @@ export function ChatPage({
         <PlanWorkspaceOverlay
           client={planClient}
           onClose={() => setPlanClient(null)}
+        />
+      ) : null}
+
+      {programClient ? (
+        <ProgramProgressModal
+          client={programClient}
+          onClose={() => setProgramClient(null)}
         />
       ) : null}
     </>

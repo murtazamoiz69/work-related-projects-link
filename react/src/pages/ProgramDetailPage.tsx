@@ -4,11 +4,10 @@ import { Icon } from '@/components/atoms/Icon'
 import { Topbar } from '@/components/organisms/Topbar'
 import { showToast } from '@/lib/toast'
 import { useProgramsStore } from '@/features/programs'
-import type { ProgramStatus, TrainingProgram } from '@/features/programs'
+import type { TrainingProgram } from '@/features/programs'
 import { AssignUsersModal } from '@/features/programs/components/AssignUsersModal'
 import { ProgramDetailHeader } from '@/features/programs/components/detail/ProgramDetailHeader'
 import { EditProgramModal } from '@/features/programs/components/detail/EditProgramModal'
-import { OverviewTab } from '@/features/programs/components/detail/OverviewTab'
 import { WorkoutPlanTab } from '@/features/programs/components/detail/WorkoutPlanTab'
 import { DietPlanTab } from '@/features/programs/components/detail/DietPlanTab'
 import { MembersTab } from '@/features/programs/components/detail/MembersTab'
@@ -17,11 +16,9 @@ import { SettingsTab } from '@/features/programs/components/detail/SettingsTab'
 
 type ProgramDetailPageProps = { programId: string }
 
-type ProgramTab =
-  'overview' | 'workout' | 'diet' | 'members' | 'analytics' | 'settings'
+type ProgramTab = 'workout' | 'diet' | 'members' | 'analytics' | 'settings'
 
 const PROGRAM_TABS: Array<{ key: ProgramTab; label: string }> = [
-  { key: 'overview', label: 'Overview' },
   { key: 'workout', label: 'Workout Plan' },
   { key: 'diet', label: 'Diet Plan' },
   { key: 'members', label: 'Members' },
@@ -49,7 +46,7 @@ export function ProgramDetailPage({ programId }: ProgramDetailPageProps) {
   void rev
   const program = programs.find((p) => p.id === programId)
 
-  const [tab, setTab] = useState<ProgramTab>('overview')
+  const [tab, setTab] = useState<ProgramTab>('workout')
   const [activeWeek, setActiveWeek] = useState(1)
   const [saved, setSaved] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
@@ -59,7 +56,7 @@ export function ProgramDetailPage({ programId }: ProgramDetailPageProps) {
   )
 
   useEffect(() => {
-    setTab('overview')
+    setTab('workout')
     setActiveWeek(1)
   }, [programId])
 
@@ -136,12 +133,6 @@ export function ProgramDetailPage({ programId }: ProgramDetailPageProps) {
     )
   }
 
-  const setVisibility = (status: ProgramStatus) => {
-    program.status = status
-    flashSaved()
-    showToast(`Visibility set to ${status[0].toUpperCase()}${status.slice(1)}`)
-  }
-
   const autosavePill = (
     <span className={`autosave-indicator${saved ? ' show' : ''}`}>
       <Icon name="check" />
@@ -181,9 +172,7 @@ export function ProgramDetailPage({ programId }: ProgramDetailPageProps) {
         </section>
 
         <div>
-          {tab === 'overview' ? (
-            <OverviewTab program={program} flashSaved={flashSaved} />
-          ) : tab === 'workout' ? (
+          {tab === 'workout' ? (
             <WorkoutPlanTab
               program={program}
               activeWeek={activeWeek}
@@ -204,11 +193,13 @@ export function ProgramDetailPage({ programId }: ProgramDetailPageProps) {
               onAssign={() => setAssignOpen(true)}
             />
           ) : tab === 'analytics' ? (
-            <AnalyticsTab program={program} />
+            <AnalyticsTab
+              program={program}
+              onAssign={() => setAssignOpen(true)}
+            />
           ) : (
             <SettingsTab
               program={program}
-              onStatusChange={setVisibility}
               onDuplicate={duplicateProgram}
               onDelete={deleteProgram}
             />

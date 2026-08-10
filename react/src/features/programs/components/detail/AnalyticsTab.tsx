@@ -9,6 +9,7 @@ import {
   type ChartOptions,
 } from 'chart.js'
 import { Line } from 'react-chartjs-2'
+import { Icon } from '@/components/atoms/Icon'
 import { seededRandom } from '@/lib/seed'
 import { MEAL_LIBRARY, WORKOUT_TEMPLATES } from '../../data'
 import type { TrainingProgram } from '../../types'
@@ -80,7 +81,32 @@ function EngagementChart({ program: p }: { program: TrainingProgram }) {
   )
 }
 
-export function AnalyticsTab({ program: p }: { program: TrainingProgram }) {
+export function AnalyticsTab({
+  program: p,
+  onAssign,
+}: {
+  program: TrainingProgram
+  onAssign: () => void
+}) {
+  // Engagement/adherence stats are derived from real assigned members — with
+  // none yet (a brand-new or just-cloned template), there's nothing real to
+  // show, so skip the fabricated fallback numbers entirely.
+  if (p.members.length === 0) {
+    return (
+      <div className="clients-empty">
+        <Icon name="bar-chart-2" />
+        <p className="clients-empty-title">No Analytics Yet</p>
+        <p>
+          Assign users to this program to start seeing engagement, adherence,
+          and completion data.
+        </p>
+        <button className="link-btn" onClick={onAssign}>
+          Assign your first user
+        </button>
+      </div>
+    )
+  }
+
   const workoutCompletion = Math.max(10, Math.min(98, p.completionRate + 8))
   const mealCompletion = Math.max(10, Math.min(98, p.completionRate - 4))
   const retention = p.members.length

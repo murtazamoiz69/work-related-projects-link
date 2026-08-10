@@ -28,7 +28,7 @@ export function VersionHistoryModal({
             <li key={i} className="timeline-item">
               <span
                 className="avatar avatar-xs"
-                style={{ background: '#5B7FA6' }}
+                style={{ background: '#55789D' }}
               >
                 <Icon name="git-branch" />
               </span>

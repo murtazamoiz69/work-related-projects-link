@@ -180,7 +180,7 @@ export function MealPickerModal({
                       {conflicts.some((c) => c.level === 'hard') ? (
                         <span
                           className="tpl-picker-row-flag"
-                          title="Conflicts with client profile — info only"
+                          title="Conflicts with user profile — info only"
                         >
                           <Icon name="alert-triangle" size={14} />
                         </span>

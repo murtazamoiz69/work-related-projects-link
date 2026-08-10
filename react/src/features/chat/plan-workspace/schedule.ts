@@ -1,6 +1,6 @@
-// Timeline scheduling helpers — status (Completed/Upcoming) is derived purely
-// from the scheduled date+time vs. now, which also gates editing. Ported from
-// V2's plan-workspace.js (scheduledDateTime / isUpcoming / isDayInPast / …).
+// Plan Workspace scheduling helpers — status (Completed/Upcoming) is derived
+// purely from the scheduled date+time vs. now, which also gates editing.
+// Ported from V2's plan-workspace.js (scheduledDateTime / isUpcoming / …).
 import type { ClinicalProfile, Workspace } from './types'
 
 export function scheduledDateTime(
@@ -24,14 +24,6 @@ export function isUpcoming(
   timeStr: string,
 ): boolean {
   return scheduledDateTime(programStart, weekNum, dayNum, timeStr) >= new Date()
-}
-
-export function isDayInPast(
-  programStart: Date,
-  weekNum: number,
-  dayNum: number,
-): boolean {
-  return scheduledDateTime(programStart, weekNum, dayNum, '23:59') < new Date()
 }
 
 export function roundToNext15(date: Date): string {

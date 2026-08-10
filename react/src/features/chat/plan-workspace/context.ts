@@ -16,7 +16,7 @@ export function getDay(
   return w ? (w.days.find((d) => d.dayNum === dayNum) ?? null) : null
 }
 
-// A day's primary workout OR one of its extra (Timeline-only) sessions.
+// A day's primary workout OR one of its extra sessions.
 export function getWorkoutRef(
   ws: Workspace,
   weekNum: number,
@@ -60,16 +60,26 @@ export type PwModal =
       dayNum: number
       wid: string | null
     }
-  | { kind: 'timelineAddChooser'; weekNum: number; dayNum: number }
-  | {
-      kind: 'timelineTimeEdit'
-      itemKind: 'workout' | 'extraWorkout' | 'meal'
-      weekNum: number
-      dayNum: number
-      itemId: string | null
-    }
   | { kind: 'editPlan' }
   | { kind: 'publish' }
+  // Hover-triggered Diet Plan library actions — Import shows the picker
+  // drawer scoped to a week or single day; Save shows the day-checklist
+  // save modal (week) or the plain name-prompt (day).
+  | { kind: 'libraryImportWeek'; weekNum: number }
+  | { kind: 'libraryImportDay'; weekNum: number; dayNum: number }
+  | { kind: 'librarySaveWeek'; weekNum: number }
+  | { kind: 'librarySaveDay'; weekNum: number; dayNum: number }
+
+/** A pending confirmation. The plan is live to the user, so anything that
+ *  removes or restructures their plan goes through this first. */
+export type PwConfirm = {
+  title: string
+  /** What is about to change, in the user's terms. */
+  message: string
+  confirmText: string
+  danger?: boolean
+  onConfirm: () => void
+}
 
 // Context passed to the three tab components.
 export type PwCtx = {
@@ -80,4 +90,6 @@ export type PwCtx = {
   currentWeek: number
   refresh: () => void
   openModal: (m: PwModal) => void
+  /** Gate a destructive or structural edit behind a confirmation dialog. */
+  confirm: (c: PwConfirm) => void
 }

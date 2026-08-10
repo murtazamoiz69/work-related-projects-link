@@ -1,7 +1,7 @@
 import { Avatar } from '@/components/atoms/Avatar'
 import { Icon } from '@/components/atoms/Icon'
 import { formatCheckIn, formatJoinDate } from '@/features/clients'
-import { categoryIcon, stripHtmlToText } from '../data'
+import { stripHtmlToText } from '../data'
 import type { Template } from '../types'
 import { FixedMenu } from './FixedMenu'
 
@@ -68,6 +68,22 @@ function MenuItems({ template: t, onAction }: ViewProps) {
             <button
               onClick={() => {
                 close()
+                onAction('edit', t)
+              }}
+            >
+              Edit
+            </button>
+            <button
+              onClick={() => {
+                close()
+                onAction('duplicate', t)
+              }}
+            >
+              Duplicate
+            </button>
+            <button
+              onClick={() => {
+                close()
                 onAction('favorite', t)
               }}
             >
@@ -98,20 +114,26 @@ function MenuItems({ template: t, onAction }: ViewProps) {
 }
 
 export function TemplateCard({ template: t, onAction }: ViewProps) {
-  const preview = stripHtmlToText(t.content).slice(0, 92)
+  const preview =
+    t.templateType === 'poll'
+      ? t.poll.question.trim() || 'No poll question added yet'
+      : stripHtmlToText(t.content).slice(0, 92)
   return (
-    <article className="prog-card tpl-card" onClick={() => onAction('view', t)}>
-      <div
-        className={`prog-card-cover tpl-card-cover`}
-        style={{ background: t.cover.value }}
-        onClick={(e) => e.stopPropagation()}
-      >
+    <article
+      className="prog-card prog-card-plain tpl-card"
+      onClick={() => onAction('view', t)}
+    >
+      <div className="prog-card-head">
         <span
           className={`prog-status-badge status-${t.trashed ? 'archived' : t.status}`}
+          style={{ position: 'static' }}
         >
           {statusLabel(t)}
         </span>
-        <div className="tpl-card-top-actions">
+        <div
+          className="tpl-card-head-actions"
+          onClick={(e) => e.stopPropagation()}
+        >
           <button
             className={`icon-btn sm tpl-fav-btn${t.favorite ? ' is-fav' : ''}`}
             title={t.favorite ? 'Remove from favorites' : 'Add to favorites'}
@@ -120,36 +142,6 @@ export function TemplateCard({ template: t, onAction }: ViewProps) {
             <Icon name="star" />
           </button>
           <MenuItems template={t} onAction={onAction} />
-        </div>
-        <div className="tpl-hover-actions">
-          <button
-            className="tpl-hover-btn"
-            title="View"
-            onClick={() => onAction('view', t)}
-          >
-            <Icon name="eye" />
-          </button>
-          <button
-            className="tpl-hover-btn"
-            title="Edit"
-            onClick={() => onAction('edit', t)}
-          >
-            <Icon name="pencil" />
-          </button>
-          <button
-            className="tpl-hover-btn"
-            title="Duplicate"
-            onClick={() => onAction('duplicate', t)}
-          >
-            <Icon name="copy" />
-          </button>
-          <button
-            className="tpl-hover-btn danger"
-            title="Delete"
-            onClick={() => onAction('delete', t)}
-          >
-            <Icon name="trash-2" />
-          </button>
         </div>
       </div>
       <div className="prog-card-body">
@@ -161,7 +153,7 @@ export function TemplateCard({ template: t, onAction }: ViewProps) {
         <div className="prog-card-coach">
           <Avatar
             initials={authorInitials(t.createdBy)}
-            color="#5B7FA6"
+            color="#55789D"
             size="xs"
           />
           <span>{t.createdBy}</span>
@@ -200,20 +192,6 @@ export function TemplateListRow({ template: t, onAction }: ViewProps) {
     <tr onClick={() => onAction('view', t)} style={{ cursor: 'pointer' }}>
       <td>
         <div className="ct-client">
-          <span
-            className="prog-goal-icon"
-            style={{
-              position: 'static',
-              background: t.cover.value,
-              color: '#fff',
-              width: 34,
-              height: 34,
-              borderRadius: 9,
-              flexShrink: 0,
-            }}
-          >
-            <Icon name={categoryIcon(t.category)} />
-          </span>
           <span className="ct-client-id">
             <span className="ct-name">
               {t.title}

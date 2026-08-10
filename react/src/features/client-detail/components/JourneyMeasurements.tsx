@@ -147,7 +147,7 @@ export function JourneyMeasurements({ program }: { program: Program }) {
       </div>
 
       <div className="clients-table-wrap">
-        <table className="client-table measure-table">
+        <table className="client-table measure-table journey-table">
           <thead>
             <tr>
               <th>Week</th>

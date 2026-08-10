@@ -1,6 +1,7 @@
 import { type ReactNode } from 'react'
 import { Icon } from '@/components/atoms/Icon'
 import { formatJoinDate } from '@/features/clients'
+import type { ClientDetail } from '@/features/client-detail'
 import { equipmentFor } from '../clinical'
 import type { ClinicalProfile } from '../types'
 
@@ -68,10 +69,15 @@ function Section({
 
 export function PwContext({
   profile,
+  detail,
+  goals,
   openSections,
   onToggle,
 }: {
   profile: ClinicalProfile
+  detail: ClientDetail
+  /** The user's own goal tags — separate from `profile.goal`, which is the program. */
+  goals: string[]
   openSections: ReadonlySet<string>
   onToggle: (key: string) => void
 }) {
@@ -85,9 +91,12 @@ export function PwContext({
 
   return (
     <>
+      {/* No identity block here any more — the topbar names the client, and
+          repeating it directly below was the same person twice. The rail opens
+          straight into the reference detail you consult while editing. */}
       <div className="pw-ctx-title">
         <Icon name="user-round" />
-        Client Context
+        User Context
       </div>
 
       <Section
@@ -105,8 +114,14 @@ export function PwContext({
         <Kv label="Goal" value={p.goal} />
         <Kv label="Activity" value={p.activityLevel} />
         <Kv label="Target weight" value={`${p.targetWeightKg} kg`} />
+        <Kv
+          label="Weekly commitment"
+          value={`${detail.weeklyCommitment} days/week`}
+        />
         <Kv label="Program start" value={formatJoinDate(p.programStart)} />
         <Kv label="Current week" value={`Week ${p.currentWeek}`} />
+        <span className="pw-sub-label">Goals</span>
+        <Chips arr={goals} empty="None set" />
       </Section>
 
       <Section

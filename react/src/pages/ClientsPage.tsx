@@ -2,18 +2,14 @@ import { useEffect, useMemo, useState } from 'react'
 import { Icon } from '@/components/atoms/Icon'
 import { Topbar } from '@/components/organisms/Topbar'
 import { CLIENTS_DATA, clientHaystack } from '@/features/clients'
-import {
-  ClientCard,
-  ClientTableRow,
-} from '@/features/clients/components/ClientRosterViews'
+import { ClientTableRow } from '@/features/clients/components/ClientRosterViews'
 
 const PAGE_SIZE = 12
 
 export function ClientsPage() {
   const [search, setSearch] = useState('')
   const [program, setProgram] = useState('all')
-  const [sort, setSort] = useState('name')
-  const [view, setView] = useState<'table' | 'card'>('table')
+  const [sort, setSort] = useState('adherence-asc')
   const [page, setPage] = useState(1)
 
   const programs = useMemo(
@@ -46,7 +42,7 @@ export function ClientsPage() {
 
   useEffect(() => {
     setPage(1)
-  }, [search, program, sort, view])
+  }, [search, program, sort])
 
   const total = list.length
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
@@ -57,11 +53,9 @@ export function ClientsPage() {
   const noResults = total === 0
 
   const countLabel = noResults
-    ? 'No clients match your filters'
+    ? 'No users match your filters'
     : `Showing ${start + 1}–${Math.min(start + PAGE_SIZE, total)} of ${total}${
-        hasFilters
-          ? ' matching clients'
-          : ' clients · 428 total in your caseload'
+        hasFilters ? ' matching users' : ' users · 428 total in your caseload'
       }`
 
   const clearFilters = () => {
@@ -73,8 +67,8 @@ export function ClientsPage() {
   return (
     <>
       <Topbar
-        title="Clients"
-        subtitle="Your full caseload, synced from each client's Nourish AI profile"
+        title="Users"
+        subtitle="Your full caseload, synced from each user's Nourish AI profile"
       />
       <main className="content">
         <section className="panel clients-toolbar">
@@ -106,7 +100,7 @@ export function ClientsPage() {
               </select>
               <select
                 className="select-range"
-                aria-label="Sort clients"
+                aria-label="Sort users"
                 value={sort}
                 onChange={(e) => setSort(e.target.value)}
               >
@@ -117,38 +111,13 @@ export function ClientsPage() {
                 <option value="checkin">Last check-in</option>
               </select>
             </div>
-
-            <div
-              className="view-toggle"
-              role="tablist"
-              aria-label="Switch view"
-            >
-              <button
-                className={`view-toggle-btn${view === 'table' ? ' active' : ''}`}
-                role="tab"
-                aria-selected={view === 'table'}
-                title="Table view"
-                onClick={() => setView('table')}
-              >
-                <Icon name="rows-3" />
-              </button>
-              <button
-                className={`view-toggle-btn${view === 'card' ? ' active' : ''}`}
-                role="tab"
-                aria-selected={view === 'card'}
-                title="Card view"
-                onClick={() => setView('card')}
-              >
-                <Icon name="layout-grid" />
-              </button>
-            </div>
           </div>
         </section>
 
         <section className="panel clients-panel">
           <div className="panel-head">
             <div>
-              <h2>Client Roster</h2>
+              <h2>User Roster</h2>
               <p className="panel-sub">{countLabel}</p>
             </div>
           </div>
@@ -156,21 +125,20 @@ export function ClientsPage() {
           {noResults ? (
             <div className="clients-empty">
               <Icon name="user-x" />
-              <p>No clients match your filters</p>
+              <p>No users match your filters</p>
               <button className="link-btn" onClick={clearFilters}>
                 Clear all filters
               </button>
             </div>
-          ) : view === 'table' ? (
+          ) : (
             <div className="clients-table-wrap">
               <table className="client-table">
                 <thead>
                   <tr>
-                    <th>Client</th>
+                    <th>User</th>
                     <th>Program</th>
                     <th>Adherence</th>
                     <th>Last Check-in</th>
-                    <th>Plan</th>
                     <th>Joined</th>
                     <th>Actions</th>
                   </tr>
@@ -181,12 +149,6 @@ export function ClientsPage() {
                   ))}
                 </tbody>
               </table>
-            </div>
-          ) : (
-            <div className="client-card-grid">
-              {pageItems.map((c) => (
-                <ClientCard key={c.id} client={c} />
-              ))}
             </div>
           )}
 

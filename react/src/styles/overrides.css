@@ -12,3 +12,16 @@
   top: calc(100% + 8px);
   right: 0;
 }
+
+/* Sidebar's profile chip sits low in a 100vh column with a fixed footer
+   below it, so the dropdown opens upward into the nav's open space rather
+   than risking overflow past the viewport bottom. */
+.sidebar-dd-wrap {
+  position: relative;
+}
+
+.sidebar-dd-wrap .shell-dropdown {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+}

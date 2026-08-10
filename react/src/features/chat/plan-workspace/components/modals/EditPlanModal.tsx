@@ -2,17 +2,20 @@ import { useState } from 'react'
 import { generateEmptyWeek, pushVersion } from '../../plan'
 import { addDays, toDateInputValue } from '../../schedule'
 import { PwModalShell } from './PwModalShell'
+import type { PwConfirm } from '../../context'
 import type { ClinicalProfile, Workspace } from '../../types'
 
 export function EditPlanModal({
   ws,
   profile,
   refresh,
+  confirm,
   onClose,
 }: {
   ws: Workspace
   profile: ClinicalProfile
   refresh: () => void
+  confirm: (c: PwConfirm) => void
   onClose: () => void
 }) {
   const initialWeeks = ws.workoutWeeks.length
@@ -28,7 +31,23 @@ export function EditPlanModal({
   const startDate = start ? new Date(`${start}T00:00:00`) : profile.programStart
   const endValue = toDateInputValue(addDays(startDate, weeksNum * 7))
 
+  // Program settings reshape the whole timeline — shortening the plan drops
+  // whole weeks of it — so this one confirms even though ordinary content
+  // edits do not.
   const save = () => {
+    const shrinking = weeksNum < initialWeeks
+    confirm({
+      title: 'Update this program?',
+      message: shrinking
+        ? `The plan goes from ${initialWeeks} weeks to ${weeksNum}, so Weeks ${weeksNum + 1}–${initialWeeks} and everything scheduled in them are removed.`
+        : `Program settings change to "${name.trim() || ws.planName}", ${weeksNum} weeks from ${start || toDateInputValue(profile.programStart)}.`,
+      confirmText: shrinking ? 'Update and drop weeks' : 'Update program',
+      danger: shrinking,
+      onConfirm: applySave,
+    })
+  }
+
+  const applySave = () => {
     ws.planName = name.trim() || ws.planName
     ws.planDescription = description.trim()
 
@@ -127,7 +146,7 @@ export function EditPlanModal({
       <p className="pw-muted">
         End date is calculated from the start date and timeline. Extending adds
         new weeks progressing from the last one; shortening removes weeks from
-        the end (never past the client&apos;s current week).
+        the end (never past the user&apos;s current week).
       </p>
     </PwModalShell>
   )

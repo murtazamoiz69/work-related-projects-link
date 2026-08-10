@@ -90,12 +90,12 @@ export function AssignUsersModal({
     programStatCounts(program)
     program.updatedDate = new Date()
     program.activity.unshift({
-      text: `${added} client${added === 1 ? '' : 's'} assigned to the program`,
+      text: `${added} user${added === 1 ? '' : 's'} assigned to the program`,
       days: 0,
     })
     onClose()
     showToast(
-      `Assigned ${added} client${added === 1 ? '' : 's'}${notify ? ' — notifications sent' : ''}`,
+      `Assigned ${added} user${added === 1 ? '' : 's'}${notify ? ' — notifications sent' : ''}`,
     )
     onAssigned()
   }
@@ -153,7 +153,7 @@ export function AssignUsersModal({
               <Icon name="search" />
               <input
                 type="text"
-                placeholder="Search clients by name or goal…"
+                placeholder="Search users by name or goal…"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
               />
@@ -174,7 +174,7 @@ export function AssignUsersModal({
             {filteredClients.length ? (
               filteredClients.map((c) => <ClientRow key={c.id} c={c} />)
             ) : (
-              <li className="assign-empty">No clients match your search</li>
+              <li className="assign-empty">No users match your search</li>
             )}
           </ul>
           <div className="modal-foot">
@@ -204,7 +204,7 @@ export function AssignUsersModal({
           </div>
           <div className="assign-review-body">
             <p className="chat-mini-card-text">
-              Assigning <strong>{selectedClients.length}</strong> client
+              Assigning <strong>{selectedClients.length}</strong> user
               {selectedClients.length === 1 ? '' : 's'} to{' '}
               <strong>{program.name}</strong>.
             </p>
@@ -238,7 +238,7 @@ export function AssignUsersModal({
               <textarea
                 className="notes-input"
                 rows={2}
-                placeholder="Anything the coach covering this client should know…"
+                placeholder="Anything the coach covering this user should know…"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
               />
@@ -249,7 +249,7 @@ export function AssignUsersModal({
                 checked={notify}
                 onChange={(e) => setNotify(e.target.checked)}
               />{' '}
-              Notify clients when assigned
+              Notify users when assigned
             </label>
           </div>
           <div className="modal-foot">

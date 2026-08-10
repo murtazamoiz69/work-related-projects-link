@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Icon } from '@/components/atoms/Icon'
 import { Avatar } from '@/components/atoms/Avatar'
-import { STATUS_LABEL } from '@/features/clients'
+import { PhotoLightbox } from '@/components/molecules/PhotoLightbox'
 import { showToast } from '@/lib/toast'
 import { TemplatePickerModal, stripHtmlToText } from '@/features/templates'
 import type { Template } from '@/features/templates'
@@ -13,6 +13,7 @@ import {
   formatTime,
   randomSuggestions,
 } from '../data'
+import { isSaved, toggleSaved } from '../saved'
 import type { ChatAttachment, ChatMessage, Conversation } from '../types'
 
 function randOf<T>(arr: readonly T[]): T {
@@ -23,51 +24,123 @@ function Attachment({
   att,
   removable,
   onRemove,
+  onOpen,
+  saved,
+  onToggleSave,
 }: {
   att: ChatAttachment
   removable?: boolean
   onRemove?: () => void
+  /** Opens the full-size viewer. Absent for the composer's pending draft. */
+  onOpen?: () => void
+  /** Absent when the attachment cannot be pinned (the coach's own draft). */
+  saved?: boolean
+  onToggleSave?: () => void
 }) {
-  if (att.type === 'image' && att.dataUrl) {
+  const saveBadge = onToggleSave ? (
+    <button
+      type="button"
+      className={`chat-attachment-save${saved ? ' is-saved' : ''}`}
+      onClick={(e) => {
+        e.stopPropagation()
+        onToggleSave()
+      }}
+      aria-pressed={saved}
+      title={saved ? 'Remove from saved' : 'Save for later'}
+    >
+      <Icon name={saved ? 'bookmark-check' : 'bookmark'} />
+    </button>
+  ) : null
+  const removeBtn = removable ? (
+    <button
+      className="icon-btn sm chat-attachment-remove"
+      title="Remove"
+      onClick={onRemove}
+    >
+      <Icon name="x" />
+    </button>
+  ) : null
+
+  // Documents get a compact, WhatsApp-style horizontal chip — a filled
+  // icon tile plus name/size — instead of a fake page preview.
+  if (att.type === 'file') {
+    const ext = (att.name.match(/\.([a-z0-9]+)$/i)?.[1] ?? 'file').toUpperCase()
+    return (
+      <div className="chat-attachment chat-attachment-doc">
+        <span className="chat-attachment-doc-tile">
+          <Icon name="file-text" />
+          <span className="chat-attachment-doc-ext">{ext}</span>
+        </span>
+        <span className="chat-attachment-doc-info">
+          <span className="chat-attachment-name">{att.name}</span>
+          {att.size ? (
+            <span className="chat-attachment-size">{att.size}</span>
+          ) : null}
+        </span>
+        {saveBadge}
+        {removeBtn}
+      </div>
+    )
+  }
+
+  if (att.dataUrl) {
     return (
       <div className="chat-attachment chat-attachment-photo">
-        <img src={att.dataUrl} alt={att.name} />
-        {removable ? (
-          <button
-            className="icon-btn sm chat-attachment-remove"
-            title="Remove"
-            onClick={onRemove}
-          >
-            <Icon name="x" />
-          </button>
-        ) : null}
+        <button
+          type="button"
+          className="chat-attachment-open"
+          onClick={onOpen}
+          disabled={!onOpen}
+          aria-label={`Open ${att.name}`}
+        >
+          <img src={att.dataUrl} alt={att.name} />
+        </button>
+        {saveBadge}
+        {removeBtn}
       </div>
     )
   }
   return (
     <div className="chat-attachment">
       <span className="chat-attachment-icon">
-        <Icon name={att.type === 'image' ? 'image' : 'file-text'} />
+        <Icon name="image" />
       </span>
       <span className="chat-attachment-name">{att.name}</span>
-      {removable ? (
-        <button
-          className="icon-btn sm chat-attachment-remove"
-          title="Remove"
-          onClick={onRemove}
-        >
-          <Icon name="x" />
-        </button>
-      ) : null}
+      {saveBadge}
+      {removeBtn}
     </div>
   )
 }
 
-function Bubble({ m }: { m: ChatMessage }) {
+function Bubble({
+  m,
+  convo,
+  onOpenAttachment,
+  onToggleSave,
+}: {
+  m: ChatMessage
+  convo: Conversation
+  onOpenAttachment: (att: ChatAttachment) => void
+  onToggleSave: (att: ChatAttachment, sentAt: Date) => void
+}) {
   if (m.from === 'system') {
     return (
       <div className="chat-system-msg">
         <span>{m.text}</span>
+      </div>
+    )
+  }
+  if (m.from === 'broadcast') {
+    return (
+      <div className="chat-bubble-row from-coach">
+        <div className="chat-bubble broadcast-bubble">
+          <span className="broadcast-bubble-label">
+            <Icon name="megaphone" />
+            Broadcast
+          </span>
+          {m.text ? <p>{m.text}</p> : null}
+          <span className="chat-bubble-time">{formatTime(m.time)}</span>
+        </div>
       </div>
     )
   }
@@ -83,7 +156,28 @@ function Bubble({ m }: { m: ChatMessage }) {
             Nourish AI
           </span>
         ) : null}
-        {m.attachment ? <Attachment att={m.attachment} /> : null}
+        {m.attachment ? (
+          <Attachment
+            att={m.attachment}
+            onOpen={
+              m.attachment.dataUrl
+                ? () => onOpenAttachment(m.attachment as ChatAttachment)
+                : undefined
+            }
+            // Only what the user sent is worth pinning; the coach's own
+            // outgoing files are already theirs.
+            saved={
+              m.from === 'client'
+                ? isSaved(convo, m.attachment, m.time)
+                : undefined
+            }
+            onToggleSave={
+              m.from === 'client'
+                ? () => onToggleSave(m.attachment as ChatAttachment, m.time)
+                : undefined
+            }
+          />
+        ) : null}
         {m.text ? <p>{m.text}</p> : null}
         <span className="chat-bubble-time">
           {formatTime(m.time)}
@@ -103,11 +197,25 @@ function Thread({
   messages,
   typing,
   convo,
+  refresh,
 }: {
   messages: ChatMessage[]
   typing: 'client' | 'ai' | null
   convo: Conversation
+  refresh: () => void
 }) {
+  const [viewing, setViewing] = useState<ChatAttachment | null>(null)
+
+  const toggleSave = (att: ChatAttachment, sentAt: Date) => {
+    const result = toggleSaved(convo, att, sentAt)
+    refresh()
+    showToast(
+      result === 'saved'
+        ? `Saved ${att.name} to ${convo.client.name.split(' ')[0]}'s file`
+        : `Removed ${att.name} from saved`,
+    )
+  }
+
   const nodes: React.ReactNode[] = []
   let lastDateKey: string | null = null
   messages.forEach((m, i) => {
@@ -120,11 +228,28 @@ function Thread({
       )
       lastDateKey = dateKey
     }
-    nodes.push(<Bubble m={m} key={`msg-${i}`} />)
+    nodes.push(
+      <Bubble
+        m={m}
+        convo={convo}
+        onOpenAttachment={setViewing}
+        onToggleSave={toggleSave}
+        key={`msg-${i}`}
+      />,
+    )
   })
   return (
     <div className="chat-thread" id="chatThread">
       {nodes}
+      {viewing?.dataUrl ? (
+        <PhotoLightbox
+          photos={[viewing.dataUrl]}
+          index={0}
+          caption={viewing.name}
+          onNavigate={() => {}}
+          onClose={() => setViewing(null)}
+        />
+      ) : null}
       {typing ? (
         <div className="chat-typing" id="chatTypingIndicator">
           {typing === 'ai' ? (
@@ -153,10 +278,12 @@ export function MessageThread({
   convo,
   refresh,
   onManagePlan,
+  onViewProgram,
 }: {
   convo: Conversation
   refresh: () => void
   onManagePlan: () => void
+  onViewProgram: () => void
 }) {
   const c = convo.client
   const firstName = c.name.split(' ')[0]
@@ -336,23 +463,42 @@ export function MessageThread({
   return (
     <section className="chat-center-col" id="chatCenterCol">
       <div className="chat-header">
+        {/* The thread header is now the only place the client is identified —
+            the right rail used to repeat the same avatar, name and meta line
+            directly opposite it. */}
         <div className="chat-header-meta">
-          <span className="chat-header-name">{c.name}</span>
-          <span className="chat-header-sub">
-            {c.program} ·{' '}
-            <span className={`status-pill status-${c.status}`}>
-              {STATUS_LABEL[c.status]}
+          <Avatar initials={c.initials} color={c.color} />
+          <div className="chat-header-id">
+            <span className="chat-header-name">{c.name}</span>
+            <span className="chat-header-sub">
+              <span className="chat-header-sub-text">
+                {c.age} · {c.gender} · {c.program}
+              </span>
             </span>
-          </span>
+          </div>
         </div>
-        <button
-          className="btn-secondary sm"
-          onClick={onManagePlan}
-          title="Open the plan workspace"
-        >
-          <Icon name="clipboard-list" />
-          Manage Plan
-        </button>
+        <div className="chat-header-actions">
+          <button
+            className="btn-secondary sm"
+            onClick={onManagePlan}
+            title="Open the plan workspace"
+          >
+            <span className="chat-header-action-icon is-solid">
+              <Icon name="clipboard-list" size={15} />
+            </span>
+            Manage Plan
+          </button>
+          <button
+            className="btn-secondary sm"
+            onClick={onViewProgram}
+            title={`Open ${firstName}'s progress at a glance`}
+          >
+            <span className="chat-header-action-icon is-soft">
+              <Icon name="activity" size={15} />
+            </span>
+            At a glance
+          </button>
+        </div>
       </div>
 
       {convo.handledBy === 'ai' ? (
@@ -381,7 +527,12 @@ export function MessageThread({
       )}
 
       <div className="chat-scroll" id="chatScrollArea" ref={scrollRef}>
-        <Thread messages={convo.messages} typing={typing} convo={convo} />
+        <Thread
+          messages={convo.messages}
+          typing={typing}
+          convo={convo}
+          refresh={refresh}
+        />
       </div>
 
       {convo.handledBy === 'ai' ? (

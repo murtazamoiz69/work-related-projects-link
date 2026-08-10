@@ -1,27 +1,44 @@
-import { Link, useNavigate } from '@tanstack/react-router'
+import { useNavigate } from '@tanstack/react-router'
 import { Icon } from '@/components/atoms/Icon'
 import type { Client } from '@/features/clients'
+import { CONVERSATIONS } from '@/features/chat'
 import { showToast } from '@/lib/toast'
 
 type ClientActionsProps = {
   client: Client
-  /** The "view profile" icon — dashboard uses file-text, clients uses eye. */
-  viewIcon?: string
+  /** Adds a "Manage Plan" action. Opt-in: the roster is where a plan is worked
+   *  on, while the dashboard's tables are about triage. */
+  showManagePlan?: boolean
 }
 
-/** Message / Call / View trio used in every client row across the app. */
-export function ClientActions({
-  client,
-  viewIcon = 'file-text',
-}: ClientActionsProps) {
+/** Message / Call / Email trio used in every client row across the app. */
+export function ClientActions({ client, showManagePlan }: ClientActionsProps) {
   const navigate = useNavigate()
+  const conversationId = CONVERSATIONS.find(
+    (c) => c.client.id === client.id,
+  )?.id
   return (
     <div className="ct-actions">
+      {showManagePlan ? (
+        <button
+          className="icon-btn sm"
+          title="Manage Plan"
+          aria-label={`Manage ${client.name}'s plan`}
+          onClick={() =>
+            navigate({
+              to: '/chat',
+              search: { c: conversationId, plan: true },
+            })
+          }
+        >
+          <Icon name="clipboard-list" />
+        </button>
+      ) : null}
       <button
         className="icon-btn sm"
         title="Message"
         aria-label={`Open chat with ${client.name}`}
-        onClick={() => navigate({ to: '/chat' })}
+        onClick={() => navigate({ to: '/chat', search: { c: conversationId } })}
       >
         <Icon name="message-circle" />
       </button>
@@ -33,14 +50,14 @@ export function ClientActions({
       >
         <Icon name="phone" />
       </button>
-      <Link
+      <button
         className="icon-btn sm"
-        to="/clients/$clientId"
-        params={{ clientId: client.id }}
-        aria-label={`Open ${client.name}'s profile`}
+        title="Email"
+        aria-label={`Email ${client.name}`}
+        onClick={() => showToast(`Emailing ${client.name}…`)}
       >
-        <Icon name={viewIcon} />
-      </Link>
+        <Icon name="mail" />
+      </button>
     </div>
   )
 }

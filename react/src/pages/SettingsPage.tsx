@@ -15,12 +15,12 @@ import { useAuthStore } from '@/store/useAuthStore'
 const AVATAR_COLOR_POOL = [
   '#2F5D50',
   '#3B6FA6',
-  '#C7594A',
+  '#C44F3F',
   '#7A5AA8',
-  '#C77F3B',
-  '#3F8F7A',
-  '#B0598A',
-  '#5B7FA6',
+  '#A3672E',
+  '#39816E',
+  '#AF5688',
+  '#55789D',
 ] as const
 
 type SectionKey = 'profile' | 'notifications' | 'security' | 'practice'
@@ -260,7 +260,7 @@ export function SettingsPage() {
                   <div>
                     <h2>Profile</h2>
                     <p className="panel-sub">
-                      This is how you appear to your team and clients
+                      This is how you appear to your team and users
                     </p>
                   </div>
                 </div>
@@ -325,7 +325,7 @@ export function SettingsPage() {
                   <textarea
                     className="notes-input"
                     rows={3}
-                    placeholder="A short bio your clients might see…"
+                    placeholder="A short bio your users might see…"
                     value={bio}
                     onChange={(e) => setBio(e.target.value)}
                   />
@@ -358,12 +358,12 @@ export function SettingsPage() {
                       {
                         key: 'email',
                         title: 'Email notifications',
-                        desc: 'Daily digest of client activity sent to your inbox',
+                        desc: 'Daily digest of user activity sent to your inbox',
                       },
                       {
                         key: 'push',
                         title: 'Push notifications',
-                        desc: 'Real-time alerts in your browser for urgent client flags',
+                        desc: 'Real-time alerts in your browser for urgent user flags',
                       },
                       {
                         key: 'chatAlerts',
@@ -504,7 +504,7 @@ export function SettingsPage() {
                   <div>
                     <h2>Practice Details</h2>
                     <p className="panel-sub">
-                      Shown on client-facing reports and reminders
+                      Shown on user-facing reports and reminders
                     </p>
                   </div>
                 </div>

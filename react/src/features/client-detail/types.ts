@@ -43,7 +43,14 @@ export type Program = {
   waistChange: number | null
 }
 
-export type InternalNote = { author: string; text: string; days: number }
+export type NoteAttachment = { name: string; type: string }
+
+export type InternalNote = {
+  author: string
+  text: string
+  days: number
+  attachment?: NoteAttachment | null
+}
 
 export type TimelineEntry = { text: string; days: number }
 

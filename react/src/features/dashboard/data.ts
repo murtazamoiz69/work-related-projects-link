@@ -369,21 +369,11 @@ function dashWorkoutStatusForDay(
   )
 }
 
-function dashPlanDurationWeeks(client: Client): number {
-  const match = /^(\d+)-Week/i.exec(client.plan)
-  return match ? parseInt(match[1], 10) : 12
-}
-
-function dashPlanWeekForDay(client: Client, daysAgo: number): number {
-  const planWeeks = dashPlanDurationWeeks(client)
-  const daysIntoProgramThen = Math.max(0, dashDaysSinceJoined(client) - daysAgo)
-  return (Math.floor(daysIntoProgramThen / 7) % planWeeks) + 1
-}
-
 function dashDayCounts(
   index: number,
   daysAgo: number,
-  done: boolean | null,
+  workoutDone: boolean | null,
+  mealDone: boolean | null,
 ): {
   workoutsScheduled: number
   workoutsCompleted: number
@@ -393,21 +383,23 @@ function dashDayCounts(
   const seed = dashClientSeed(index) + daysAgo * 2.7
   const workoutsScheduled = seededRandom(seed * 98) < 0.3 ? 2 : 1
   const mealsScheduled = seededRandom(seed * 100) < 0.4 ? 4 : 3
-  if (done === null) {
-    return {
-      workoutsScheduled,
-      workoutsCompleted: 0,
-      mealsScheduled,
-      mealsCompleted: 0,
-    }
-  }
-  const workoutsCompleted = done
-    ? workoutsScheduled
-    : Math.floor(seededRandom(seed * 99) * workoutsScheduled)
-  const mealsCompleted = Math.min(
-    mealsScheduled,
-    Math.round(seededRandom(seed * 101) * mealsScheduled * (done ? 1 : 0.6)),
-  )
+  const workoutsCompleted =
+    workoutDone === null
+      ? 0
+      : workoutDone
+        ? workoutsScheduled
+        : Math.floor(seededRandom(seed * 99) * workoutsScheduled)
+  // mealDone comes from the same dashMealLoggedToday/Yesterday booleans the
+  // Catch Up "Missed/Logged Diet" filters match against — false must mean
+  // zero meals logged, never a randomized partial count, or a client could
+  // land in "Missed Diet Yesterday" while still showing a done/partial dot.
+  const mealsCompleted =
+    mealDone === null || mealDone === false
+      ? 0
+      : Math.min(
+          mealsScheduled,
+          Math.max(1, Math.round(seededRandom(seed * 101) * mealsScheduled)),
+        )
   return {
     workoutsScheduled,
     workoutsCompleted,
@@ -420,38 +412,87 @@ function dashDayPopoverText(
   client: Client,
   index: number,
   daysAgo: number,
-  done: boolean | null,
+  workoutDone: boolean | null,
+  mealDone: boolean | null,
 ): string {
-  const week = dashPlanWeekForDay(client, daysAgo)
-  const counts = dashDayCounts(index, daysAgo, done)
-  return `Week ${week} — ${client.plan}\nWorkouts: ${counts.workoutsCompleted}/${counts.workoutsScheduled}\nMeals: ${counts.mealsCompleted}/${counts.mealsScheduled}`
+  const counts = dashDayCounts(index, daysAgo, workoutDone, mealDone)
+  return `${client.plan}\nWorkouts: ${counts.workoutsCompleted}/${counts.workoutsScheduled}\nMeals: ${counts.mealsCompleted}/${counts.mealsScheduled}`
 }
 
 export function dashWeeklyProgress(client: Client, index: number): WeekDay[] {
   const joinedDaysAgo = dashDaysSinceJoined(client)
+  const joinedToday = joinedDaysAgo === 0
   const daysSinceSunday = new Date().getDay()
   return Array.from({ length: 7 }, (_, i) => {
     const daysAgo = daysSinceSunday - i
     const isFuture = daysAgo < 0
     const beforeJoined = !isFuture && daysAgo > joinedDaysAgo
+    // A client who joined today has no activity to show yet on their join
+    // day itself — distinct from the (grey) days before they existed as a
+    // client at all, and from ordinary missed/partial/done days.
+    const isJoinDay = !isFuture && !beforeJoined && joinedToday && daysAgo === 0
     const done =
-      isFuture || beforeJoined
+      isFuture || beforeJoined || isJoinDay
         ? null
         : dashWorkoutStatusForDay(client, index, daysAgo)
-    const counts = dashDayCounts(index, daysAgo, done)
-    const tier: WeekDayTier =
-      isFuture || beforeJoined || done === null
-        ? 'empty'
-        : counts.workoutsCompleted <= 0
-          ? 'missed'
-          : counts.workoutsCompleted >= counts.workoutsScheduled
-            ? 'done'
-            : 'partial'
-    const popover = isFuture
-      ? "Upcoming — hasn't happened yet"
-      : dashDayPopoverText(client, index, daysAgo, done)
-    return { daysAgo, isToday: daysAgo === 0, tier, popover }
+    const mealDone =
+      isFuture || beforeJoined || isJoinDay
+        ? null
+        : dashMealStatusForDay(client, index, daysAgo)
+    const counts = dashDayCounts(index, daysAgo, done, mealDone)
+    const nothingDone =
+      counts.workoutsCompleted <= 0 && counts.mealsCompleted <= 0
+    const everythingDone =
+      counts.workoutsCompleted >= counts.workoutsScheduled &&
+      counts.mealsCompleted >= counts.mealsScheduled
+    const tier: WeekDayTier = isFuture
+      ? 'empty'
+      : beforeJoined
+        ? 'not-joined'
+        : isJoinDay
+          ? 'joined-today'
+          : nothingDone
+            ? 'missed'
+            : everythingDone
+              ? 'done'
+              : 'partial'
+    // The calendar date this dot stands for, derived from the same daysAgo
+    // offset the tiers are built from so the label can never disagree with
+    // the data underneath it.
+    const date = new Date()
+    date.setHours(0, 0, 0, 0)
+    date.setDate(date.getDate() - daysAgo)
+    const dayLabel = date.toLocaleDateString('en-US', { weekday: 'short' })
+    const dateLabel = date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+    })
+
+    const status = isFuture
+      ? "Upcoming, hasn't happened yet"
+      : beforeJoined
+        ? 'Before they joined the program'
+        : isJoinDay
+          ? `${client.name.split(' ')[0]} joined today, no activity yet`
+          : dashDayPopoverText(client, index, daysAgo, done, mealDone)
+    // The dots carry no visible weekday, so the tooltip opens with the day and
+    // date — on hover it's the only place either is spelled out.
+    const popover = `${dayLabel}, ${dateLabel}${isToday(daysAgo) ? ' (Today)' : ''}\n${status}`
+
+    return {
+      daysAgo,
+      isToday: daysAgo === 0,
+      tier,
+      popover,
+      dayLabel,
+      dateLabel,
+      dateShort: String(date.getDate()),
+    }
   })
+}
+
+function isToday(daysAgo: number): boolean {
+  return daysAgo === 0
 }
 
 export function dashCurrentWeekRangeLabel(): string {
@@ -508,10 +549,12 @@ function dashCohortPctForWindow(
   statusFn: StatusFn,
   startDaysAgo: number,
   endDaysAgo: number,
+  program: string,
 ): number {
   let hit = 0
   let total = 0
   CLIENTS_DATA.forEach((c, idx) => {
+    if (program !== 'all' && c.program !== program) return
     const joinedDaysAgo = dashDaysSinceJoined(c)
     for (let offset = startDaysAgo; offset <= endDaysAgo; offset++) {
       if (offset > joinedDaysAgo) continue
@@ -562,20 +605,29 @@ function dashClientProgressWindows(rangeDays: number): Window[] {
   return windows
 }
 
-function dashCohortSeries(statusFn: StatusFn, windows: Window[]): number[] {
+function dashCohortSeries(
+  statusFn: StatusFn,
+  windows: Window[],
+  program: string,
+): number[] {
   return windows.map((w) =>
-    dashCohortPctForWindow(statusFn, w.startDaysAgo, w.endDaysAgo),
+    dashCohortPctForWindow(statusFn, w.startDaysAgo, w.endDaysAgo, program),
   )
 }
 
-export function buildClientProgress(rangeDays: number): ClientProgress {
+export function buildClientProgress(
+  rangeDays: number,
+  program = 'all',
+): ClientProgress {
   const windows = dashClientProgressWindows(rangeDays)
-  const meals = dashCohortSeries(dashMealStatusForDay, windows)
-  const workouts = dashCohortSeries(dashWorkoutStatusForDay, windows)
+  const meals = dashCohortSeries(dashMealStatusForDay, windows, program)
+  const workouts = dashCohortSeries(dashWorkoutStatusForDay, windows, program)
   return {
     ticks: windows.map((w) => w.tick),
     tips: windows.map((w) => w.tip),
-    activeClients: CLIENTS_DATA.filter((c) => c.status !== 'paused').length,
+    activeClients: CLIENTS_DATA.filter(
+      (c) => c.status !== 'paused' && (program === 'all' || c.program === program),
+    ).length,
     meals: { values: meals, headline: meals[meals.length - 1] },
     workouts: { values: workouts, headline: workouts[workouts.length - 1] },
   }

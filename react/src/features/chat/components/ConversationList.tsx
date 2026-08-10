@@ -3,12 +3,16 @@ import { Avatar } from '@/components/atoms/Avatar'
 import { conversationsForTab, filterConversations, timeAgoShort } from '../data'
 import type { ChatTab, Conversation } from '../types'
 
-const TABS: { id: ChatTab; label: string }[] = [
+const BASE_TABS: { id: ChatTab; label: string }[] = [
   { id: 'inbox', label: 'All' },
-  { id: 'waiting', label: 'Needs attention' },
-  { id: 'active', label: 'Active' },
+  { id: 'waiting', label: 'Needs Attention' },
   { id: 'new', label: 'New' },
+  { id: 'active', label: 'Active' },
 ]
+const STARRED_TAB: { id: ChatTab; label: string } = {
+  id: 'starred',
+  label: 'Pinned',
+}
 
 function ConvoCard({
   c,
@@ -108,6 +112,10 @@ export function ConversationList({
   onToggleStar: (id: string) => void
 }) {
   const list = filterConversations(conversationsForTab(tab), query)
+  const hasStarred = conversationsForTab('starred').length > 0
+  const tabs = hasStarred
+    ? [BASE_TABS[0], BASE_TABS[1], STARRED_TAB, BASE_TABS[2], BASE_TABS[3]]
+    : BASE_TABS
 
   return (
     <aside className="chat-list-col">
@@ -123,7 +131,7 @@ export function ConversationList({
       </div>
 
       <div className="chat-tabs" role="tablist">
-        {TABS.map((t) => {
+        {tabs.map((t) => {
           const tabConvos = conversationsForTab(t.id)
           const total = tabConvos.length
           const unread = tabConvos.filter((c) => c.unread).length

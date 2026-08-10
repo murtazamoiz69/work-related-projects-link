@@ -58,7 +58,7 @@ export function ProgramCard({ program: p, onAction, onAssign }: ViewProps) {
           <span className="prog-meta-chip">{p.difficulty}</span>
         </div>
         <div className="prog-card-coach">
-          <Avatar initials={coachInitials(p.coach)} color="#5B7FA6" size="xs" />
+          <Avatar initials={coachInitials(p.coach)} color="#55789D" size="xs" />
           <span>{p.coach}</span>
         </div>
         <div className="prog-card-stats">
@@ -121,7 +121,7 @@ export function ProgramTableRow({ program: p, onAction, onAssign }: ViewProps) {
       </td>
       <td>
         <div className="ct-client">
-          <Avatar initials={coachInitials(p.coach)} color="#5B7FA6" size="xs" />
+          <Avatar initials={coachInitials(p.coach)} color="#55789D" size="xs" />
           <span className="ct-text">{p.coach}</span>
         </div>
       </td>

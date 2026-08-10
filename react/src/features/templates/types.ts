@@ -42,6 +42,20 @@ export type TemplateVariable = {
   sample: string
 }
 
+// 'message' is the existing rich-text template; 'poll' swaps the content
+// editor for a question + answer-options builder.
+export type TemplateKind = 'message' | 'poll'
+
+export type PollOptionType = 'single' | 'multiple' | 'text' | 'rating'
+
+export type PollOption = { id: string; text: string }
+
+export type PollContent = {
+  question: string
+  optionType: PollOptionType
+  options: PollOption[]
+}
+
 export type Template = {
   id: string
   title: string
@@ -49,6 +63,8 @@ export type Template = {
   description: string
   content: string
   cover: TemplateCover
+  templateType: TemplateKind
+  poll: PollContent
   status: TemplateStatus
   trashed: boolean
   favorite: boolean
@@ -58,7 +74,4 @@ export type Template = {
   usage: TemplateUsage
   recentUses: RecentUse[]
   versionHistory: TemplateVersion[]
-  // Optional crop metadata set by the cover-crop modal.
-  coverFocalPoint?: string
-  coverZoom?: number
 }
