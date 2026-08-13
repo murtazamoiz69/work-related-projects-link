@@ -45,7 +45,7 @@ export function SidebarProfile() {
           size={14}
         />
       </button>
-      {open ? <ProfileDropdown /> : null}
+      {open ? <ProfileDropdown onSelect={() => setOpen(false)} /> : null}
     </div>
   )
 }

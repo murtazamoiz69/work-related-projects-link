@@ -3,8 +3,6 @@ import { Icon } from '@/components/atoms/Icon'
 import { Avatar } from '@/components/atoms/Avatar'
 import { PhotoLightbox } from '@/components/molecules/PhotoLightbox'
 import { showToast } from '@/lib/toast'
-import { TemplatePickerModal, stripHtmlToText } from '@/features/templates'
-import type { Template } from '@/features/templates'
 import {
   CLIENT_FOLLOWUPS,
   COACH_REPLIES,
@@ -127,20 +125,6 @@ function Bubble({
     return (
       <div className="chat-system-msg">
         <span>{m.text}</span>
-      </div>
-    )
-  }
-  if (m.from === 'broadcast') {
-    return (
-      <div className="chat-bubble-row from-coach">
-        <div className="chat-bubble broadcast-bubble">
-          <span className="broadcast-bubble-label">
-            <Icon name="megaphone" />
-            Broadcast
-          </span>
-          {m.text ? <p>{m.text}</p> : null}
-          <span className="chat-bubble-time">{formatTime(m.time)}</span>
-        </div>
       </div>
     )
   }
@@ -296,7 +280,6 @@ export function MessageThread({
   )
   const [typing, setTyping] = useState<'client' | 'ai' | null>(null)
   const [emojiOpen, setEmojiOpen] = useState(false)
-  const [templatesOpen, setTemplatesOpen] = useState(false)
 
   const scrollRef = useRef<HTMLDivElement | null>(null)
   const inputRef = useRef<HTMLTextAreaElement | null>(null)
@@ -423,21 +406,6 @@ export function MessageThread({
     })
     showToast(`Nourish AI is handling ${c.name} again`)
     refresh()
-  }
-
-  const insertTemplate = (template: Template) => {
-    const plain = stripHtmlToText(template.content)
-    setInput(`${template.title}\n\n${plain}`)
-    if (template.cover.type === 'image') {
-      setPendingAttachment({
-        type: 'image',
-        name: `${template.title} — cover image`,
-      })
-    }
-    window.requestAnimationFrame(() => {
-      autoGrow()
-      inputRef.current?.focus()
-    })
   }
 
   const onFile = (file: File) => {
@@ -642,13 +610,6 @@ export function MessageThread({
                   </div>
                 ) : null}
               </div>
-              <button
-                className="icon-btn sm"
-                title="Templates"
-                onClick={() => setTemplatesOpen(true)}
-              >
-                <Icon name="notebook-text" />
-              </button>
             </div>
             <textarea
               className="chat-composer-input"
@@ -678,14 +639,6 @@ export function MessageThread({
           </div>
         </>
       )}
-
-      {templatesOpen ? (
-        <TemplatePickerModal
-          context="chat"
-          onInsert={insertTemplate}
-          onClose={() => setTemplatesOpen(false)}
-        />
-      ) : null}
     </section>
   )
 }

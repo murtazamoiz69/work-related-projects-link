@@ -1,8 +1,8 @@
-import { useEffect, useId, useMemo, useRef, useState } from 'react'
+import { useEffect, useId, useMemo, useRef } from 'react'
 import { Icon } from '@/components/atoms/Icon'
 import type { Client } from '@/features/clients'
 import {
-  ProgramSwitcher,
+  CurrentProgramLabel,
   ProgramTrackerDashboard,
   deriveDetail,
 } from '@/features/client-detail'
@@ -21,12 +21,6 @@ export function ProgramProgressModal({
   const cardRef = useRef<HTMLDivElement>(null)
   const closeRef = useRef<HTMLButtonElement>(null)
   const detail = useMemo(() => deriveDetail(client), [client])
-  // Lifted out of ProgramTrackerDashboard so the picker can live up in the
-  // modal head next to Close, the same placement the Plan Workspace uses,
-  // instead of its own row above the tracker.
-  const [selectedProgramId, setSelectedProgramId] = useState(
-    detail.programs[0].id,
-  )
 
   // Escape closes, focus starts inside and returns to the opener, Tab stays
   // within the card, and the page behind stops scrolling — same dialog
@@ -94,11 +88,7 @@ export function ProgramProgressModal({
             <p className="prog-progress-subtitle">{client.program}</p>
           </div>
           <div className="prog-progress-head-actions">
-            <ProgramSwitcher
-              programs={detail.programs}
-              selectedId={selectedProgramId}
-              onSelect={setSelectedProgramId}
-            />
+            <CurrentProgramLabel program={detail.programs[0]} />
             <button
               className="icon-btn sm"
               onClick={onClose}
@@ -110,13 +100,7 @@ export function ProgramProgressModal({
           </div>
         </div>
         <div className="prog-progress-body">
-          <ProgramTrackerDashboard
-            client={client}
-            detail={detail}
-            selectedProgramId={selectedProgramId}
-            onSelectProgram={setSelectedProgramId}
-            hideSwitcher
-          />
+          <ProgramTrackerDashboard client={client} detail={detail} hideSwitcher />
         </div>
       </div>
     </div>

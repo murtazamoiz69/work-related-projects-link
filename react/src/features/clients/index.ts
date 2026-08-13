@@ -5,5 +5,12 @@ export {
   formatJoinDate,
   adherenceTier,
   clientHaystack,
+  daysUntil,
+  expiryUrgency,
+  expiryLabel,
+  formatFullDate,
+  formatPeriodDate,
   type AdherenceTier,
+  type ExpiryUrgency,
 } from './utils'
+export { useClientsStore } from './store'

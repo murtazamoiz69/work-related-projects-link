@@ -4,7 +4,7 @@ import { SWITCH_PROFILES } from '@/features/shell/data'
 import { showToast } from '@/lib/toast'
 import { useAuthStore } from '@/store/useAuthStore'
 
-export function ProfileDropdown() {
+export function ProfileDropdown({ onSelect }: { onSelect: () => void }) {
   const activeProfile = useAuthStore((s) => s.activeProfile)
   const switchProfile = useAuthStore((s) => s.switchProfile)
 
@@ -26,6 +26,7 @@ export function ProfileDropdown() {
               onClick={() => {
                 switchProfile(p)
                 showToast(`Switched to ${p.name}`)
+                onSelect()
               }}
             >
               <Avatar initials={p.initials} color={p.color} size="sm" />

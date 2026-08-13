@@ -8,9 +8,17 @@ type TopbarProps = {
   back?: { to: string; label: string; search?: Record<string, string> }
   /** Optional status node shown in the greeting row (e.g. an autosave pill). */
   status?: ReactNode
+  /** Optional right-aligned action(s), e.g. a page-level primary button. */
+  actions?: ReactNode
 }
 
-export function Topbar({ title, subtitle, back, status }: TopbarProps) {
+export function Topbar({
+  title,
+  subtitle,
+  back,
+  status,
+  actions,
+}: TopbarProps) {
   // With no greeting to hold, the bar shouldn't keep reserving the height a
   // two-line title needs — it would just be 44px of nothing above the content.
   const bare = !title && !subtitle && !back && !status
@@ -34,6 +42,7 @@ export function Topbar({ title, subtitle, back, status }: TopbarProps) {
         )}
         {status}
       </div>
+      {actions ? <div className="topbar-actions">{actions}</div> : null}
     </header>
   )
 }

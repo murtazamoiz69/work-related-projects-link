@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useState } from 'react'
 import { Icon } from '@/components/atoms/Icon'
 import type { Client } from '@/features/clients'
 import { formatJoinDate } from '@/features/clients'
 import type { Program } from '../types'
 import { fmtDelta } from '../data'
+import { CurrentProgramLabel } from './ProgramTrackerDashboard'
 import { JourneyTimeline } from './JourneyTimeline'
 import { JourneyMeasurements } from './JourneyMeasurements'
 import { JourneyPhotos } from './JourneyPhotos'
@@ -18,100 +19,6 @@ const JOURNEY_TABS: Array<{ key: JourneyTab; label: string }> = [
   { key: 'adherence', label: 'Adherence' },
 ]
 
-// The program switcher — a themed dropdown (reusing the app's context-menu
-// component) instead of a native <select>. Active first, previous grouped by
-// end year.
-function ProgramSwitcher({
-  programs,
-  activeId,
-  onSelect,
-}: {
-  programs: Program[]
-  activeId: string
-  onSelect: (id: string) => void
-}) {
-  const [open, setOpen] = useState(false)
-  const wrapRef = useRef<HTMLDivElement>(null)
-  const active = programs[0]
-  const prev = programs.slice(1)
-
-  const byYear = useMemo(() => {
-    const map = new Map<number, Program[]>()
-    prev.forEach((p) => {
-      const y = p.endDate.getFullYear()
-      const list = map.get(y) ?? []
-      list.push(p)
-      map.set(y, list)
-    })
-    return map
-  }, [prev])
-  const years = useMemo(
-    () => [...byYear.keys()].sort((a, b) => b - a),
-    [byYear],
-  )
-
-  useEffect(() => {
-    if (!open) return
-    const onDocClick = (e: MouseEvent) => {
-      if (!wrapRef.current?.contains(e.target as Node)) setOpen(false)
-    }
-    document.addEventListener('click', onDocClick)
-    return () => document.removeEventListener('click', onDocClick)
-  }, [open])
-
-  const selected = programs.find((p) => p.id === activeId) ?? active
-  const triggerLabel =
-    selected.id === active.id ? `Current · ${active.name}` : selected.name
-
-  const itemHtml = (p: Program, tag?: string) => (
-    <button
-      key={p.id}
-      type="button"
-      className={`ctx-menu-item${p.id === activeId ? ' active' : ''}`}
-      onClick={() => {
-        onSelect(p.id)
-        setOpen(false)
-      }}
-    >
-      <span className="ctx-menu-item-label">
-        {tag ? <span className="ctx-menu-item-tag">{tag}</span> : null}
-        {p.name}
-      </span>
-      <span className="ctx-menu-item-meta">{p.totalWeeks} wks</span>
-    </button>
-  )
-
-  return (
-    <div className="journey-switcher" ref={wrapRef}>
-      <label className="journey-switch-label">Viewing</label>
-      <div className="topbar-dd-wrap">
-        <button
-          type="button"
-          className="select-range journey-select-btn"
-          aria-haspopup="listbox"
-          onClick={(e) => {
-            e.stopPropagation()
-            setOpen((o) => !o)
-          }}
-        >
-          <span>{triggerLabel}</span>
-          <Icon name="chevron-down" />
-        </button>
-        {open ? (
-          <div className="context-menu program-switcher-menu">
-            {itemHtml(active, 'Current')}
-            {years.map((y) => (
-              <div key={y}>
-                <div className="ctx-menu-group-label">{y}</div>
-                {(byYear.get(y) ?? []).map((p) => itemHtml(p))}
-              </div>
-            ))}
-          </div>
-        ) : null}
-      </div>
-    </div>
-  )
-}
 
 function JourneyHeader({ program }: { program: Program }) {
   const isActive = program.status === 'active'
@@ -166,7 +73,7 @@ function JourneyHeader({ program }: { program: Program }) {
   )
 }
 
-/** Program Journey: switcher + header + 4 scoped sub-tabs (Chart.js measurements). */
+/** Program Journey: label + header + 4 scoped sub-tabs (Chart.js measurements). */
 export function ProgramJourney({
   client,
   programs,
@@ -174,16 +81,10 @@ export function ProgramJourney({
   client: Client
   programs: Program[]
 }) {
-  const [activeId, setActiveId] = useState(programs[0].id)
   const [tab, setTab] = useState<JourneyTab>('timeline')
   const firstName = client.name.split(' ')[0]
 
-  const program = programs.find((p) => p.id === activeId) ?? programs[0]
-
-  const selectProgram = (id: string) => {
-    setActiveId(id)
-    setTab('timeline')
-  }
+  const program = programs[0]
 
   return (
     <section className="panel journey-panel">
@@ -194,11 +95,7 @@ export function ProgramJourney({
             Everything {firstName} has done with you, program by program
           </p>
         </div>
-        <ProgramSwitcher
-          programs={programs}
-          activeId={activeId}
-          onSelect={selectProgram}
-        />
+        <CurrentProgramLabel program={program} />
       </div>
 
       <JourneyHeader program={program} />

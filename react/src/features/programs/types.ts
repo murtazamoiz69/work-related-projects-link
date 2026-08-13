@@ -9,8 +9,6 @@ export type ProgramGoal =
 
 export type ProgramDifficulty = 'Beginner' | 'Intermediate' | 'Advanced'
 
-export type ProgramStatus = 'published' | 'draft' | 'archived'
-
 export type MemberStatus = 'active' | 'paused' | 'completed'
 
 export type MealSlot = 'Breakfast' | 'Lunch' | 'Snack' | 'Dinner'
@@ -153,7 +151,8 @@ export type TrainingProgram = {
   difficulty: ProgramDifficulty
   durationWeeks: number
   coach: string
-  status: ProgramStatus
+  /** Program availability — the single global program's Active/Disabled toggle. */
+  enabled: boolean
   createdDate: Date
   updatedDate: Date
   version: string

@@ -68,21 +68,15 @@ export type Profile = {
 export const SWITCH_PROFILES: Profile[] = [
   {
     name: 'Sarah Nolan',
-    role: 'Lead Nutritionist',
+    role: 'Nutritionist',
     initials: 'SN',
     color: '#2F5D50',
   },
   {
-    name: 'James Okoro, RD',
-    role: 'Nutritionist',
-    initials: 'JO',
-    color: '#55789D',
-  },
-  {
-    name: 'Priya Anand',
-    role: 'Nutritionist',
-    initials: 'PA',
-    color: '#AF5688',
+    name: 'Alex Rivera',
+    role: 'Super Admin',
+    initials: 'AR',
+    color: '#7A5AA8',
   },
 ]
 

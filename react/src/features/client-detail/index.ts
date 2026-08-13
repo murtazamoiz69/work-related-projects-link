@@ -9,7 +9,7 @@ export { LifetimePrograms } from './components/LifetimePrograms'
 export { ProgramJourney } from './components/ProgramJourney'
 export {
   ProgramTrackerDashboard,
-  ProgramSwitcher,
+  CurrentProgramLabel,
 } from './components/ProgramTrackerDashboard'
 export { NotesTab } from './components/NotesTab'
 export { SavedTab } from './components/SavedTab'

@@ -4,7 +4,6 @@
 // localStorage after every mutation (guarded in try/catch) so creating/editing
 // a program survives a navigation between the library and the workspace.
 import { daysAgo, pick, seededRandom } from '@/lib/seed'
-import { CLIENTS_DATA } from '@/features/clients'
 import type {
   DietDay,
   DietWeek,
@@ -15,8 +14,6 @@ import type {
   MealTotals,
   ProgramDifficulty,
   ProgramGoal,
-  ProgramMember,
-  ProgramStatus,
   TrainingProgram,
   Workout,
   WorkoutSlot,
@@ -48,12 +45,6 @@ const WEEKDAY_LABELS = [
   'Sunday',
 ]
 export const MEAL_SLOTS: MealSlot[] = ['Breakfast', 'Lunch', 'Snack', 'Dinner']
-
-export const PROGRAM_STATUS_LABEL: Record<ProgramStatus, string> = {
-  published: 'Published',
-  draft: 'Draft',
-  archived: 'Archived',
-}
 
 // ===================== Exercise library =====================
 export const EXERCISE_LIBRARY: Exercise[] = [
@@ -920,67 +911,17 @@ const PROGRAM_NAME_POOL: Record<ProgramGoal, string[]> = {
   ],
 }
 
-const ACTIVITY_TEMPLATES = [
-  '{name} completed Week {week} · Day {day}',
-  '{name} logged a meal from the diet plan',
-  '{name} skipped a scheduled workout',
-  '{name} was assigned to the program',
-  '{name} left a note for their coach',
-]
-
+// Builds the single global program. There is only ever one — per-user
+// assignment/progress now lives entirely in the Users section, so this no
+// longer generates a members roster.
 export function buildProgram(index: number): TrainingProgram {
   const seed = (index + 1) * 23.7 + 11
   const goal = pick(PROGRAM_GOALS, seed * 1.1)
   const difficulty = pick(PROGRAM_DIFFICULTIES, seed * 2.3)
   const durationWeeks = pick(PROGRAM_DURATIONS, seed * 3.7)
   const coach = pick(COACH_NAMES, seed * 4.1)
-  const statusRoll = seededRandom(seed * 5.9)
-  const status: ProgramStatus =
-    statusRoll < 0.65 ? 'published' : statusRoll < 0.85 ? 'draft' : 'archived'
   const createdDate = daysAgo(Math.floor(30 + seededRandom(seed * 6.3) * 300))
   const updatedDate = daysAgo(Math.floor(seededRandom(seed * 7.1) * 20))
-
-  const memberCount =
-    status === 'published'
-      ? Math.floor(seededRandom(seed * 8.3) * 26)
-      : Math.floor(seededRandom(seed * 8.3) * 4)
-  const members: ProgramMember[] = Array.from(
-    { length: memberCount },
-    (_, i) => {
-      const client = CLIENTS_DATA[(index * 7 + i * 13) % CLIENTS_DATA.length]
-      const currentWeek =
-        1 + Math.floor(seededRandom(seed * 10 + i) * durationWeeks)
-      const progressPct = Math.min(
-        100,
-        Math.round((currentWeek / durationWeeks) * 100) -
-          Math.floor(seededRandom(seed * 11 + i) * 15),
-      )
-      const memberStatusRoll = seededRandom(seed * 12 + i)
-      return {
-        clientId: client.id,
-        currentWeek: Math.min(currentWeek, durationWeeks),
-        progressPct: Math.max(0, progressPct),
-        currentWeight: 55 + Math.floor(seededRandom(seed * 13 + i) * 45),
-        assignedDate: daysAgo(Math.floor(seededRandom(seed * 14 + i) * 60)),
-        lastActive: Math.floor(seededRandom(seed * 15 + i) * 9),
-        status:
-          memberStatusRoll < 0.78
-            ? 'active'
-            : memberStatusRoll < 0.92
-              ? 'paused'
-              : 'completed',
-        notes: [],
-        overrides: { workouts: 0, meals: 0 },
-      }
-    },
-  )
-
-  const activeUsers = members.filter((m) => m.status === 'active').length
-  const completionRate = members.length
-    ? Math.round(
-        members.reduce((a, m) => a + m.progressPct, 0) / members.length,
-      )
-    : 0
 
   return {
     id: `prog-${index + 1}`,
@@ -990,13 +931,13 @@ export function buildProgram(index: number): TrainingProgram {
     difficulty,
     durationWeeks,
     coach,
-    status,
+    enabled: true,
     createdDate,
     updatedDate,
     version: `v1.${Math.floor(seededRandom(seed * 17) * 4)}`,
-    members,
-    activeUsers,
-    completionRate,
+    members: [],
+    activeUsers: 0,
+    completionRate: 0,
     workoutWeeks: buildWorkoutWeeks(durationWeeks, difficulty, seed),
     dietWeeks: buildDietWeeks(durationWeeks, seed),
     nutritionTargets: {
@@ -1007,48 +948,9 @@ export function buildProgram(index: number): TrainingProgram {
       water: 2 + Math.round(seededRandom(seed * 22) * 2),
     },
     notes: [],
-    activity: Array.from({ length: 5 }, (_, i) => {
-      const m = members[i % Math.max(members.length, 1)]
-      const client = m ? CLIENTS_DATA.find((c) => c.id === m.clientId) : null
-      const text = pick(ACTIVITY_TEMPLATES, seed * 23 + i)
-        .replace('{name}', client ? client.name : 'A user')
-        .replace('{week}', m ? String(m.currentWeek) : '1')
-        .replace(
-          '{day}',
-          String(1 + Math.floor(seededRandom(seed * 24 + i) * 7)),
-        )
-      return { text, days: Math.floor(seededRandom(seed * 25 + i) * 10) }
-    }),
-    versionHistory: [
-      {
-        version: 'v1.0',
-        text: 'Program created',
-        days: Math.round(
-          (Date.now() - createdDate.getTime()) / (24 * 3600 * 1000),
-        ),
-      },
-      {
-        version: `v1.${Math.floor(seededRandom(seed * 17) * 4)}`,
-        text: 'Workout plan updated',
-        days: Math.round(
-          (Date.now() - updatedDate.getTime()) / (24 * 3600 * 1000),
-        ),
-      },
-    ],
+    activity: [],
+    versionHistory: [],
   }
-}
-
-// Recompute the derived member counts after a mutation.
-export function programStatCounts(program: TrainingProgram): void {
-  program.activeUsers = program.members.filter(
-    (m) => m.status === 'active',
-  ).length
-  program.completionRate = program.members.length
-    ? Math.round(
-        program.members.reduce((a, m) => a + m.progressPct, 0) /
-          program.members.length,
-      )
-    : 0
 }
 
 // ===================== Empty week builders =====================
@@ -1127,14 +1029,15 @@ function loadStoredPrograms(): TrainingProgram[] | null {
   }
 }
 
+// There is only ever one program.
 export function seedTrainingPrograms(): TrainingProgram[] {
-  return Array.from({ length: 11 }, (_, i) => buildProgram(i))
+  return [buildProgram(0)]
 }
 
-// The session's programs — restored from localStorage or freshly seeded.
-export const TRAINING_PROGRAMS: TrainingProgram[] =
-  loadStoredPrograms() ?? seedTrainingPrograms()
-
-export function programById(id: string): TrainingProgram | undefined {
-  return TRAINING_PROGRAMS.find((p) => p.id === id)
-}
+// The session's program — restored from localStorage or freshly seeded.
+// Only the first entry is ever used; a browser that still has an old
+// multi-program array (or a pre-`enabled` entry) falls back safely.
+const restoredPrograms = loadStoredPrograms()
+export const TRAINING_PROGRAMS: TrainingProgram[] = restoredPrograms?.length
+  ? [{ ...restoredPrograms[0], enabled: restoredPrograms[0].enabled ?? true }]
+  : seedTrainingPrograms()

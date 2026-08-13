@@ -2,7 +2,7 @@ import type { Client } from '@/features/clients'
 
 export type ConversationStatus = 'waiting' | 'active'
 export type HandledBy = 'ai' | 'nutritionist'
-export type MessageFrom = 'client' | 'ai' | 'coach' | 'system' | 'broadcast'
+export type MessageFrom = 'client' | 'ai' | 'coach' | 'system'
 
 export type ChatAttachment = {
   type: 'image' | 'file'

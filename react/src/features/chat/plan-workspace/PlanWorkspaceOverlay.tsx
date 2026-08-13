@@ -8,7 +8,7 @@ import type { Client } from '@/features/clients'
 import {
   deriveDetail,
   NotesTab,
-  ProgramSwitcher,
+  CurrentProgramLabel,
   ProgramTrackerDashboard,
   SavedTab,
   type InternalNote,
@@ -83,11 +83,6 @@ export function PlanWorkspaceOverlay({
     () => new Set(['profile', 'medical']),
   )
   const [notes, setNotes] = useState<InternalNote[]>(detail.notes)
-  // Lifted out of ProgramTrackerDashboard so the picker can live in the topbar
-  // while the tracker it drives stays down in the At-a-glance tab.
-  const [selectedProgramId, setSelectedProgramId] = useState(
-    detail.programs[0].id,
-  )
   const [modal, setModal] = useState<PwModal | null>(null)
   const [confirm, setConfirm] = useState<PwConfirm | null>(null)
   const [, refresh] = useReducer((x: number) => x + 1, 0)
@@ -150,16 +145,11 @@ export function PlanWorkspaceOverlay({
           profile={profile}
           ws={ws}
           onClose={onClose}
-          programSwitcher={
-            // Only on At a glance — it selects which program's tracker you're
-            // reading, and the plan tabs below show the current plan regardless.
-            // Parking it in the bar on those tabs would imply it changes them.
+          programLabel={
+            // Only on At a glance — the other tabs show the current plan
+            // regardless, so the label would be out of place there.
             activeTab === 'glance' ? (
-              <ProgramSwitcher
-                programs={detail.programs}
-                selectedId={selectedProgramId}
-                onSelect={setSelectedProgramId}
-              />
+              <CurrentProgramLabel program={detail.programs[0]} />
             ) : null
           }
         />
@@ -211,8 +201,6 @@ export function PlanWorkspaceOverlay({
                   <ProgramTrackerDashboard
                     client={client}
                     detail={detail}
-                    selectedProgramId={selectedProgramId}
-                    onSelectProgram={setSelectedProgramId}
                     hideSwitcher
                   />
                 </div>
@@ -328,13 +316,13 @@ function PwTopbar({
   profile,
   ws,
   onClose,
-  programSwitcher,
+  programLabel,
 }: {
   profile: ClinicalProfile
   ws: Workspace
   onClose: () => void
   /** Rendered at the far right, beside the close button. */
-  programSwitcher?: ReactNode
+  programLabel?: ReactNode
 }) {
   const totalWeeks = ws.workoutWeeks.length
   const totalDays = totalWeeks * 7
@@ -361,7 +349,7 @@ function PwTopbar({
         </p>
       </div>
       <div className="pw-topbar-actions">
-        {programSwitcher}
+        {programLabel}
         {/* Escape does the same thing; this is the visible way out now that
             "Back to conversation" is gone. */}
         <button

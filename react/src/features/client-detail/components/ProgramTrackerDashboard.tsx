@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   CategoryScale,
   Chart as ChartJS,
@@ -67,82 +67,21 @@ const METRIC_COLOR = {
 
 // ===================== Header: stat row + program switcher =====================
 
-/** The program picker. Exported because the Plan Workspace renders it in its
- *  own topbar instead of above the tracker — see ProgramTrackerDashboard's
+/** A plain "Program" label — clients only ever have the one active program,
+ *  so this just names it. Exported because the Plan Workspace renders it in
+ *  its own topbar instead of above the tracker — see ProgramTrackerDashboard's
  *  `hideSwitcher`. */
-export function ProgramSwitcher({
-  programs,
-  selectedId,
-  onSelect,
+export function CurrentProgramLabel({
+  program,
   className,
 }: {
-  programs: Program[]
-  selectedId: string
-  onSelect: (id: string) => void
+  program: Program
   className?: string
 }) {
-  const [open, setOpen] = useState(false)
-  const wrapRef = useRef<HTMLDivElement>(null)
-  const active = programs[0]
-  const selected = programs.find((p) => p.id === selectedId) ?? active
-  const triggerLabel =
-    selected.id === active.id ? `Current · ${active.name}` : selected.name
-
-  useEffect(() => {
-    if (!open) return
-    const onDocClick = (e: MouseEvent) => {
-      if (!wrapRef.current?.contains(e.target as Node)) setOpen(false)
-    }
-    document.addEventListener('click', onDocClick)
-    return () => document.removeEventListener('click', onDocClick)
-  }, [open])
-
-  // Just the control — no row wrapper. Each caller supplies its own placement:
-  // the tracker frames it in .tracker-header-row, the Plan Workspace drops it
-  // straight into its topbar actions.
   return (
-    <div
-      className={`journey-switcher${className ? ` ${className}` : ''}`}
-      ref={wrapRef}
-    >
-      <label className="journey-switch-label">Program</label>
-      <div className="topbar-dd-wrap">
-        <button
-          type="button"
-          className="select-range journey-select-btn"
-          aria-haspopup="listbox"
-          onClick={(e) => {
-            e.stopPropagation()
-            setOpen((o) => !o)
-          }}
-        >
-          <span>{triggerLabel}</span>
-          <Icon name="chevron-down" />
-        </button>
-        {open ? (
-          <div className="context-menu program-switcher-menu">
-            {programs.map((p) => (
-              <button
-                key={p.id}
-                type="button"
-                className={`ctx-menu-item${p.id === selectedId ? ' active' : ''}`}
-                onClick={() => {
-                  onSelect(p.id)
-                  setOpen(false)
-                }}
-              >
-                <span className="ctx-menu-item-label">
-                  {p.id === active.id ? (
-                    <span className="ctx-menu-item-tag">Current</span>
-                  ) : null}
-                  {p.name}
-                </span>
-                <span className="ctx-menu-item-meta">{p.totalWeeks} wks</span>
-              </button>
-            ))}
-          </div>
-        ) : null}
-      </div>
+    <div className={`journey-switcher${className ? ` ${className}` : ''}`}>
+      <span className="journey-switch-label">Program</span>
+      <span className="journey-select-btn">{program.name}</span>
     </div>
   )
 }
@@ -1173,25 +1112,15 @@ function DailyLogDetail({
 export function ProgramTrackerDashboard({
   client,
   detail,
-  selectedProgramId: controlledProgramId,
-  onSelectProgram,
   hideSwitcher,
 }: {
   client: Client
   detail: ClientDetail
-  /** Controlled selection. Omit and the dashboard keeps its own — which is what
-   *  the At-a-glance modal does. The Plan Workspace passes both of these plus
-   *  `hideSwitcher`, because it renders the picker up in its topbar. */
-  selectedProgramId?: string
-  onSelectProgram?: (id: string) => void
+  /** The Plan Workspace and the At-a-glance modal both show the program
+   *  label up in their own header instead of above the tracker. */
   hideSwitcher?: boolean
 }) {
-  const [ownProgramId, setOwnProgramId] = useState(detail.programs[0].id)
-  const selectedProgramId = controlledProgramId ?? ownProgramId
-  const setSelectedProgramId = onSelectProgram ?? setOwnProgramId
-  const program =
-    detail.programs.find((p) => p.id === selectedProgramId) ??
-    detail.programs[0]
+  const program = detail.programs[0]
 
   // The same real activity log the Chat panel's "User Activity" tab reads —
   // so any day it already shows a meal, workout, or weigh-in for is used
@@ -1218,9 +1147,8 @@ export function ProgramTrackerDashboard({
   )
 
   // Re-default to the tracker's own most recent day whenever the tracker
-  // itself changes (switching client, or switching program via the header
-  // dropdown) — otherwise the log detail could stay stuck on a date that
-  // belonged to a different program.
+  // itself changes (switching client) — otherwise the log detail could stay
+  // stuck on a date that belonged to a different client.
   useEffect(() => {
     setSelectedKey(lastDay ? dateKey(lastDay.date) : '')
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1234,15 +1162,13 @@ export function ProgramTrackerDashboard({
 
   return (
     <>
-      {/* Program switcher first because it scopes everything below it, then the
+      {/* Program label first because it scopes everything below it, then the
           whole-program stat row, then the day-by-day log, then the trends. */}
       <div className="panel tracker-overview-panel">
         {hideSwitcher ? null : (
           <div className="tracker-header-row">
-            <ProgramSwitcher
-              programs={detail.programs}
-              selectedId={program.id}
-              onSelect={setSelectedProgramId}
+            <CurrentProgramLabel
+              program={program}
               className="tracker-header-switcher"
             />
           </div>

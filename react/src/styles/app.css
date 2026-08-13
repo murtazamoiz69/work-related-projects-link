@@ -400,7 +400,7 @@ svg {
 /* width:0/auto (not just opacity, from .sidebar-label) so the invisible
    text also stops claiming row width in the collapsed 48px square — plain
    nowrap text can't flex-shrink below its own content width, so without
-   this "Broadcast Message" would push past the icon and get center-clipped
+   this a long label would push past the icon and get center-clipped
    asymmetrically instead of leaving a clean, icon-only square. */
 .nav-item-label {
   flex: 0 1 auto;
@@ -1190,6 +1190,24 @@ svg {
 .link-btn.view-all {
   margin-top: 16px;
 }
+/* Plain text "5 members" read as a label, not a click target. An underline
+   plus a distinct accent color signal it's clickable, matching link
+   conventions elsewhere in the app. */
+.link-btn.members-link {
+  color: var(--primary);
+  text-decoration: underline;
+  text-decoration-color: var(--primary-light);
+  text-underline-offset: 2px;
+}
+.link-btn.members-link:hover {
+  color: var(--primary-dark);
+  text-decoration-color: currentColor;
+}
+.link-btn.members-link:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: var(--r-xs);
+}
 
 /* ---------- Chat panel ---------- */
 .chat-stats {
@@ -1297,54 +1315,6 @@ svg {
   border-radius: 999px;
 }
 
-/* ---------- Quick actions ---------- */
-.qa-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-.qa-btn {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 8px;
-  padding: 14px 12px;
-  border-radius: var(--r-sm);
-  border: 1px solid var(--border-soft);
-  background: var(--surface-alt);
-  font-size: 12.5px;
-  font-weight: 600;
-  text-align: left;
-  transition:
-    background 0.15s ease,
-    border-color 0.15s ease,
-    transform 0.15s ease,
-    box-shadow 0.15s ease;
-}
-.qa-btn:hover {
-  background: var(--primary-light);
-  border-color: var(--primary-light);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-sm);
-}
-.qa-btn svg {
-  color: var(--primary);
-  width: 19px;
-  height: 19px;
-}
-.qa-badge {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: var(--coral);
-  color: #fff;
-  font-size: 10px;
-  font-weight: 700;
-  padding: 1px 6px;
-  border-radius: 999px;
-}
-
 .select-range {
   font-size: 12.5px;
   font-weight: 500;
@@ -1360,35 +1330,6 @@ svg {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 }
 
-.timeline {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  position: relative;
-}
-.timeline-item {
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-  position: relative;
-}
-.timeline-item:not(:last-child)::after {
-  content: '';
-  position: absolute;
-  left: 13px;
-  top: 30px;
-  width: 1.5px;
-  height: calc(100% + 2px);
-  background: var(--border-soft);
-}
-.timeline-body p {
-  font-size: 13px;
-  color: var(--text-primary);
-}
-.timeline-time {
-  font-size: 11.5px;
-  color: var(--text-muted);
-}
 .tag-down {
   color: var(--green-text);
   font-weight: 600;
@@ -2092,6 +2033,14 @@ svg {
 .client-table td:last-child {
   padding-right: 0;
 }
+/* The Actions column holds an equal 1/5 share like every other column
+   (no special-cased width), but its icon row is the one thing in this
+   table that can't ellipsis when it doesn't quite fit — so unlike every
+   other cell, it's allowed to overflow into the row's own right-padding
+   whitespace instead of clipping an icon. */
+.client-table td:last-child {
+  overflow: visible;
+}
 /* Auto table layout hands every spare pixel to whichever column holds the
    longest string, so the gaps between columns came out 79 / 134 / 33px — the
    eye reads that as three different gutters. These widths are each the column's
@@ -2099,6 +2048,21 @@ svg {
    same number. Fixed layout is what makes them hold. */
 .attn-table {
   table-layout: fixed;
+}
+/* Same fix as .attn-table above, for the User Roster and Nutritionist
+   Roster tables: without table-layout:fixed, the colgroup widths below are
+   only hints — auto layout still grows whichever column holds the longest
+   string (Qualification, in the nutritionist table) and steals space from
+   the rest, most visibly ballooning the Actions column with dead space. */
+.user-table,
+.nutritionist-table {
+  table-layout: fixed;
+}
+/* Fixed layout no longer grows a column to fit its content, so anything
+   that overflows its column needs a visible truncation cue instead of a
+   hard, silent clip. */
+.client-table td {
+  text-overflow: ellipsis;
 }
 /* These shares even out the space between columns. Left to itself, auto layout
    hands every spare pixel to whichever column holds the longest string, which
@@ -2147,7 +2111,7 @@ svg {
   border-bottom: none;
 }
 
-/* Every "avatar + name" table cell (Clients, Members, Programs, Templates)
+/* Every "avatar + name" table cell (Clients, Members, Programs)
    shares this shape. IMPORTANT: the flex container is a <div> INSIDE the
    <td>, never the <td> itself — putting display:flex directly on a <td>
    takes it out of table-cell layout, so it no longer stretches to the
@@ -2183,16 +2147,6 @@ svg {
   white-space: nowrap;
 }
 
-/* The whole row navigates to the program (see ProgramTableRow's onClick), so
-   the name needs a hand cursor + link-style hover to read as the clickable
-   label rather than plain text sitting inside a coincidentally-clickable row. */
-.prog-table-row {
-  cursor: pointer;
-}
-.prog-table-row:hover .ct-name {
-  color: var(--primary-dark);
-  text-decoration: underline;
-}
 .ct-text {
   min-width: 0;
   flex: 1;
@@ -2215,34 +2169,11 @@ svg {
    colgroup regardless of which rows are currently shown. */
 /* min-width keeps the fixed columns (incl. the Actions icons) from cramping on
    narrow viewports — the .clients-table-wrap scrolls horizontally instead. */
-/* 820px, not 760px: at 760 the fixed layout gave the Status column 76px, but
-   the widest badge ("Published" at 10.5px uppercase plus its pill padding) needs
-   ~82px and the cell clips, so the label was cut off once the viewport dropped
-   near 1024px. The wrapper scrolls horizontally, so the extra width costs
-   nothing but a little scroll. */
-.prog-table {
-  table-layout: fixed;
-  min-width: 820px;
-}
 /* Pure-number columns (no avatar, badge, or unit attached) are centered under
    their heading instead of stranded at the left edge. Scoped per table class,
-   not the shared .prog-table/.client-table, because column position means a
-   different thing in every table — a bare nth-child rule on the shared class
-   would center whichever column happens to land on that index in each table,
-   which is exactly the bug this replaced (it was centering a date column in
-   Templates and a count-plus-label column in Broadcasts). */
-.programs-table th:nth-child(4),
-.programs-table td:nth-child(4),
-.programs-table th:nth-child(5),
-.programs-table td:nth-child(5),
-.programs-table th:nth-child(6),
-.programs-table td:nth-child(6) {
-  text-align: center;
-}
-.templates-table th:nth-child(5),
-.templates-table td:nth-child(5) {
-  text-align: center;
-}
+   not the shared .client-table, because column position means a different
+   thing in every table — a bare nth-child rule on the shared class would
+   center whichever column happens to land on that index in each table. */
 .journey-table th:nth-child(4),
 .journey-table td:nth-child(4),
 .journey-table th:nth-child(5),
@@ -2380,6 +2311,181 @@ svg {
 }
 .pagination-btns .icon-btn.sm:disabled:hover {
   background: var(--surface);
+}
+
+/* ===================== USERS PAGE (single-program redesign) ===================== */
+.users-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.users-summary-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 18px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  text-align: left;
+}
+.users-summary-value {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.1;
+}
+.users-summary-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.users-summary-card.accent-green .users-summary-value {
+  color: var(--green-text);
+}
+.users-summary-card.accent-amber .users-summary-value {
+  color: var(--amber-text);
+}
+.users-summary-card.accent-red .users-summary-value {
+  color: var(--red-text);
+}
+
+
+/* ---- Plan expiry column: date + urgency subtext, no row-level color ---- */
+.expiry-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  line-height: 1.3;
+  white-space: normal;
+}
+.expiry-date {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+.expiry-warn-icon {
+  color: var(--amber-text);
+  flex-shrink: 0;
+}
+.expiry-sub {
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+.expiry-sub.is-warning {
+  color: var(--amber-text);
+  font-weight: 600;
+}
+.expiry-sub.is-expired {
+  color: var(--red-text);
+  font-weight: 600;
+}
+
+/* ---- Extend Program modal ---- */
+.extend-modal-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.extend-modal-current {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 14px;
+  background: var(--surface-alt);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r-sm);
+}
+.extend-modal-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.extend-modal-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.extend-quick-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.extend-quick-btn {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface-alt);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.extend-quick-btn:hover {
+  border-color: var(--primary);
+  color: var(--text-primary);
+}
+.extend-quick-btn.active {
+  background: var(--primary-light);
+  border-color: var(--primary);
+  color: var(--primary-dark);
+}
+.extend-result-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--primary-light);
+  border-radius: var(--r-sm);
+}
+.extend-result-value {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--primary-dark);
+  font-size: 15px;
+}
+.extend-result-dates {
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  text-align: right;
+  line-height: 1.4;
+}
+
+/* ---- Narrow screens: Progress becomes secondary, Actions stays reachable ---- */
+@media (max-width: 900px) {
+  .user-table th:nth-child(4),
+  .user-table td:nth-child(4) {
+    display: none;
+  }
+  .nutritionist-table th:nth-child(2),
+  .nutritionist-table td:nth-child(2),
+  .nutritionist-table th:nth-child(3),
+  .nutritionist-table td:nth-child(3) {
+    display: none;
+  }
+}
+
+/* ===================== NUTRITIONISTS PAGE (Super Admin) ===================== */
+.nutritionist-members-card {
+  width: 440px;
+}
+.nutritionist-members-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 360px;
+  overflow-y: auto;
+}
+.nutritionist-members-list .ct-client {
+  padding: 8px 4px;
 }
 
 /* ===================== CLIENT DETAIL PAGE ===================== */
@@ -3172,7 +3278,7 @@ img.upload-thumb {
   gap: 8px;
 }
 .journey-switch-label {
-  font-size: 11px;
+  font-size: 12.5px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.4px;
@@ -3181,22 +3287,14 @@ img.upload-thumb {
 .journey-select-btn {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
   min-width: 230px;
   max-width: 320px;
-  cursor: pointer;
-}
-.journey-select-btn span {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-.journey-select-btn svg {
-  width: 14px;
-  height: 14px;
-  color: var(--text-muted);
-  flex-shrink: 0;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
 .journey-header {
@@ -5269,32 +5367,6 @@ body.chat-page .content.chat-content {
   height: 14px;
 }
 
-/* A delivered Broadcast — same tinted-bubble treatment as .ai-bubble (a
-   distinct color + label) so it never reads as something Sarah personally
-   typed to this one user. */
-.chat-bubble-row.from-coach .chat-bubble.broadcast-bubble {
-  background: var(--primary-light);
-  color: var(--text-primary);
-  border-color: var(--border-soft);
-  border-bottom-right-radius: 4px;
-}
-.chat-bubble-row.from-coach .chat-bubble.broadcast-bubble .chat-bubble-time {
-  color: var(--text-muted);
-}
-.broadcast-bubble-label {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 10.5px;
-  font-weight: 700;
-  color: var(--primary-dark);
-  margin-bottom: 4px;
-}
-.broadcast-bubble-label svg {
-  width: 12px;
-  height: 12px;
-}
-
 .chat-system-msg {
   display: flex;
   align-items: center;
@@ -5786,47 +5858,6 @@ body.chat-page .content.chat-content {
   background: var(--red-light);
 }
 
-/* ---- Menu items with a trailing meta value (e.g. the journey program
-   switcher's "13 wks") instead of a plain label — still a .context-menu
-   button underneath, just laid out as a row. ---- */
-.context-menu button.ctx-menu-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-.context-menu button.ctx-menu-item.active {
-  background: var(--primary-light);
-  color: var(--primary-dark);
-}
-.ctx-menu-item-tag {
-  font-size: 9.5px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  color: var(--primary);
-  margin-right: 6px;
-}
-.ctx-menu-item-meta {
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--text-muted);
-  flex-shrink: 0;
-}
-.ctx-menu-group-label {
-  font-size: 10.5px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  color: var(--text-muted);
-  padding: 10px 10px 4px;
-}
-.program-switcher-menu {
-  min-width: 260px;
-  max-height: 320px;
-  overflow-y: auto;
-}
-
 .modal-field {
   display: flex;
   flex-direction: column;
@@ -5900,146 +5931,6 @@ body.chat-page .content.chat-content {
   padding-bottom: 24px;
 }
 
-.prog-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 22px;
-  margin-top: 4px;
-}
-
-.prog-card {
-  display: flex;
-  flex-direction: column;
-  border: 1px solid var(--border-soft);
-  border-radius: var(--r-lg);
-  background: var(--surface);
-  box-shadow: var(--shadow-sm);
-  overflow: hidden;
-  cursor: pointer;
-  transition:
-    box-shadow 0.2s ease,
-    transform 0.2s ease,
-    border-color 0.2s ease;
-}
-.prog-card:hover {
-  box-shadow: var(--shadow-md);
-  transform: translateY(-3px);
-  border-color: var(--border);
-}
-
-.prog-card-cover {
-  position: relative;
-  height: 92px;
-  display: flex;
-  align-items: flex-start;
-  justify-content: flex-end;
-  padding: 12px;
-}
-.prog-status-badge {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  font-size: 10.5px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.94);
-  color: var(--text-primary);
-}
-.prog-status-badge.status-published {
-  color: var(--green-text);
-}
-.prog-status-badge.status-draft {
-  color: var(--amber-text);
-}
-.prog-status-badge.status-archived {
-  color: var(--text-muted);
-}
-
-.prog-card-menu-wrap {
-  position: relative;
-  z-index: 5;
-}
-.prog-card-menu-btn {
-  background: rgba(255, 255, 255, 0.92);
-  border: none;
-  box-shadow: none;
-}
-.prog-card-menu-btn:hover {
-  background: #fff;
-}
-
-.prog-goal-icon {
-  position: absolute;
-  bottom: -20px;
-  left: 16px;
-  width: 44px;
-  height: 44px;
-  border-radius: 13px;
-  background: var(--surface);
-  box-shadow: var(--shadow-sm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--primary-dark);
-}
-.prog-goal-icon svg {
-  width: 20px;
-  height: 20px;
-}
-
-.prog-card-body {
-  padding: 28px 18px 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  flex: 1;
-}
-
-/* ---- Program cards: plain header, no gradient cover/goal icon (Programs
-   grid only — Templates cards keep their cover image/gradient). ---- */
-.prog-card-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 18px 0;
-}
-.prog-card-plain .prog-card-body {
-  padding-top: 14px;
-}
-.prog-card-plain .prog-status-badge {
-  background: var(--surface-alt);
-  border: 1px solid var(--border-soft);
-}
-/* In a fixed-layout table the badge has a hard column budget, unlike the card
-   overlay it was designed for — a tighter pill keeps the widest label off the
-   next column's gutter. */
-.prog-table .prog-status-badge {
-  padding: 4px 8px;
-}
-.prog-card-title {
-  font-family: var(--font-display);
-  font-size: 15.5px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-}
-.prog-card-desc {
-  font-size: 12px;
-  color: var(--text-muted);
-  line-height: 1.5;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.prog-card-meta-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
 .prog-meta-chip {
   font-size: 11px;
   font-weight: 600;
@@ -6048,156 +5939,6 @@ body.chat-page .content.chat-content {
   background: var(--surface-alt);
   color: var(--text-secondary);
   border: 1px solid var(--border-soft);
-}
-
-.prog-card-coach {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  color: var(--text-secondary);
-  font-weight: 500;
-}
-
-.prog-card-stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  padding: 12px 0;
-  border-top: 1px solid var(--border-soft);
-  border-bottom: 1px solid var(--border-soft);
-}
-.prog-stat {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-.prog-stat-value {
-  font-family: var(--font-display);
-  font-size: 16px;
-  font-weight: 700;
-}
-.prog-stat-label {
-  font-size: 10px;
-  color: var(--text-muted);
-  margin-top: 1px;
-}
-
-.prog-card-foot {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-top: 2px;
-}
-.prog-card-updated {
-  font-size: 11px;
-  color: var(--text-muted);
-}
-
-/* ---- Assign Users modal ---- */
-.assign-modal-card {
-  width: 520px;
-  max-width: 92vw;
-}
-.assign-search-row {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 14px;
-}
-.assign-search {
-  flex: 1;
-  margin: 0;
-}
-.assign-client-list {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  max-height: 360px;
-  overflow-y: auto;
-  margin-bottom: 16px;
-}
-.assign-client-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 9px 10px;
-  border-radius: var(--r-sm);
-  cursor: pointer;
-  transition: background 0.15s ease;
-}
-.assign-client-row:hover {
-  background: var(--surface-alt);
-}
-.assign-client-row.is-assigned {
-  opacity: 0.55;
-  cursor: default;
-}
-.assign-client-row input[type='checkbox'],
-.assign-client-row input[type='radio'] {
-  width: 16px;
-  height: 16px;
-  accent-color: var(--primary-dark);
-  flex-shrink: 0;
-}
-.assign-client-body {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-}
-.assign-client-name {
-  font-size: 13px;
-  font-weight: 600;
-}
-.assign-client-sub {
-  font-size: 11.5px;
-  color: var(--text-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.assign-already-tag {
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--text-muted);
-  flex-shrink: 0;
-}
-.assign-selected-count {
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--text-secondary);
-}
-.assign-empty {
-  padding: 24px;
-  text-align: center;
-  color: var(--text-muted);
-  font-size: 12.5px;
-}
-.assign-review-body {
-  margin-bottom: 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-.assign-review-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-.assign-notify-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--text-secondary);
-}
-.assign-notify-row input {
-  width: 16px;
-  height: 16px;
-  accent-color: var(--primary-dark);
 }
 
 /* ===================== PROGRAM DETAIL WORKSPACE ===================== */
@@ -6224,43 +5965,63 @@ body.chat-page .content.chat-content {
   transform: translateY(0);
 }
 
-.prog-detail-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 20px;
-  flex-wrap: wrap;
-}
-.prog-detail-header-top {
-  flex: 1;
-  min-width: 280px;
-}
-.prog-detail-title-row {
+/* ---- Topbar actions: Edit + the program's Active/Disabled toggle ---- */
+.prog-status-toggle {
   display: flex;
   align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
+  gap: 8px;
 }
-.prog-detail-title-row h1 {
+.prog-status-toggle-label {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+.prog-status-toggle-label.is-active {
+  color: var(--green-text);
+}
+
+/* ---- Program Overview card ---- */
+.prog-overview-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.prog-overview-name {
   font-family: var(--font-display);
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 700;
   letter-spacing: -0.01em;
 }
-.prog-detail-desc {
+.prog-overview-desc {
   font-size: 13px;
   color: var(--text-secondary);
-  margin-top: 6px;
-  max-width: 640px;
   line-height: 1.55;
+  max-width: 640px;
 }
-.prog-detail-meta-row {
+.prog-overview-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.status-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  flex-shrink: 0;
+}
+.status-dot.is-active {
+  background: var(--green);
+}
+.prog-overview-meta {
   display: flex;
   flex-wrap: wrap;
   gap: 18px;
-  margin-top: 14px;
+  margin-top: 4px;
 }
-.prog-detail-meta-row span {
+.prog-overview-meta span {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -6268,20 +6029,9 @@ body.chat-page .content.chat-content {
   color: var(--text-muted);
   font-weight: 500;
 }
-.prog-detail-meta-row svg {
+.prog-overview-meta svg {
   width: 14px;
   height: 14px;
-}
-.prog-detail-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-  flex-wrap: wrap;
-}
-.prog-detail-actions .btn-secondary {
-  width: auto;
-  padding: 10px 16px;
 }
 
 .prog-tabs-panel {
@@ -6311,23 +6061,11 @@ body.chat-page .content.chat-content {
   color: var(--primary-dark);
 }
 
-/* ---- Overview / Analytics stat cards ---- */
-.ov-summary-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 14px;
-  margin-bottom: 24px;
-}
 .dash-kpi-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 14px;
   margin-bottom: 24px;
-}
-/* Broadcasts only has 3 summary cards (no Drafts) — stretch them evenly
-   instead of leaving a 4th empty grid column. */
-.dash-kpi-grid.cols-3 {
-  grid-template-columns: repeat(3, 1fr);
 }
 .dash-kpi-card {
   position: relative;
@@ -6419,44 +6157,6 @@ body.chat-page .content.chat-content {
 .dash-kpi-card.accent-coral .dash-kpi-label {
   color: var(--coral-text);
 }
-.ov-stat-card {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 16px 14px;
-  border: 1px solid var(--border-soft);
-  border-radius: var(--r-md);
-  background: var(--surface);
-  box-shadow: var(--shadow-sm);
-}
-.ov-stat-icon {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--primary-light);
-  color: var(--primary-dark);
-}
-.ov-stat-icon svg {
-  width: 14px;
-  height: 14px;
-}
-.ov-stat-value {
-  font-family: var(--font-display);
-  font-size: 19px;
-  font-weight: 700;
-}
-.ov-stat-label {
-  font-size: 11px;
-  color: var(--text-muted);
-}
-.ov-split {
-  margin-bottom: 24px;
-}
-
 /* Info tooltip on a stat card — hover/focus reveals what the metric means. */
 .kpi-info {
   position: absolute;
@@ -7378,145 +7078,6 @@ body.chat-page .content.chat-content {
   list-style: decimal;
 }
 
-/* ---- Members ---- */
-.member-bulk-bar {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 10px 16px;
-  margin-bottom: 14px;
-  background: var(--primary-light);
-  border-radius: var(--r-sm);
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--primary-dark);
-}
-.member-bulk-actions {
-  display: flex;
-  gap: 6px;
-  margin-left: auto;
-}
-.member-bulk-actions button {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 12px;
-  font-weight: 600;
-  padding: 7px 12px;
-  border-radius: var(--r-xs);
-  background: var(--surface);
-  color: var(--text-secondary);
-}
-.member-bulk-actions button:hover {
-  background: var(--surface-alt);
-  color: var(--text-primary);
-}
-.member-bulk-actions button svg {
-  width: 13px;
-  height: 13px;
-}
-.member-bulk-actions button.danger {
-  color: var(--red-text);
-}
-.member-bulk-actions button.danger:hover {
-  background: var(--red-light);
-}
-
-.member-override-banner {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  font-size: 11.5px;
-  color: var(--text-secondary);
-  line-height: 1.5;
-  background: var(--blue-light);
-  padding: 10px 12px;
-  border-radius: var(--r-sm);
-  margin-bottom: 14px;
-}
-.member-override-banner svg {
-  width: 15px;
-  height: 15px;
-  color: var(--blue-text);
-  flex-shrink: 0;
-}
-.member-override-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-top: 10px;
-}
-
-/* ---- Analytics ---- */
-.ranked-list {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.ranked-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 4px;
-  border-bottom: 1px solid var(--border-soft);
-}
-.ranked-item:last-child {
-  border-bottom: none;
-}
-.ranked-num {
-  width: 20px;
-  flex-shrink: 0;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--text-muted);
-}
-.ranked-name {
-  flex: 1;
-  font-size: 12.5px;
-  font-weight: 600;
-}
-.ranked-score {
-  font-size: 12px;
-  font-weight: 700;
-}
-.ranked-score.good {
-  color: var(--green-text);
-}
-.ranked-score.warn {
-  color: var(--amber-text);
-}
-
-/* ---- Settings ---- */
-.settings-radio-group {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.settings-radio {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 11px 14px;
-  border: 1px solid var(--border-soft);
-  border-radius: var(--r-sm);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-}
-.settings-radio:hover {
-  background: var(--surface-alt);
-}
-.settings-radio input {
-  width: 16px;
-  height: 16px;
-  accent-color: var(--primary-dark);
-}
-.qa-btn.danger-qa {
-  color: var(--red-text);
-}
-.qa-btn.danger-qa svg {
-  color: var(--red-text);
-}
 .link-btn.danger-link {
   color: var(--red-text);
 }
@@ -7965,25 +7526,6 @@ body.chat-page .content.chat-content {
 .emoji-popup-item:hover {
   background: var(--surface-alt);
 }
-.template-popup {
-  width: 280px;
-  padding: 6px;
-  display: flex;
-  flex-direction: column;
-}
-.template-popup-item {
-  text-align: left;
-  font-size: 12.5px;
-  padding: 9px 10px;
-  border-radius: 8px;
-  color: var(--text-secondary);
-  line-height: 1.4;
-}
-.template-popup-item:hover {
-  background: var(--surface-alt);
-  color: var(--text-primary);
-}
-
 /* ===================== LOGIN / AUTH ===================== */
 body.auth-page {
   position: relative;
@@ -8249,27 +7791,7 @@ body.auth-page {
   font-weight: 700;
 }
 
-/* ===================== TEMPLATE LIBRARY ===================== */
-
-/* ---- Variable chip — used in editor content, previews, and detail view ---- */
-.var-chip {
-  display: inline-block;
-  background: var(--purple-light);
-  color: var(--purple-text);
-  font-size: 12px;
-  font-weight: 700;
-  padding: 1px 7px;
-  border-radius: 999px;
-  border: 1px solid rgba(122, 90, 168, 0.25);
-}
-
-/* ---- Category chips (Home toolbar + Template Picker) ---- */
-.tpl-category-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 16px;
-}
+/* ---- Category chips (used by the Meal/Workout picker modals) ---- */
 .tpl-cat-chip {
   display: flex;
   align-items: center;
@@ -8293,51 +7815,7 @@ body.auth-page {
   border-color: var(--primary-dark);
 }
 
-/* ---- Template cards (Home) ---- */
-.tpl-card-head-actions {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.tpl-fav-btn {
-  background: rgba(255, 255, 255, 0.92);
-  border: none;
-  box-shadow: none;
-  color: var(--text-muted);
-}
-.tpl-fav-btn:hover {
-  background: #fff;
-}
-.tpl-fav-btn.is-fav {
-  color: #d9a519;
-}
-.tpl-fav-btn.is-fav svg {
-  fill: #d9a519;
-}
-.tpl-card-head-actions .tpl-fav-btn {
-  background: var(--surface-alt);
-  box-shadow: none;
-}
-.tpl-fav-star {
-  width: 12px;
-  height: 12px;
-  color: #d9a519;
-  fill: #d9a519;
-  vertical-align: -1px;
-}
-.tpl-hover-btn svg {
-  width: 15px;
-  height: 15px;
-}
-.tpl-hover-btn.danger {
-  color: var(--red-text);
-}
-
-.tpl-list-wrap {
-  margin-top: 4px;
-}
-
-/* ---- Template Picker Modal (universal, used by Chat + Broadcast) ---- */
+/* ---- Meal/workout picker modal (shared by Programs + Chat Plan Workspace) ---- */
 .tpl-picker-card {
   width: 760px;
   max-width: 94vw;
@@ -8441,47 +7919,14 @@ body.auth-page {
   height: 26px;
 }
 
-.tpl-preview-cover {
-  height: 100px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  border-radius: var(--r-md) var(--r-md) 0 0;
-}
-.tpl-preview-cover svg {
-  width: 24px;
-  height: 24px;
-}
 .tpl-preview-body {
   padding: 16px;
-}
-.tpl-meta-chip {
-  font-size: 10.5px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  color: var(--primary-dark);
-  background: var(--primary-light);
-  padding: 3px 9px;
-  border-radius: 999px;
 }
 .tpl-preview-body h4 {
   font-family: var(--font-display);
   font-size: 15px;
   font-weight: 700;
   margin: 10px 0 8px;
-}
-.tpl-preview-content {
-  font-size: 12.5px;
-  color: var(--text-secondary);
-  line-height: 1.6;
-}
-.tpl-preview-content p {
-  margin-bottom: 8px;
-}
-.tpl-preview-content p:last-child {
-  margin-bottom: 0;
 }
 
 /* ---- Confirmation dialog ---- */
@@ -8551,571 +7996,6 @@ body.auth-page {
   background: #a92e24;
 }
 
-/* ---- Template Detail / Editor workspace ---- */
-.tpl-detail-header {
-  padding: 0;
-  overflow: hidden;
-  display: block;
-}
-.tpl-detail-header-body {
-  padding: 20px 28px 6px;
-}
-.tpl-detail-title-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.tpl-detail-title-row h1 {
-  font-family: var(--font-display);
-  font-size: 21px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-}
-.tpl-detail-title-row .tpl-fav-btn {
-  background: var(--surface-alt);
-  box-shadow: none;
-}
-.tpl-detail-title-row .tpl-fav-btn.is-fav {
-  background: var(--amber-light);
-}
-.tpl-detail-header .prog-detail-actions {
-  padding: 16px 28px 22px;
-}
-
-.tpl-content-display {
-  font-size: 13.5px;
-  color: var(--text-secondary);
-  line-height: 1.7;
-}
-.tpl-content-display p {
-  margin-bottom: 10px;
-}
-
-/* ---- Rich text editor ---- */
-.tpl-editor-split {
-  align-items: stretch;
-}
-.tpl-editor-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-.rte-toolbar {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  flex-wrap: wrap;
-  padding: 6px;
-  border: 1px solid var(--border-soft);
-  border-radius: var(--r-sm) var(--r-sm) 0 0;
-  background: var(--surface-alt);
-  border-bottom: none;
-}
-.rte-toolbar button {
-  width: 30px;
-  height: 30px;
-  border-radius: 7px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-secondary);
-}
-.rte-toolbar button:hover {
-  background: var(--surface);
-  color: var(--text-primary);
-}
-.rte-toolbar button svg {
-  width: 15px;
-  height: 15px;
-}
-.rte-divider {
-  width: 1px;
-  height: 20px;
-  background: var(--border);
-  margin: 0 4px;
-}
-.rte-variable-btn {
-  width: auto !important;
-  padding: 0 10px !important;
-  gap: 6px;
-  font-size: 12px;
-  font-weight: 600;
-}
-.rte-editor {
-  min-height: 280px;
-  flex: 1;
-  padding: 16px;
-  font-size: 13.5px;
-  line-height: 1.6;
-  color: var(--text-primary);
-  border: 1px solid var(--border-soft);
-  border-top: none;
-  border-radius: 0 0 var(--r-sm) var(--r-sm);
-  background: var(--surface);
-  outline: none;
-}
-.rte-editor:focus {
-  border-color: var(--primary);
-  box-shadow: var(--shadow-ring);
-}
-.rte-editor p {
-  margin-bottom: 8px;
-}
-.rte-editor ul,
-.rte-editor ol {
-  margin: 8px 0 8px 20px;
-}
-.rte-editor video,
-.rte-editor audio,
-.tpl-content-display video,
-.tpl-content-display audio {
-  display: block;
-  max-width: 100%;
-  margin: 10px 0;
-  border-radius: var(--r-sm);
-}
-.rte-editor audio,
-.tpl-content-display audio {
-  width: 100%;
-}
-
-/* ---- Template Type toggle (Message / Poll) ---- */
-.tpl-type-toggle {
-  display: flex;
-  gap: 8px;
-}
-.tpl-type-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 9px 14px;
-  border: 1px solid var(--border);
-  border-radius: var(--r-sm);
-  background: var(--surface);
-  color: var(--text-secondary);
-  font-size: 12.5px;
-  font-weight: 600;
-  white-space: nowrap;
-  transition:
-    border-color 0.15s ease,
-    background 0.15s ease,
-    color 0.15s ease;
-}
-.tpl-type-btn svg {
-  width: 15px;
-  height: 15px;
-}
-.tpl-type-btn:hover {
-  border-color: var(--text-muted);
-}
-.tpl-type-btn.selected {
-  border-color: var(--primary-dark);
-  background: var(--primary-light);
-  color: var(--primary-dark);
-}
-
-/* ---- Poll editor ---- */
-.poll-editor-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  margin-top: 16px;
-}
-.poll-editor-col {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-.poll-char-count {
-  align-self: flex-end;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text-muted);
-}
-
-.option-type-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.option-type-card {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 12px;
-  border: 1px solid var(--border);
-  border-radius: var(--r-sm);
-  background: var(--surface);
-  text-align: left;
-  transition:
-    border-color 0.15s ease,
-    background 0.15s ease;
-}
-.option-type-card:hover {
-  border-color: var(--text-muted);
-}
-.option-type-card.selected {
-  border-color: var(--primary-dark);
-  background: var(--surface-alt);
-}
-.option-type-card svg {
-  width: 17px;
-  height: 17px;
-  margin-top: 1px;
-  color: var(--text-secondary);
-  flex-shrink: 0;
-}
-.option-type-radio {
-  width: 16px;
-  height: 16px;
-  margin-top: 1px;
-  border-radius: 50%;
-  border: 2px solid var(--border);
-  flex-shrink: 0;
-}
-.option-type-card.selected .option-type-radio {
-  border-color: var(--primary-dark);
-  background: radial-gradient(
-    circle,
-    var(--primary-dark) 0 40%,
-    transparent 42%
-  );
-}
-.option-type-copy {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.option-type-title {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text-primary);
-}
-.option-type-desc {
-  font-size: 11.5px;
-  font-weight: 500;
-  color: var(--text-muted);
-}
-
-.poll-options-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 2px;
-}
-.poll-options-head .link-btn {
-  font-size: 11.5px;
-}
-.poll-option-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-.poll-option-grip {
-  width: 15px;
-  height: 15px;
-  color: var(--text-muted);
-  flex-shrink: 0;
-  cursor: grab;
-}
-.poll-option-index {
-  width: 24px;
-  height: 24px;
-  flex-shrink: 0;
-  border-radius: var(--r-xs);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--surface-alt);
-  border: 1px solid var(--border-soft);
-  font-size: 11.5px;
-  font-weight: 700;
-  color: var(--text-secondary);
-}
-.poll-options-help {
-  font-size: 11.5px;
-  color: var(--text-muted);
-  margin-top: 4px;
-}
-
-.poll-preview {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.poll-preview-card {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 16px;
-  border: 1px solid var(--border-soft);
-  border-radius: var(--r-md);
-  background: var(--surface-alt);
-}
-.poll-preview-question {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text-primary);
-}
-.poll-preview-choices {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.poll-preview-choice {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12.5px;
-  color: var(--text-secondary);
-}
-.poll-preview-input {
-  width: 16px;
-  height: 16px;
-  flex-shrink: 0;
-  border: 1.5px solid var(--border);
-  background: var(--surface);
-}
-.poll-preview-input.is-radio {
-  border-radius: 50%;
-}
-.poll-preview-input.is-checkbox {
-  border-radius: 4px;
-}
-.poll-preview-stars {
-  display: flex;
-  gap: 4px;
-  color: var(--amber-text);
-}
-.poll-preview-stars svg {
-  width: 20px;
-  height: 20px;
-}
-
-/* ---- Live preview frames ---- */
-.tpl-preview-panel #tePreviewTabs {
-  margin-bottom: 14px;
-}
-.tpl-preview-desktop-frame {
-  border: 1px solid var(--border-soft);
-  border-radius: var(--r-md);
-  overflow: hidden;
-  background: var(--surface);
-}
-.tpl-preview-desktop-cover {
-  height: 120px;
-}
-.tpl-preview-desktop-body {
-  padding: 16px;
-}
-.tpl-preview-desktop-body h4 {
-  font-family: var(--font-display);
-  font-size: 15px;
-  font-weight: 700;
-  margin: 10px 0 8px;
-}
-
-.tpl-preview-mobile-frame {
-  max-width: 300px;
-  margin: 0 auto;
-  padding: 20px 0;
-}
-
-.tpl-preview-broadcast-frame {
-  border: 1px solid var(--border-soft);
-  border-radius: var(--r-md);
-  overflow: hidden;
-  background: var(--surface);
-}
-.tpl-preview-broadcast-cover {
-  height: 100px;
-}
-.tpl-preview-broadcast-body {
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.tpl-preview-broadcast-body .prog-meta-chip {
-  width: fit-content;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.tpl-preview-broadcast-body .prog-meta-chip svg {
-  width: 12px;
-  height: 12px;
-}
-
-/* ---- Broadcast composer (Create Broadcast) ---- */
-.breadcrumb-trail {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12.5px;
-  color: var(--text-muted);
-  margin-bottom: 6px;
-}
-.breadcrumb-trail svg {
-  width: 13px;
-  height: 13px;
-}
-.breadcrumb-current {
-  color: var(--text-primary);
-  font-weight: 600;
-}
-.breadcrumb-link {
-  color: inherit;
-}
-.breadcrumb-link:hover {
-  color: var(--text-primary);
-  text-decoration: underline;
-}
-
-.broadcast-page-header {
-  padding: 22px 28px;
-}
-.broadcast-header-top {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-.broadcast-header-title {
-  font-family: var(--font-display);
-  font-size: 21px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-}
-
-.field-required {
-  color: var(--red-text);
-}
-
-.broadcast-template-field {
-  flex: 1;
-}
-
-.broadcast-client-search {
-  margin: 0 0 10px;
-}
-
-/* minmax(0, ...) keeps both tracks from blowing out past the container —
-   same fix as the dashboard progress charts (see ClientProgressPanel). */
-.broadcast-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1.86fr) minmax(0, 1fr);
-  gap: 24px;
-  align-items: start;
-}
-.broadcast-form-col {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  min-width: 0;
-}
-.broadcast-preview-col {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  min-width: 0;
-  position: sticky;
-  top: 20px;
-}
-
-/* Inline "Recipients: N" under the Audience section — N is a link that opens
-   the names list (RecipientsModal) rather than a separate summary card. */
-.broadcast-recipients-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 14px;
-  padding-top: 14px;
-  border-top: 1px solid var(--border-soft);
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-secondary);
-}
-.broadcast-recipients-link {
-  font-size: 14px;
-  font-weight: 800;
-  color: var(--primary-dark);
-}
-.broadcast-recipients-link:hover {
-  text-decoration: underline;
-}
-
-/* Nested under "Schedule Later" — the Date/Time vs Rule sub-choice, and
-   whichever of the two field groups that choice reveals. */
-.schedule-mode-block {
-  margin-top: 14px;
-  padding-top: 14px;
-  border-top: 1px solid var(--border-soft);
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.info-banner {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  font-size: 12.5px;
-  color: var(--text-secondary);
-  line-height: 1.5;
-  background: var(--blue-light);
-  padding: 12px 14px;
-  border-radius: var(--r-sm);
-  margin-top: 14px;
-}
-.info-banner svg {
-  width: 16px;
-  height: 16px;
-  color: var(--blue-text);
-  flex-shrink: 0;
-  margin-top: 1px;
-}
-
-.broadcast-footer-bar {
-  position: sticky;
-  bottom: 0;
-  z-index: 5;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 10px;
-  padding: 16px 36px;
-  background: var(--surface);
-  border-top: 1px solid var(--border-soft);
-  box-shadow: 0 -4px 16px rgba(24, 32, 26, 0.06);
-}
-
-/* ---- Broadcast Messages (roster) ---- */
-.broadcast-status-badge {
-  display: inline-flex;
-  align-items: center;
-  font-size: 10.5px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  padding: 4px 10px;
-  border-radius: 999px;
-}
-.broadcast-status-badge.status-draft {
-  background: var(--border-soft);
-  color: var(--text-secondary);
-}
-.broadcast-status-badge.status-scheduled {
-  background: var(--blue-light);
-  color: var(--blue-text);
-}
-.broadcast-status-badge.status-published {
-  background: var(--green-light);
-  color: var(--green-text);
-}
-
 /* ===================== RESPONSIVE ===================== */
 /* 1366/1440/1536 are the most common laptop widths, and the chat module's
    three fixed-width columns (sidebar + list + right rail) used to leave the
@@ -9135,9 +8015,6 @@ body.auth-page {
   }
   .chat-right-col {
     width: 280px;
-  }
-  .ov-summary-grid {
-    grid-template-columns: repeat(4, 1fr);
   }
   .nutrition-summary-grid {
     grid-template-columns: repeat(3, 1fr);
@@ -9176,12 +8053,6 @@ body.auth-page {
     grid-template-columns: 1fr;
     height: auto;
   }
-  .broadcast-layout {
-    grid-template-columns: 1fr;
-  }
-  .broadcast-preview-col {
-    position: static;
-  }
 }
 
 @media (max-width: 900px) {
@@ -9204,21 +8075,11 @@ body.auth-page {
   .chat-list-col {
     width: 240px;
   }
-  .prog-grid {
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  }
-  .ov-summary-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .dash-kpi-grid,
-  .dash-kpi-grid.cols-3 {
+  .dash-kpi-grid {
     grid-template-columns: repeat(2, 1fr);
   }
   .nutrition-summary-grid {
     grid-template-columns: repeat(2, 1fr);
-  }
-  .member-override-grid {
-    grid-template-columns: 1fr;
   }
   .progress-chart-grid {
     grid-template-columns: 1fr;
@@ -10616,7 +9477,7 @@ body.pw-open {
 /* ---- Add-workout picker: search/filter + editable sets-reps-rest preview,
    same card format as the editor above (no drag handle/reorder, but each
    exercise can still be removed before it's added). Widened via a scoped
-   .pw-tpl-picker modifier so the shared Chat/Broadcast .tpl-picker-card is
+   .pw-tpl-picker modifier so the shared .tpl-picker-card is
    untouched. ---- */
 .pw-tpl-picker {
   width: 980px;
