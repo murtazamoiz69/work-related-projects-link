@@ -3,8 +3,8 @@ import { Icon } from '@/components/atoms/Icon'
 
 // Full-size viewer for anything the user has sent in: progress photos, meal
 // shots, screenshots, and the page previews standing in for documents.
-// Shared by the chat thread, the activity log and the Saved grid so a photo
-// opens the same way wherever it is clicked.
+// Shared by the chat thread and the activity log so a photo opens the same
+// way wherever it is clicked.
 export function PhotoLightbox({
   photos,
   index,

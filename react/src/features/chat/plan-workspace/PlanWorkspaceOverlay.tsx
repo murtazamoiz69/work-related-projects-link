@@ -10,7 +10,6 @@ import {
   NotesTab,
   CurrentProgramLabel,
   ProgramTrackerDashboard,
-  SavedTab,
   type InternalNote,
 } from '@/features/client-detail'
 import {
@@ -46,7 +45,7 @@ import { PublishReportModal } from './components/modals/PublishReportModal'
 import { SaveWeekTemplateModal } from './components/modals/SaveWeekTemplateModal'
 import type { ClinicalProfile, Workspace } from './types'
 
-type PwTab = 'glance' | 'workout' | 'diet' | 'activity' | 'notes' | 'saved'
+type PwTab = 'glance' | 'workout' | 'diet' | 'activity' | 'notes'
 
 const PW_TABS: ReadonlyArray<{ key: PwTab; icon: string; label: string }> = [
   { key: 'glance', icon: 'layout-dashboard', label: 'At a glance' },
@@ -54,7 +53,6 @@ const PW_TABS: ReadonlyArray<{ key: PwTab; icon: string; label: string }> = [
   { key: 'diet', icon: 'utensils', label: 'Diet Plan' },
   { key: 'activity', icon: 'activity', label: 'Activity' },
   { key: 'notes', icon: 'notebook-text', label: 'Notes' },
-  { key: 'saved', icon: 'bookmark', label: 'Saved' },
 ]
 
 export function PlanWorkspaceOverlay({
@@ -71,8 +69,8 @@ export function PlanWorkspaceOverlay({
     [client],
   )
   const profile = ws.profile
-  // The narrative half of the profile — AI summary, notes, saved items — which
-  // the workspace now owns outright since there is no separate profile view.
+  // The narrative half of the profile — AI summary, notes — which the
+  // workspace now owns outright since there is no separate profile view.
   const detail = useMemo(() => deriveDetail(client), [client])
 
   const [activeTab, setActiveTab] = useState<PwTab>('glance')
@@ -113,11 +111,10 @@ export function PlanWorkspaceOverlay({
     ? (activeWeekOverride as number)
     : currentWeek
 
-  // Read on each render rather than memoised: saving happens in the chat thread
-  // and mutates the same CONVERSATIONS entry, so the badge — and the Activity
-  // action below — has to reflect whatever the array holds at render time.
+  // Read on each render rather than memoised: new messages happen in the
+  // chat thread and mutate the same CONVERSATIONS entry, so the Activity
+  // action below has to reflect whatever the array holds at render time.
   const convo = CONVERSATIONS.find((c) => c.client.id === client.id)
-  const savedCount = convo?.saved.length ?? 0
   const activityItems = convo?.activity ?? []
   const activityFirstName = client.name.split(' ')[0]
   const activityFilters = useActivityFilters(activityItems, activityFirstName)
@@ -182,9 +179,6 @@ export function PlanWorkspaceOverlay({
                 >
                   <Icon name={t.icon} />
                   {t.label}
-                  {t.key === 'saved' && savedCount ? (
-                    <span className="pw-tab-count">{savedCount}</span>
-                  ) : null}
                 </button>
               ))}
               {activeTab === 'workout' ? (
@@ -270,11 +264,6 @@ export function PlanWorkspaceOverlay({
                     notes={notes}
                     onAdd={(note) => setNotes((prev) => [note, ...prev])}
                   />
-                </div>
-              ) : null}
-              {activeTab === 'saved' ? (
-                <div className="pw-panel-scroll">
-                  <SavedTab client={client} onChange={refresh} />
                 </div>
               ) : null}
             </div>

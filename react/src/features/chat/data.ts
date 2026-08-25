@@ -65,7 +65,7 @@ export const CLIENT_FOLLOWUPS = [
   "That's a relief to hear, thanks Sarah!",
 ]
 // What a user is plausibly sending in, by program. Each conversation draws a
-// couple of these so the thread has real material to pin: progress photos,
+// couple of these so the thread has real material in it: progress photos,
 // meal shots, screenshots of a tracker, and clinical documents.
 const ATTACHMENT_BY_PROGRAM: Record<string, ChatAttachment[]> = {
   'Diabetes Management': [
@@ -121,11 +121,6 @@ const ATTACHMENT_BY_PROGRAM: Record<string, ChatAttachment[]> = {
 // prototype, so a WhatsApp-style file chip reads as more honest than a fake
 // page thumbnail.
 
-// One id per attachment occurrence, so a pinned item can be matched back to
-// the exact message it came from even though attachments are plain values.
-export function attachmentKey(name: string, sentAt: Date): string {
-  return `${name}::${sentAt.getTime()}`
-}
 const FLAG_POOL_ATTENTION = [
   'Missed 3 consecutive check-ins',
   'Adherence dropped below 50%',
@@ -418,10 +413,10 @@ function buildConversation(client: Client, index: number): Conversation {
     })
     t -= 0.3 + seededRandom(seed * 7) * 2
     if (seededRandom(seed * 8) < 0.6) {
-      // A second upload later in the thread, so pinning is not a one-shot
-      // interaction confined to the very first message. Drawn from the
-      // remaining pool entries so it is never a duplicate of the opener's
-      // file, which would put two identically-named rows in Saved.
+      // A second upload later in the thread, so attachments aren't a
+      // one-shot occurrence confined to the very first message. Drawn from
+      // the remaining pool entries so it is never a duplicate of the
+      // opener's file.
       const rest = attachPool.filter((a) => a.name !== attached?.name)
       const second =
         rest.length && seededRandom(seed * 8.4) < 0.55
@@ -562,7 +557,6 @@ function buildConversation(client: Client, index: number): Conversation {
     notes,
     uploads,
     activity,
-    saved: [],
     chatSummary,
     liveSimulated: false,
   }

@@ -12,4 +12,3 @@ export {
   CurrentProgramLabel,
 } from './components/ProgramTrackerDashboard'
 export { NotesTab } from './components/NotesTab'
-export { SavedTab } from './components/SavedTab'

@@ -10,12 +10,11 @@ type LightboxState = { photos: string[]; index: number }
 
 // The kinds the filter bar shows a dedicated chip for, most-common-first, so
 // a client who mostly just logs meals doesn't have to scan past other chips
-// to find the one with the count on it. Check-ins and saved items still show
-// up under "All" and in the table below — they just don't get their own chip,
-// since check-ins are rare enough not to earn a chip and saved items already
-// have their own tab. The label and icon here are what the filter chip
-// shows; individual entries keep their own more-specific icon regardless of
-// which chip (or "All") they're grouped under.
+// to find the one with the count on it. Check-ins still show up under "All"
+// and in the table below — they just don't get their own chip, since they're
+// rare enough not to earn one. The label and icon here are what the filter
+// chip shows; individual entries keep their own more-specific icon
+// regardless of which chip (or "All") they're grouped under.
 export const ACTIVITY_KIND_DEFS: ReadonlyArray<{
   key: ChatActivityKind
   label: string
@@ -248,19 +247,10 @@ export function ActivityLogList({
                     </td>
                     <td className="activity-log-col-activity">
                       <span className="activity-log-activity">
-                        <span
-                          className={`activity-log-icon${it.kind === 'saved' ? ' is-saved' : ''}`}
-                        >
+                        <span className="activity-log-icon">
                           <Icon name={it.icon} />
                         </span>
-                        <span className="activity-log-title">
-                          {it.title}
-                          {it.kind === 'saved' ? (
-                            <span className="activity-log-saved-tag">
-                              Saved
-                            </span>
-                          ) : null}
-                        </span>
+                        <span className="activity-log-title">{it.title}</span>
                       </span>
                     </td>
                     <td className="activity-log-detail activity-log-col-detail">

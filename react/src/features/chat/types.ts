@@ -12,18 +12,6 @@ export type ChatAttachment = {
   size?: string
 }
 
-/** An attachment the nutritionist has pinned out of the conversation so it
- * stays findable later, independent of how far the chat has scrolled. */
-export type SavedItem = {
-  id: string
-  attachment: ChatAttachment
-  /** When the user sent it. */
-  sentAt: Date
-  /** When the nutritionist pinned it. */
-  savedAt: Date
-  savedBy: string
-}
-
 export type ChatMessage = {
   from: MessageFrom
   text: string
@@ -52,7 +40,7 @@ export type ChatUpload = {
 }
 
 export type ChatActivityKind =
-  'checkin' | 'meal' | 'workout' | 'weight' | 'photo' | 'saved'
+  'checkin' | 'meal' | 'workout' | 'weight' | 'photo'
 
 export type ChatActivityDelta = { text: string; direction: 'up' | 'down' }
 
@@ -86,8 +74,6 @@ export type Conversation = {
   notes: ChatNote[]
   uploads: ChatUpload[]
   activity: ChatActivityItem[]
-  /** Attachments pinned by the nutritionist, newest first. */
-  saved: SavedItem[]
   chatSummary: string[]
   liveSimulated: boolean
 }

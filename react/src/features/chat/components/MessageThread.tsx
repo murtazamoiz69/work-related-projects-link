@@ -11,7 +11,6 @@ import {
   formatTime,
   randomSuggestions,
 } from '../data'
-import { isSaved, toggleSaved } from '../saved'
 import type { ChatAttachment, ChatMessage, Conversation } from '../types'
 
 function randOf<T>(arr: readonly T[]): T {
@@ -23,32 +22,13 @@ function Attachment({
   removable,
   onRemove,
   onOpen,
-  saved,
-  onToggleSave,
 }: {
   att: ChatAttachment
   removable?: boolean
   onRemove?: () => void
   /** Opens the full-size viewer. Absent for the composer's pending draft. */
   onOpen?: () => void
-  /** Absent when the attachment cannot be pinned (the coach's own draft). */
-  saved?: boolean
-  onToggleSave?: () => void
 }) {
-  const saveBadge = onToggleSave ? (
-    <button
-      type="button"
-      className={`chat-attachment-save${saved ? ' is-saved' : ''}`}
-      onClick={(e) => {
-        e.stopPropagation()
-        onToggleSave()
-      }}
-      aria-pressed={saved}
-      title={saved ? 'Remove from saved' : 'Save for later'}
-    >
-      <Icon name={saved ? 'bookmark-check' : 'bookmark'} />
-    </button>
-  ) : null
   const removeBtn = removable ? (
     <button
       className="icon-btn sm chat-attachment-remove"
@@ -75,7 +55,6 @@ function Attachment({
             <span className="chat-attachment-size">{att.size}</span>
           ) : null}
         </span>
-        {saveBadge}
         {removeBtn}
       </div>
     )
@@ -93,7 +72,6 @@ function Attachment({
         >
           <img src={att.dataUrl} alt={att.name} />
         </button>
-        {saveBadge}
         {removeBtn}
       </div>
     )
@@ -104,7 +82,6 @@ function Attachment({
         <Icon name="image" />
       </span>
       <span className="chat-attachment-name">{att.name}</span>
-      {saveBadge}
       {removeBtn}
     </div>
   )
@@ -112,14 +89,10 @@ function Attachment({
 
 function Bubble({
   m,
-  convo,
   onOpenAttachment,
-  onToggleSave,
 }: {
   m: ChatMessage
-  convo: Conversation
   onOpenAttachment: (att: ChatAttachment) => void
-  onToggleSave: (att: ChatAttachment, sentAt: Date) => void
 }) {
   if (m.from === 'system') {
     return (
@@ -148,18 +121,6 @@ function Bubble({
                 ? () => onOpenAttachment(m.attachment as ChatAttachment)
                 : undefined
             }
-            // Only what the user sent is worth pinning; the coach's own
-            // outgoing files are already theirs.
-            saved={
-              m.from === 'client'
-                ? isSaved(convo, m.attachment, m.time)
-                : undefined
-            }
-            onToggleSave={
-              m.from === 'client'
-                ? () => onToggleSave(m.attachment as ChatAttachment, m.time)
-                : undefined
-            }
           />
         ) : null}
         {m.text ? <p>{m.text}</p> : null}
@@ -181,24 +142,12 @@ function Thread({
   messages,
   typing,
   convo,
-  refresh,
 }: {
   messages: ChatMessage[]
   typing: 'client' | 'ai' | null
   convo: Conversation
-  refresh: () => void
 }) {
   const [viewing, setViewing] = useState<ChatAttachment | null>(null)
-
-  const toggleSave = (att: ChatAttachment, sentAt: Date) => {
-    const result = toggleSaved(convo, att, sentAt)
-    refresh()
-    showToast(
-      result === 'saved'
-        ? `Saved ${att.name} to ${convo.client.name.split(' ')[0]}'s file`
-        : `Removed ${att.name} from saved`,
-    )
-  }
 
   const nodes: React.ReactNode[] = []
   let lastDateKey: string | null = null
@@ -212,15 +161,7 @@ function Thread({
       )
       lastDateKey = dateKey
     }
-    nodes.push(
-      <Bubble
-        m={m}
-        convo={convo}
-        onOpenAttachment={setViewing}
-        onToggleSave={toggleSave}
-        key={`msg-${i}`}
-      />,
-    )
+    nodes.push(<Bubble m={m} onOpenAttachment={setViewing} key={`msg-${i}`} />)
   })
   return (
     <div className="chat-thread" id="chatThread">
@@ -495,12 +436,7 @@ export function MessageThread({
       )}
 
       <div className="chat-scroll" id="chatScrollArea" ref={scrollRef}>
-        <Thread
-          messages={convo.messages}
-          typing={typing}
-          convo={convo}
-          refresh={refresh}
-        />
+        <Thread messages={convo.messages} typing={typing} convo={convo} />
       </div>
 
       {convo.handledBy === 'ai' ? (

@@ -124,8 +124,6 @@ button {
 .dash-kpi-value,
 .pw-plan-duration,
 .chip-count,
-.pw-tab-count,
-.prog-tab-count,
 .nav-badge,
 .due-badge,
 .adherence-pct {
@@ -1710,27 +1708,6 @@ svg {
   gap: 7px;
   flex-wrap: wrap;
   min-width: 0;
-}
-.activity-icon.is-saved {
-  background: var(--green-light);
-  color: var(--green-text);
-}
-/* A pinned attachment reads as an event in the log, tinted to match the
-   Saved control in the chat thread it was pinned from. */
-.activity-log-icon.is-saved {
-  background: var(--green-light);
-  color: var(--green-text);
-}
-.activity-log-saved-tag {
-  font-size: 9.5px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--green-text);
-  background: var(--green-light);
-  border-radius: 999px;
-  padding: 2px 7px;
-  flex-shrink: 0;
 }
 .activity-log-detail {
   color: var(--text-secondary);
@@ -5210,53 +5187,6 @@ body.chat-page .content.chat-content {
   border-radius: 9px;
 }
 
-/* ---- Save toggle: a corner bookmark badge on photos, filling in gold once
-   pinned (the same "marked for later" gold as .convo-star in the chat list). ---- */
-.chat-attachment-save {
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 999px;
-  border: none;
-  background: rgba(20, 20, 20, 0.45);
-  color: #fff;
-}
-.chat-attachment-save svg {
-  width: 14px;
-  height: 14px;
-}
-/* 26px is under the 44px target minimum, so grow the hit area with a
-   pseudo-element rather than the box itself — same trick as .convo-star, and it
-   leaves the badge's visual size (and the doc row's layout) untouched. */
-.chat-attachment-save::after {
-  content: '';
-  position: absolute;
-  inset: -9px;
-}
-.chat-attachment-doc .chat-attachment-save,
-.chat-attachment:not(.chat-attachment-photo) .chat-attachment-save {
-  position: relative;
-}
-.chat-attachment-save:hover {
-  background: rgba(20, 20, 20, 0.65);
-}
-.chat-attachment-save.is-saved {
-  background: #f0b429;
-  color: #fff;
-}
-.chat-attachment-save.is-saved svg {
-  fill: currentColor;
-}
-.chat-attachment-save:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: 2px;
-}
-
 /* ---- Document card: a WhatsApp-style horizontal chip — filled icon tile
    plus name/size — instead of a fake page preview. ---- */
 .chat-attachment-doc {
@@ -5300,38 +5230,6 @@ body.chat-page .content.chat-content {
 }
 .chat-bubble-row.from-coach .chat-attachment-size {
   color: rgba(255, 255, 255, 0.65);
-}
-/* Inline (not overlaid), muted-to-gold star at the end of the row. */
-.chat-attachment-doc .chat-attachment-save {
-  position: static;
-  flex-shrink: 0;
-  background: transparent;
-  color: var(--border);
-}
-.chat-attachment-doc .chat-attachment-save:hover {
-  color: var(--text-secondary);
-}
-.chat-attachment-doc .chat-attachment-save.is-saved {
-  color: #f0b429;
-}
-
-/* Plain (no-preview) row: same corner-badge language, but inline since
-   there's no image to overlay. */
-.chat-attachment:not(.chat-attachment-photo):not(.chat-attachment-doc)
-  .chat-attachment-save {
-  position: static;
-  margin-left: auto;
-  flex-shrink: 0;
-  background: transparent;
-  color: var(--border);
-}
-.chat-attachment:not(.chat-attachment-photo):not(.chat-attachment-doc)
-  .chat-attachment-save:hover {
-  color: var(--text-secondary);
-}
-.chat-attachment:not(.chat-attachment-photo):not(.chat-attachment-doc)
-  .chat-attachment-save.is-saved {
-  color: #f0b429;
 }
 
 /* Sim's own messages sit on the coach's (right) side but get a distinct
@@ -8639,21 +8537,6 @@ body.pw-open {
   background: var(--primary-light);
   border-bottom-color: var(--primary);
 }
-.pw-tab-count {
-  min-width: 18px;
-  padding: 0 5px;
-  border-radius: 999px;
-  background: var(--primary-light);
-  color: var(--primary);
-  font-size: 10.5px;
-  font-weight: 700;
-  line-height: 18px;
-  text-align: center;
-}
-.pw-tab.active .pw-tab-count {
-  background: var(--primary);
-  color: #fff;
-}
 .pw-tab-body {
   flex: 1;
   min-height: 0;
@@ -9748,138 +9631,3 @@ body.pw-open {
   }
 }
 
-/* ===================== SAVED ITEMS (client detail -> Saved tab) ===================== */
-/* Attachments pinned out of chat. Card grid rather than a list: these are
-   visual artefacts (progress photos, report pages) and the thumbnail is how
-   the nutritionist recognises the one they want. */
-.saved-filter-bar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-bottom: 18px;
-}
-.saved-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-  gap: 16px;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-.saved-card {
-  display: flex;
-  flex-direction: column;
-  border: 1px solid var(--border-soft);
-  border-radius: var(--r-md);
-  background: var(--surface);
-  overflow: hidden;
-  transition:
-    border-color 0.15s ease,
-    box-shadow 0.15s ease;
-}
-.saved-card:hover {
-  border-color: var(--border);
-  box-shadow: var(--shadow-sm);
-}
-.saved-card-thumb {
-  position: relative;
-  display: block;
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  padding: 0;
-  border: none;
-  background: var(--surface-alt);
-  cursor: zoom-in;
-  overflow: hidden;
-}
-.saved-card-thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: top;
-  display: block;
-}
-.saved-card-thumb:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: -2px;
-}
-.saved-card-kind {
-  position: absolute;
-  left: 8px;
-  bottom: 8px;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: #fff;
-  background: rgba(24, 32, 26, 0.72);
-  border-radius: 999px;
-  padding: 3px 8px;
-}
-.saved-card-kind svg {
-  width: 11px;
-  height: 11px;
-}
-.saved-card-body {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  padding: 11px 12px 9px;
-  min-width: 0;
-}
-.saved-card-name {
-  font-size: 12.5px;
-  font-weight: 700;
-  color: var(--text-primary);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.saved-card-meta {
-  font-size: 11px;
-  color: var(--text-muted);
-}
-.saved-card-actions {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-top: auto;
-  padding: 9px 12px 11px;
-  border-top: 1px solid var(--border-soft);
-}
-.saved-card-actions .link-btn {
-  font-size: 11.5px;
-  min-height: 24px;
-}
-.saved-empty {
-  gap: 6px;
-}
-.saved-empty-hint {
-  font-size: 12.5px;
-  color: var(--text-muted);
-  max-width: 46ch;
-  text-align: center;
-  line-height: 1.5;
-}
-/* Count on the Saved tab so the nutritionist sees there is something in
-   there without opening it. */
-.prog-tab-count {
-  margin-left: 6px;
-  font-size: 10.5px;
-  font-weight: 800;
-  color: var(--green-text);
-  background: var(--green-light);
-  border-radius: 999px;
-  padding: 1px 6px;
-}
-
-@media (max-width: 620px) {
-  .saved-grid {
-    grid-template-columns: 1fr;
-  }
-}

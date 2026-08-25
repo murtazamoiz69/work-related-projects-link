@@ -316,18 +316,11 @@ function ActivitySection({ convo }: { convo: Conversation }) {
             {todayActivity.map((a, i) => (
               <li className="activity-row" key={i}>
                 <span className="activity-time">{formatTime(a.time)}</span>
-                <span
-                  className={`activity-icon${a.kind === 'saved' ? ' is-saved' : ''}`}
-                >
+                <span className="activity-icon">
                   <Icon name={a.icon} />
                 </span>
                 <div className="activity-body">
-                  <span className="activity-title">
-                    {a.title}
-                    {a.kind === 'saved' ? (
-                      <span className="activity-log-saved-tag">Saved</span>
-                    ) : null}
-                  </span>
+                  <span className="activity-title">{a.title}</span>
                   {a.detail ? (
                     <span className="activity-detail-text">{a.detail}</span>
                   ) : null}
