@@ -16,27 +16,32 @@ Until a feature is migrated, its existing `data.ts` + store pattern stays as-is.
 Component
   → feature hook          useClientsQuery() / useUpdateClientMutation()
       → React Query        cache, request states, retries, invalidation
-          → service        clients.service.ts  — pure typed functions, one per operation
-              → transport  mockClient (now)  ⇄  apiClient/axios (later)  — same interface
+          → api module     clients.api.ts   — pure typed functions, one per operation
+              → transport  mock harness (now)  ⇄  apiClient/axios + MSW (later)  — same interface
 ```
 
 Rules:
-- **Components import hooks, never services or the transport.**
-- **Services are pure typed async functions.** No React, no hooks, no toasts inside them. They take typed input, return typed output (or throw a typed error).
-- The **transport is swappable**: today a mock; later `lib/axios`. Services depend on the transport interface, not on which one is wired.
+- **Components import hooks, never the api module or the transport.**
+- **The api module holds pure typed async functions.** No React, no hooks, no toasts inside them. They take typed input, return typed domain output (or reject with a typed `ApiError`).
+- The **transport is swappable**: today the mock harness (`lib/api/mock.ts`); later `lib/axios` with MSW. The api module depends on the transport, not on which one is wired.
 
 ---
 
 ## Where code goes
 
+Each feature owns an `api/` folder (see `src/features/clients/api/` for the reference implementation):
+
 | Piece | Location |
 | --- | --- |
-| Service functions | `features/<name>/services/<name>.service.ts` |
-| Request/response/error types | with the service (or `features/<name>/types.ts` for shared domain types) |
+| Service functions (the interface) | `features/<name>/api/<name>.api.ts` |
+| API request / response (DTO) types | `features/<name>/api/<name>.types.ts` |
+| Mock fixtures + the 9 scenarios | `features/<name>/api/<name>.mock.ts` (MSW handlers wire from these) |
+| Domain types | `features/<name>/types.ts` (unchanged; the `.api.ts` mapper converts DTO → domain) |
+| UI-only types | with the component that uses them |
 | Query/mutation hooks | `features/<name>/hooks/use<Name>Query.ts` / `use<Name>Mutation.ts` |
-| Query keys | `features/<name>/services/<name>.keys.ts` (or top of the service) |
+| Query keys | `features/<name>/api/<name>.keys.ts` (or top of the api module) |
+| Shared API primitives | `lib/api/types.ts` (`ApiError`, `Paginated<T>`, …) + `lib/api/mock.ts` |
 | Transport (real) | `lib/axios.ts` (already scaffolded — activate + guard `lib/env.ts` first) |
-| Mock transport / handlers | `src/mocks/` (or `features/<name>/services/<name>.mock.ts`) |
 
 ## Mock strategy (transport) — MSW
 
@@ -106,7 +111,7 @@ Every data-driven surface renders all of: **loading (skeleton) · error (with re
 ## Migration checklist (per feature)
 
 1. Define/confirm response & request types from the current `data.ts` shapes (`types.ts` is the contract).
-2. Write `<name>.service.ts` returning `Promise`s via the transport; back it with MSW handlers.
+2. Write `<name>.api.ts` returning `Promise`s via the transport; back it with `<name>.mock.ts` fixtures (MSW serves them once wired).
 3. Add query/mutation hooks with keys; wire loading/error/empty/success in the UI.
 4. Replace direct `data.ts` reads and the store's rev-bump mutations with the hooks (immutable updates via cache).
 5. **Prune now-redundant `useEffect`s** — ones that only fetched/refreshed data or forced a re-render (`refresh()`/rev-bump) become unnecessary once Query owns the data. **Keep** effects doing real side effects (DOM class toggles, timers, listeners, focus, `Escape` handling). Remove only what is genuinely dead.

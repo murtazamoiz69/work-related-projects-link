@@ -71,7 +71,7 @@ Practical rules a senior team can actually follow. Examples use this repo's styl
 | Union member (string literal) | match domain wording | `'waiting'`, `'active'` |
 | Type file | `types.ts` per feature | |
 | Utility file | `utils.ts` / `<thing>.ts` | `seed.ts`, `schedule.ts` |
-| API service file | `<name>.service.ts` | `clients.service.ts` |
+| API service file | `<name>.api.ts` (in `<feature>/api/`) | `clients.api.ts` |
 | Store | `useXStore` | `useClientsStore` |
 | Store file | `store.ts` (feature) / `useXStore.ts` (global) | |
 | Feature folder | plural, kebab-case, lowercase | `meal-templates`, `client-detail` |

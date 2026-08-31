@@ -39,7 +39,7 @@ src/
   features/<name>/
     components/                feature UI (may itself use atoms/molecules/organisms)
     hooks/                     feature hooks
-    services/                  API/mock access (currently empty — see api-guidelines.md)
+    api/                       data access: <name>.api.ts + .types.ts + .mock.ts (see api-guidelines.md)
     store.ts                   feature Zustand store (when the feature owns mutable state)
     data.ts                    seeded mock data + derivations (interim source of truth)
     types.ts                   feature domain types (the contract)
@@ -92,6 +92,6 @@ State lives in the narrowest scope that works. See `coding-standards.md` for the
 | A layout shell | `components/templates/` |
 | App-wide state | `store/` |
 | Feature-owned mutable state | `features/<name>/store.ts` |
-| Data access (API/mock) | `features/<name>/services/<name>.service.ts` |
+| Data access (API/mock) | `features/<name>/api/<name>.api.ts` (+ `.types.ts`, `.mock.ts`) |
 | A pure helper | nearest `utils.ts` (feature) or `lib/` (app-wide) |
 | A domain type | `features/<name>/types.ts` (or `src/types/` if truly shared) |
