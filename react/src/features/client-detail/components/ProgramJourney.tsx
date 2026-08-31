@@ -19,7 +19,6 @@ const JOURNEY_TABS: Array<{ key: JourneyTab; label: string }> = [
   { key: 'adherence', label: 'Adherence' },
 ]
 
-
 function JourneyHeader({ program }: { program: Program }) {
   const isActive = program.status === 'active'
   const pct = Math.round((program.currentWeek / program.totalWeeks) * 100)

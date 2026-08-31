@@ -65,9 +65,7 @@ export function filterActivityItems(
   } = {},
 ): ChatActivityItem[] {
   const q = search?.trim().toLowerCase()
-  const since = rangeDays
-    ? Date.now() - rangeDays * 24 * 60 * 60 * 1000
-    : null
+  const since = rangeDays ? Date.now() - rangeDays * 24 * 60 * 60 * 1000 : null
   return items.filter((it) => {
     if (it.upcoming) return false
     if (kinds?.length) {
@@ -77,8 +75,7 @@ export function filterActivityItems(
         return false
     }
     if (since != null && it.time.getTime() < since) return false
-    if (q && !`${it.title} ${it.detail}`.toLowerCase().includes(q))
-      return false
+    if (q && !`${it.title} ${it.detail}`.toLowerCase().includes(q)) return false
     return true
   })
 }

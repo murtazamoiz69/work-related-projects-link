@@ -60,9 +60,7 @@ export function useActivityFilters(
     setCategoriesByKind({})
   }
 
-  const activeKinds = ACTIVITY_KIND_DEFS.map((d) => d.key).filter(
-    isKindActive,
-  )
+  const activeKinds = ACTIVITY_KIND_DEFS.map((d) => d.key).filter(isKindActive)
 
   const total = filterActivityItems(items, { rangeDays }).length
   const filterActive = activeKinds.length > 0 || search.trim() !== ''

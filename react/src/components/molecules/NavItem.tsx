@@ -12,8 +12,7 @@ type NavItemBaseProps = {
 }
 
 type NavItemProps =
-  | (NavItemBaseProps & { to: string })
-  | (NavItemBaseProps & { to?: never })
+  (NavItemBaseProps & { to: string }) | (NavItemBaseProps & { to?: never })
 
 /** One sidebar row — nav link, Settings, or Help. Reused as-is in both the
  *  76px rail (icon-only) and the 280px panel it expands into on hover

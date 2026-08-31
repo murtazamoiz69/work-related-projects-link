@@ -100,7 +100,11 @@ export function ProgramProgressModal({
           </div>
         </div>
         <div className="prog-progress-body">
-          <ProgramTrackerDashboard client={client} detail={detail} hideSwitcher />
+          <ProgramTrackerDashboard
+            client={client}
+            detail={detail}
+            hideSwitcher
+          />
         </div>
       </div>
     </div>

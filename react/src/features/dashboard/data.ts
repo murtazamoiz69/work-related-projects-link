@@ -626,7 +626,8 @@ export function buildClientProgress(
     ticks: windows.map((w) => w.tick),
     tips: windows.map((w) => w.tip),
     activeClients: CLIENTS_DATA.filter(
-      (c) => c.status !== 'paused' && (program === 'all' || c.program === program),
+      (c) =>
+        c.status !== 'paused' && (program === 'all' || c.program === program),
     ).length,
     meals: { values: meals, headline: meals[meals.length - 1] },
     workouts: { values: workouts, headline: workouts[workouts.length - 1] },

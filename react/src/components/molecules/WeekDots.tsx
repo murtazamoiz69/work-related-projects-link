@@ -54,7 +54,9 @@ export function WeekDots({
           // to assistive tech here rather than being lost with the pointer.
           role="img"
           aria-label={d.popover.replace(/\n/g, '. ')}
-          onMouseEnter={onDotEnter ? (e) => onDotEnter(e, d.popover) : undefined}
+          onMouseEnter={
+            onDotEnter ? (e) => onDotEnter(e, d.popover) : undefined
+          }
           onMouseLeave={onDotLeave}
         />
       ))}
