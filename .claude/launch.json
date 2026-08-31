@@ -2,18 +2,19 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "nutritionist-panel-react",
+      "name": "nws-dev",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev", "--prefix", "react", "--", "--port", "5185", "--strictPort"],
-      "port": 5185,
-      "autoPort": false
-    },
-    {
-      "name": "single-file-check",
-      "runtimeExecutable": "npx",
-      "runtimeArgs": ["--yes", "serve", "react/dist-single", "-l", "5199"],
-      "port": 5199,
-      "autoPort": false
+      "runtimeArgs": [
+        "--prefix",
+        "react",
+        "run",
+        "dev",
+        "--",
+        "--port",
+        "5180",
+        "--strictPort"
+      ],
+      "port": 5180
     }
   ]
 }

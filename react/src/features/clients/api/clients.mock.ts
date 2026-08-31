@@ -1,8 +1,12 @@
 // Mock backend fixtures + scenario responses for the clients endpoints.
 // This is the ONLY place clients mock data lives — never inside a component.
-// The `clients.api.ts` service reads from here through the mock transport, and
-// MSW handlers will serve from the same fixtures once the network layer lands.
+// The fixtures are DERIVED from the shared CLIENTS_DATA seed (mapped to the
+// wire shape: Date -> ISO string) so the Users page shows the same people as
+// every other screen that still reads CLIENTS_DATA directly. MSW handlers
+// (clients.handlers.ts) serve from these; unit tests exercise them too.
 import type { ApiError } from '@/lib/api/types'
+import { CLIENTS_DATA } from '../data'
+import type { Client } from '../types'
 import type {
   ClientDto,
   ClientsSummaryDto,
@@ -10,173 +14,22 @@ import type {
   PaginatedClientsDto,
 } from './clients.types'
 
-// Dates are expressed relative to "now" at module load, as ISO strings, so the
-// expiry tiers (expired / expiring-soon / active) stay meaningful whenever the
-// mock runs — mirroring how a live backend's dates move with real time.
 const DAY_MS = 86_400_000
-function isoFromNow(days: number): string {
-  return new Date(Date.now() + days * DAY_MS).toISOString()
+
+/** Domain `Client` (Date fields) -> wire `ClientDto` (ISO strings). */
+function toDto(c: Client): ClientDto {
+  return {
+    ...c,
+    expiryDate: c.expiryDate.toISOString(),
+    joinDate: c.joinDate.toISOString(),
+  }
 }
 
-// A curated roster covering the edge cases the UI must handle:
-// - nullable adherence / checkInDays (a brand-new user)
-// - expired, expiring-today, expiring-soon, and comfortably-active expiries
-// - a disabled user, a paused user, and a long-tenure user
-// - realistic program ↔ plan relationships
-export const CLIENT_FIXTURES: ClientDto[] = [
-  {
-    id: 'c-1',
-    name: 'Priya Sharma',
-    initials: 'PS',
-    color: '#C44F3F',
-    age: 34,
-    gender: 'Female',
-    email: 'priya.sharma@email.com',
-    program: 'Weight Loss',
-    plan: '12-Week Weight Loss Kickstart',
-    status: 'attention',
-    accessEnabled: true,
-    expiryDate: isoFromNow(-3), // expired
-    adherence: 42,
-    checkInDays: 4,
-    joinDate: isoFromNow(-118),
-    goals: ['Lose fat', 'Build discipline'],
-    diet: 'Low carb',
-  },
-  {
-    id: 'c-2',
-    name: 'Marcus Chen',
-    initials: 'MC',
-    color: '#3B6FA6',
-    age: 51,
-    gender: 'Male',
-    email: 'marcus.chen@email.com',
-    program: 'Diabetes Management',
-    plan: 'Diabetes-Friendly Meal Plan',
-    status: 'attention',
-    accessEnabled: true,
-    expiryDate: isoFromNow(0), // expires today
-    adherence: 58,
-    checkInDays: 1,
-    joinDate: isoFromNow(-210),
-    goals: ['Improve health'],
-    diet: 'Mediterranean',
-  },
-  {
-    id: 'c-3',
-    name: 'Elena Rodriguez',
-    initials: 'ER',
-    color: '#8A5FBF',
-    age: 29,
-    gender: 'Female',
-    email: 'elena.rodriguez@email.com',
-    program: 'Prenatal Nutrition',
-    plan: 'Prenatal Nutrition Essentials',
-    status: 'attention',
-    accessEnabled: true,
-    expiryDate: isoFromNow(5), // expiring soon (warning tier)
-    adherence: 66,
-    checkInDays: 2,
-    joinDate: isoFromNow(-58),
-    goals: ['Improve health', 'More energy'],
-    diet: 'Vegetarian',
-  },
-  {
-    id: 'c-4',
-    name: 'James Okafor',
-    initials: 'JO',
-    color: '#3C8260',
-    age: 26,
-    gender: 'Male',
-    email: 'james.okafor@email.com',
-    program: 'Muscle Gain',
-    plan: 'Muscle Gain Progressive Plan',
-    status: 'active',
-    accessEnabled: true,
-    expiryDate: isoFromNow(12), // expiring soon (attention tier)
-    adherence: 92,
-    checkInDays: 0,
-    joinDate: isoFromNow(-150),
-    goals: ['Build muscle'],
-    diet: 'High protein',
-  },
-  {
-    id: 'c-6',
-    name: 'Tom Wilson',
-    initials: 'TW',
-    color: '#5C6862',
-    age: 61,
-    gender: 'Male',
-    email: 'tom.wilson@email.com',
-    program: 'Post-Surgery Recovery',
-    plan: 'Post-Surgery Recovery Nutrition',
-    status: 'paused',
-    accessEnabled: false, // disabled
-    expiryDate: isoFromNow(-40),
-    adherence: 75,
-    checkInDays: null, // paused — no recent check-in data
-    joinDate: isoFromNow(-380),
-    goals: ['Improve health'],
-    diet: 'Gluten-free',
-  },
-  {
-    id: 'c-8',
-    name: 'Robert Kim',
-    initials: 'RK',
-    color: '#4A7A9D',
-    age: 55,
-    gender: 'Male',
-    email: 'robert.kim@email.com',
-    program: 'Diabetes Management',
-    plan: 'Diabetes-Friendly Meal Plan',
-    status: 'active',
-    accessEnabled: true,
-    expiryDate: isoFromNow(64), // comfortably active
-    adherence: 90,
-    checkInDays: 0,
-    joinDate: isoFromNow(-245),
-    goals: ['Improve health'],
-    diet: 'Low carb',
-  },
-  {
-    id: 'c-11',
-    name: 'Sofia Martins',
-    initials: 'SM',
-    color: '#457C89',
-    age: 24,
-    gender: 'Female',
-    email: 'sofia.martins@email.com',
-    program: 'General Wellness',
-    plan: 'General Wellness Starter',
-    status: 'new',
-    accessEnabled: true,
-    expiryDate: isoFromNow(90),
-    adherence: null, // brand-new — no data yet
-    checkInDays: null,
-    joinDate: isoFromNow(0), // joined today
-    goals: ['Improve health'],
-    diet: 'Eats everything',
-  },
-  {
-    id: 'c-15',
-    name: 'Carlos Vega',
-    initials: 'CV',
-    color: '#55789D',
-    age: 58,
-    gender: 'Male',
-    email: 'carlos.vega@email.com',
-    program: 'Cardiac Health',
-    plan: 'Cardiac Health Nutrition',
-    status: 'attention',
-    accessEnabled: false, // disabled + expired
-    expiryDate: isoFromNow(-12),
-    adherence: 38,
-    checkInDays: 6,
-    joinDate: isoFromNow(-420),
-    goals: ['Improve health'],
-    diet: 'Low sodium',
-  },
-]
+// The full seeded roster as the backend would send it. Already covers the edge
+// cases the UI must handle — nullable adherence/checkInDays (new users),
+// expired / expiring-soon / active expiries, disabled and paused users, and
+// realistic program ↔ plan relationships — because CLIENTS_DATA does.
+export const CLIENT_FIXTURES: ClientDto[] = CLIENTS_DATA.map(toDto)
 
 // Calendar-day difference between now and an ISO date — negative once past.
 // Mirrors features/clients/utils.ts `daysUntil`, on the wire (string) shape.
@@ -240,11 +93,10 @@ export function summarizeClientFixtures(): ClientsSummaryDto {
 }
 
 // ---------------------------------------------------------------------------
-// The nine canonical response scenarios for the clients endpoints. These are
-// concrete, realistic examples used by tests and by the api layer's error
-// paths — and they double as living documentation of what each endpoint can
-// return. (Success/empty are shaped by `filterClientFixtures`; the failures
-// are the normalized ApiError the transport rejects with.)
+// The nine canonical response scenarios for the clients endpoints — concrete,
+// realistic examples used by tests and as living documentation of what each
+// endpoint can return. (Success/empty are shaped by `filterClientFixtures`;
+// the failures are the normalized ApiError the transport rejects with.)
 // ---------------------------------------------------------------------------
 export const clientsScenarios = {
   /** 2. Successful, populated page. */
