@@ -3,72 +3,114 @@ import { useNavigate } from '@tanstack/react-router'
 import { Icon } from '@/components/atoms/Icon'
 import { Topbar } from '@/components/organisms/Topbar'
 import { ConfirmDialog } from '@/components/molecules/ConfirmDialog'
-import { CONVERSATIONS } from '@/features/chat'
+import { apiErrorMessage } from '@/lib/api/errors'
 import { showToast } from '@/lib/toast'
+import { CONVERSATIONS } from '@/features/chat'
 import {
-  clientHaystack,
-  daysUntil,
-  useClientsStore,
+  useClientsQuery,
+  useClientsSummaryQuery,
+  useUpdateClientAccess,
   type Client,
+  type ClientExpiryFilter,
+  type ClientStatusFilter,
+  type ClientsSearch,
+  type ListClientsParams,
 } from '@/features/clients'
 import { ClientTableRow } from '@/features/clients/components/ClientRosterViews'
-import {
-  UserSummaryCards,
-  type ExpiryFilter,
-} from '@/features/clients/components/UserSummaryCards'
+import { UserSummaryCards } from '@/features/clients/components/UserSummaryCards'
 import { ExtendProgramModal } from '@/features/clients/components/ExtendProgramModal'
 
 const PAGE_SIZE = 12
 
-type StatusFilter = 'all' | 'active' | 'disabled'
+function SkeletonRows() {
+  return (
+    <>
+      {Array.from({ length: 8 }, (_, i) => (
+        <tr key={i}>
+          <td>
+            <span className="skel skel-wide" />
+          </td>
+          <td>
+            <span className="skel skel-narrow" />
+          </td>
+          <td>
+            <span className="skel" />
+          </td>
+          <td>
+            <span className="skel" />
+          </td>
+          <td>
+            <span className="skel skel-narrow" />
+          </td>
+        </tr>
+      ))}
+    </>
+  )
+}
 
-export function ClientsPage() {
+export function ClientsPage({ search }: { search: ClientsSearch }) {
   const navigate = useNavigate()
-  const clients = useClientsStore((s) => s.clients)
-  const setClients = useClientsStore((s) => s.setClients)
 
-  const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
-  const [expiryFilter, setExpiryFilter] = useState<ExpiryFilter>('all')
-  const [page, setPage] = useState(1)
+  // URL is the source of truth for filters / pagination.
+  const q = search.q ?? ''
+  const status: ClientStatusFilter = search.status ?? 'all'
+  const expiry: ClientExpiryFilter = search.expiry ?? 'all'
+  const page = search.page ?? 1
 
+  const [searchInput, setSearchInput] = useState(q)
   const [toggleTarget, setToggleTarget] = useState<Client | null>(null)
   const [extendTarget, setExtendTarget] = useState<Client | null>(null)
 
-  const list = useMemo(() => {
-    const q = search.trim().toLowerCase()
-    const filtered = clients.filter((c) => {
-      if (statusFilter === 'active' && !c.accessEnabled) return false
-      if (statusFilter === 'disabled' && c.accessEnabled) return false
-      if (expiryFilter !== 'all') {
-        const d = daysUntil(c.expiryDate)
-        if (expiryFilter === 'expiring-soon' && !(d >= 0 && d <= 14))
-          return false
-        if (expiryFilter === 'expired' && d >= 0) return false
-        if (expiryFilter === 'active' && d <= 14) return false
-      }
-      if (q && !clientHaystack(c).includes(q)) return false
-      return true
-    })
-    // Soonest-expiring users surface first, so the roster answers "who needs
-    // action" before anything else.
-    return [...filtered].sort(
-      (a, b) => daysUntil(a.expiryDate) - daysUntil(b.expiryDate),
-    )
-  }, [clients, search, statusFilter, expiryFilter])
-
+  // Keep the input in sync when the URL q changes from outside (back/forward,
+  // Clear filters).
   useEffect(() => {
-    setPage(1)
-  }, [search, statusFilter, expiryFilter])
+    setSearchInput(q)
+  }, [q])
 
-  const total = list.length
+  // Debounce the search box into the URL so the roster query doesn't refetch on
+  // every keystroke.
+  useEffect(() => {
+    const trimmed = searchInput.trim()
+    if (trimmed === q) return
+    const t = setTimeout(() => {
+      navigate({
+        to: '/clients',
+        search: (prev) => ({
+          ...prev,
+          q: trimmed || undefined,
+          page: undefined,
+        }),
+      })
+    }, 250)
+    return () => clearTimeout(t)
+  }, [searchInput, q, navigate])
+
+  const params: ListClientsParams = useMemo(
+    () => ({
+      search: q || undefined,
+      status,
+      expiry,
+      page,
+      pageSize: PAGE_SIZE,
+    }),
+    [q, status, expiry, page],
+  )
+
+  const clientsQuery = useClientsQuery(params)
+  const summaryQuery = useClientsSummaryQuery()
+  const updateAccess = useUpdateClientAccess()
+
+  const data = clientsQuery.data
+  const items = data?.items ?? []
+  const total = data?.total ?? 0
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
   const currentPage = Math.min(page, totalPages)
   const start = (currentPage - 1) * PAGE_SIZE
-  const pageItems = list.slice(start, start + PAGE_SIZE)
-  const hasFilters =
-    statusFilter !== 'all' || expiryFilter !== 'all' || search.trim().length > 0
-  const noResults = total === 0
+
+  const hasFilters = status !== 'all' || expiry !== 'all' || q.trim().length > 0
+  const showError = clientsQuery.isError && !data
+  const showSkeleton = clientsQuery.isPending
+  const noResults = !showSkeleton && !showError && total === 0
 
   const countLabel = noResults
     ? 'No users match your filters'
@@ -76,11 +118,15 @@ export function ClientsPage() {
         hasFilters ? ' matching users' : ' users'
       }`
 
+  const updateSearch = (patch: Partial<ClientsSearch>) => {
+    navigate({ to: '/clients', search: (prev) => ({ ...prev, ...patch }) })
+  }
+
+  const goToPage = (n: number) => updateSearch({ page: n > 1 ? n : undefined })
+
   const clearFilters = () => {
-    setSearch('')
-    setStatusFilter('all')
-    setExpiryFilter('all')
-    setPage(1)
+    setSearchInput('')
+    navigate({ to: '/clients', search: {} })
   }
 
   const conversationIdFor = (client: Client) =>
@@ -97,23 +143,15 @@ export function ClientsPage() {
     })
   }
 
-  const callClient = (client: Client) => {
-    showToast(`Calling ${client.name}…`)
-  }
-
-  const emailClient = (client: Client) => {
-    showToast(`Emailing ${client.name}…`)
-  }
+  const callClient = (client: Client) => showToast(`Calling ${client.name}…`)
+  const emailClient = (client: Client) => showToast(`Emailing ${client.name}…`)
 
   const confirmToggle = () => {
     if (!toggleTarget) return
-    const next = !toggleTarget.accessEnabled
-    setClients((prev) =>
-      prev.map((c) =>
-        c.id === toggleTarget.id ? { ...c, accessEnabled: next } : c,
-      ),
-    )
-    showToast(`${toggleTarget.name} ${next ? 'enabled' : 'disabled'}`)
+    updateAccess.mutate({
+      id: toggleTarget.id,
+      enabled: !toggleTarget.accessEnabled,
+    })
     setToggleTarget(null)
   }
 
@@ -124,7 +162,10 @@ export function ClientsPage() {
         subtitle="Manage users, program access and status."
       />
       <main className="content">
-        <UserSummaryCards clients={clients} />
+        <UserSummaryCards
+          summary={summaryQuery.data}
+          loading={summaryQuery.isPending}
+        />
 
         <section className="panel clients-toolbar">
           <div className="clients-toolbar-row">
@@ -134,8 +175,8 @@ export function ClientsPage() {
                 type="text"
                 placeholder="Search users by name or email…"
                 autoComplete="off"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
               />
             </div>
 
@@ -143,9 +184,15 @@ export function ClientsPage() {
               <select
                 className="select-range"
                 aria-label="Filter by status"
-                value={statusFilter}
+                value={status}
                 onChange={(e) =>
-                  setStatusFilter(e.target.value as StatusFilter)
+                  updateSearch({
+                    status:
+                      e.target.value === 'all'
+                        ? undefined
+                        : (e.target.value as ClientStatusFilter),
+                    page: undefined,
+                  })
                 }
               >
                 <option value="all">All</option>
@@ -155,9 +202,15 @@ export function ClientsPage() {
               <select
                 className="select-range"
                 aria-label="Filter by plan expiry"
-                value={expiryFilter}
+                value={expiry}
                 onChange={(e) =>
-                  setExpiryFilter(e.target.value as ExpiryFilter)
+                  updateSearch({
+                    expiry:
+                      e.target.value === 'all'
+                        ? undefined
+                        : (e.target.value as ClientExpiryFilter),
+                    page: undefined,
+                  })
                 }
               >
                 <option value="all">All</option>
@@ -177,7 +230,18 @@ export function ClientsPage() {
             </div>
           </div>
 
-          {noResults ? (
+          {showError ? (
+            <div className="clients-empty is-error" role="alert">
+              <Icon name="alert-triangle" />
+              <p>{apiErrorMessage(clientsQuery.error)}</p>
+              <button
+                className="link-btn clients-empty-retry"
+                onClick={() => clientsQuery.refetch()}
+              >
+                Try again
+              </button>
+            </div>
+          ) : noResults ? (
             <div className="clients-empty">
               <Icon name="user-x" />
               <p>No users match your filters</p>
@@ -186,7 +250,10 @@ export function ClientsPage() {
               </button>
             </div>
           ) : (
-            <div className="clients-table-wrap">
+            <div
+              className="clients-table-wrap"
+              aria-busy={clientsQuery.isFetching || undefined}
+            >
               <table className="client-table user-table">
                 <colgroup>
                   <col style={{ width: '19.5%' }} />
@@ -205,18 +272,22 @@ export function ClientsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {pageItems.map((c) => (
-                    <ClientTableRow
-                      key={c.id}
-                      client={c}
-                      onOpenChat={openChat}
-                      onManage={manageUser}
-                      onExtend={setExtendTarget}
-                      onCall={callClient}
-                      onEmail={emailClient}
-                      onRequestToggle={setToggleTarget}
-                    />
-                  ))}
+                  {showSkeleton ? (
+                    <SkeletonRows />
+                  ) : (
+                    items.map((c) => (
+                      <ClientTableRow
+                        key={c.id}
+                        client={c}
+                        onOpenChat={openChat}
+                        onManage={manageUser}
+                        onExtend={setExtendTarget}
+                        onCall={callClient}
+                        onEmail={emailClient}
+                        onRequestToggle={setToggleTarget}
+                      />
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
@@ -231,7 +302,7 @@ export function ClientsPage() {
                 className="icon-btn sm"
                 aria-label="Previous page"
                 disabled={currentPage <= 1}
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                onClick={() => goToPage(Math.max(1, currentPage - 1))}
               >
                 <Icon name="chevron-left" />
               </button>
@@ -239,7 +310,7 @@ export function ClientsPage() {
                 className="icon-btn sm"
                 aria-label="Next page"
                 disabled={currentPage >= totalPages}
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                onClick={() => goToPage(Math.min(totalPages, currentPage + 1))}
               >
                 <Icon name="chevron-right" />
               </button>
@@ -252,13 +323,6 @@ export function ClientsPage() {
         <ExtendProgramModal
           client={extendTarget}
           onClose={() => setExtendTarget(null)}
-          onExtended={(newExpiry) => {
-            setClients((prev) =>
-              prev.map((c) =>
-                c.id === extendTarget.id ? { ...c, expiryDate: newExpiry } : c,
-              ),
-            )
-          }}
         />
       ) : null}
 

@@ -14,3 +14,37 @@
   bottom: calc(100% + 8px);
   left: 0;
 }
+
+/* ---- Data-fetching states (Phase 4 API wiring) ---- */
+/* Skeleton shimmer for table/summary loading. Uses existing token colors so it
+   reads the same in light/dark; purely additive, no layout change. */
+@keyframes nws-skel-pulse {
+  0% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.55;
+  }
+}
+.skel {
+  display: inline-block;
+  height: 0.75rem;
+  width: 60%;
+  border-radius: 6px;
+  background: var(--border-soft, rgba(0, 0, 0, 0.08));
+  animation: nws-skel-pulse 1.2s ease-in-out infinite;
+}
+.skel-wide {
+  width: 85%;
+}
+.skel-narrow {
+  width: 40%;
+}
+
+/* Inline error block reusing the empty-state layout. */
+.clients-empty.is-error .clients-empty-retry {
+  margin-top: 4px;
+}

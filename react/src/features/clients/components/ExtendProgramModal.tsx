@@ -1,18 +1,27 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { Modal } from '@/components/molecules/Modal'
+import { apiErrorMessage } from '@/lib/api/errors'
+import { isApiError } from '@/lib/api/types'
 import { showToast } from '@/lib/toast'
 import type { Client } from '../types'
 import { formatFullDate, formatPeriodDate } from '../utils'
+import { useExtendClientExpiry } from '../hooks/useClientMutations'
+import {
+  EXTEND_OPTIONS,
+  makeExtendProgramSchema,
+  type ExtendOption,
+  type ExtendProgramForm,
+} from '../schemas/extendProgram.schema'
 
-type QuickOption = '7' | '14' | '30' | '90' | 'custom'
-
-const QUICK_OPTIONS: { key: QuickOption; label: string }[] = [
-  { key: '7', label: '+7 days' },
-  { key: '14', label: '+14 days' },
-  { key: '30', label: '+30 days' },
-  { key: '90', label: '+3 months' },
-  { key: 'custom', label: 'Custom' },
-]
+const QUICK_LABELS: Record<ExtendOption, string> = {
+  '7': '+7 days',
+  '14': '+14 days',
+  '30': '+30 days',
+  '90': '+3 months',
+  custom: 'Custom',
+}
 
 function toInputDate(d: Date): string {
   return d.toISOString().slice(0, 10)
@@ -33,16 +42,32 @@ function addMonths(d: Date, months: number): Date {
 export function ExtendProgramModal({
   client,
   onClose,
-  onExtended,
 }: {
   client: Client
   onClose: () => void
-  onExtended: (newExpiry: Date) => void
 }) {
-  const [option, setOption] = useState<QuickOption>('30')
-  const [customDate, setCustomDate] = useState(() =>
-    toInputDate(addDays(client.expiryDate, 30)),
+  const schema = useMemo(
+    () => makeExtendProgramSchema(client.expiryDate),
+    [client.expiryDate],
   )
+
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    setError,
+    formState: { errors },
+  } = useForm<ExtendProgramForm>({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      option: '30',
+      customDate: toInputDate(addDays(client.expiryDate, 30)),
+    },
+  })
+
+  const option = watch('option')
+  const customDate = watch('customDate')
 
   const newExpiry = useMemo(() => {
     switch (option) {
@@ -63,11 +88,23 @@ export function ExtendProgramModal({
     }
   }, [option, customDate, client.expiryDate])
 
-  const save = () => {
-    onExtended(newExpiry)
-    onClose()
-    showToast(
-      `Program extended successfully — ${client.name}'s program now ends on ${formatFullDate(newExpiry)}.`,
+  const extend = useExtendClientExpiry()
+
+  const onSubmit = (values: ExtendProgramForm) => {
+    void values
+    extend.mutate(
+      { id: client.id, expiryDate: newExpiry.toISOString() },
+      {
+        onSuccess: () => onClose(),
+        onError: (error) => {
+          if (isApiError(error) && error.fields?.expiryDate) {
+            setValue('option', 'custom')
+            setError('customDate', { message: error.fields.expiryDate })
+          } else {
+            showToast(apiErrorMessage(error))
+          }
+        },
+      },
     )
   }
 
@@ -80,8 +117,12 @@ export function ExtendProgramModal({
           <button className="link-btn" onClick={onClose}>
             Cancel
           </button>
-          <button className="btn-primary" onClick={save}>
-            Extend program
+          <button
+            className="btn-primary"
+            onClick={handleSubmit(onSubmit)}
+            disabled={extend.isPending}
+          >
+            {extend.isPending ? 'Extending…' : 'Extend program'}
           </button>
         </>
       }
@@ -98,14 +139,14 @@ export function ExtendProgramModal({
       <div className="modal-field">
         <span>Extend by</span>
         <div className="extend-quick-options">
-          {QUICK_OPTIONS.map((opt) => (
+          {EXTEND_OPTIONS.map((key) => (
             <button
-              key={opt.key}
+              key={key}
               type="button"
-              className={`extend-quick-btn${option === opt.key ? ' active' : ''}`}
-              onClick={() => setOption(opt.key)}
+              className={`extend-quick-btn${option === key ? ' active' : ''}`}
+              onClick={() => setValue('option', key, { shouldValidate: true })}
             >
-              {opt.label}
+              {QUICK_LABELS[key]}
             </button>
           ))}
         </div>
@@ -114,11 +155,12 @@ export function ExtendProgramModal({
       {option === 'custom' ? (
         <label className="modal-field">
           <span>New expiry date</span>
-          <input
-            type="date"
-            value={customDate}
-            onChange={(e) => setCustomDate(e.target.value)}
-          />
+          <input type="date" {...register('customDate')} />
+          {errors.customDate ? (
+            <span className="settings-hint is-error">
+              {errors.customDate.message}
+            </span>
+          ) : null}
         </label>
       ) : null}
 

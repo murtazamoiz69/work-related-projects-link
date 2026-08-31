@@ -21,6 +21,15 @@ export type ListClientsParams = {
   sort?: string
 }
 
+/** The roster filters as represented in the URL (route search params). Defaults
+ *  (`status: 'all'`, `expiry: 'all'`, page 1) are omitted to keep URLs clean. */
+export type ClientsSearch = {
+  q?: string
+  status?: ClientStatusFilter
+  expiry?: ClientExpiryFilter
+  page?: number
+}
+
 export type UpdateClientAccessBody = {
   enabled: boolean
 }

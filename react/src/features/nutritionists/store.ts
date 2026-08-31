@@ -2,7 +2,9 @@ import { create } from 'zustand'
 import { NUTRITIONISTS_DATA } from './data'
 import type { Nutritionist } from './types'
 
-// Same rev-bump pattern as features/clients/store.ts.
+// Rev-bump store: mutate in place + `commit()` to re-render, or `setX()` to
+// swap the array. (The clients feature has since moved to the API/Query layer;
+// this pattern stays until nutritionists migrates too — see docs/api-guidelines.md.)
 type NutritionistsState = {
   nutritionists: Nutritionist[]
   rev: number

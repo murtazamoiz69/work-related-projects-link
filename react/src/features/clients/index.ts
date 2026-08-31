@@ -13,4 +13,31 @@ export {
   type AdherenceTier,
   type ExpiryUrgency,
 } from './utils'
-export { useClientsStore } from './store'
+
+// API layer
+export {
+  listClients,
+  getClientsSummary,
+  updateClientAccess,
+  extendClientExpiry,
+  toClient,
+} from './api/clients.api'
+export type {
+  ListClientsParams,
+  ClientsSearch,
+  ClientStatusFilter,
+  ClientExpiryFilter,
+  ClientDto,
+  ClientsSummaryDto,
+  PaginatedClientsDto,
+} from './api/clients.types'
+
+// Query / mutation hooks (the only surface pages should use for data)
+export {
+  useClientsQuery,
+  useClientsSummaryQuery,
+} from './hooks/useClientsQuery'
+export {
+  useUpdateClientAccess,
+  useExtendClientExpiry,
+} from './hooks/useClientMutations'

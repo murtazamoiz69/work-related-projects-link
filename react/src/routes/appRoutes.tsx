@@ -1,6 +1,7 @@
 import { lazy, Suspense, type ReactNode } from 'react'
 import { createRoute, redirect } from '@tanstack/react-router'
 import { useAuthStore } from '@/store/useAuthStore'
+import type { ClientsSearch } from '@/features/clients/api/clients.types'
 import { authedRoute } from './authed'
 
 // Lazy-load each screen so heavy routes (Chat + Plan Workspace, Program,
@@ -43,11 +44,29 @@ export const indexRoute = createRoute({
 export const clientsRoute = createRoute({
   getParentRoute: () => authedRoute,
   path: '/clients',
-  component: () => (
-    <Lazy>
-      <ClientsPage />
-    </Lazy>
-  ),
+  validateSearch: (search: Record<string, unknown>): ClientsSearch => {
+    const { status, expiry } = search
+    const page = Number(search.page)
+    return {
+      q: typeof search.q === 'string' && search.q ? search.q : undefined,
+      status: status === 'active' || status === 'disabled' ? status : undefined,
+      expiry:
+        expiry === 'expiring-soon' ||
+        expiry === 'expired' ||
+        expiry === 'active'
+          ? expiry
+          : undefined,
+      page: Number.isFinite(page) && page > 1 ? page : undefined,
+    }
+  },
+  component: () => {
+    const search = clientsRoute.useSearch()
+    return (
+      <Lazy>
+        <ClientsPage search={search} />
+      </Lazy>
+    )
+  },
 })
 
 export const chatRoute = createRoute({
