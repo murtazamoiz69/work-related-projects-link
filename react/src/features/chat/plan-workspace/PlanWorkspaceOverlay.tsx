@@ -195,6 +195,7 @@ export function PlanWorkspaceOverlay({
                   <ProgramTrackerDashboard
                     client={client}
                     detail={detail}
+                    activity={activityItems}
                     hideSwitcher
                   />
                 </div>

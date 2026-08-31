@@ -12,7 +12,7 @@ import {
 import { Line } from 'react-chartjs-2'
 import { Icon } from '@/components/atoms/Icon'
 import type { Client } from '@/features/clients'
-import { CONVERSATIONS } from '@/features/chat'
+import type { ChatActivityItem } from '@/features/chat'
 import type { ClientDetail, Program } from '../types'
 import { clientSeed } from '../data'
 import {
@@ -1112,23 +1112,22 @@ function DailyLogDetail({
 export function ProgramTrackerDashboard({
   client,
   detail,
+  activity = [],
   hideSwitcher,
 }: {
   client: Client
   detail: ClientDetail
+  /** The user's real logged activity (meals / workouts / weigh-ins) — the same
+   *  list the Chat panel's "User Activity" tab reads. Passed in by the caller,
+   *  which already holds the conversation, so this component doesn't import the
+   *  chat feature and create a client-detail ⇄ chat dependency cycle. Any day
+   *  it covers is used as-is instead of a second, independently-random guess. */
+  activity?: ChatActivityItem[]
   /** The Plan Workspace and the At-a-glance modal both show the program
    *  label up in their own header instead of above the tracker. */
   hideSwitcher?: boolean
 }) {
   const program = detail.programs[0]
-
-  // The same real activity log the Chat panel's "User Activity" tab reads —
-  // so any day it already shows a meal, workout, or weigh-in for is used
-  // as-is here instead of a second, independently-random guess.
-  const activity = useMemo(
-    () => CONVERSATIONS.find((c) => c.client.id === client.id)?.activity ?? [],
-    [client.id],
-  )
 
   const tracker = useMemo(
     () =>

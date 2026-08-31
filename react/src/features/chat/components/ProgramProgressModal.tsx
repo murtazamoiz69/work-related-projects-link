@@ -6,6 +6,7 @@ import {
   ProgramTrackerDashboard,
   deriveDetail,
 } from '@/features/client-detail'
+import { CONVERSATIONS } from '../data'
 
 /** The user's Program tab — the same progress dashboard the Client 360 profile
  * shows — opened in a big viewport over Chat so the nutritionist can read how
@@ -21,6 +22,14 @@ export function ProgramProgressModal({
   const cardRef = useRef<HTMLDivElement>(null)
   const closeRef = useRef<HTMLButtonElement>(null)
   const detail = useMemo(() => deriveDetail(client), [client])
+  // The user's real logged activity, injected into the tracker so it doesn't
+  // reach back into the chat feature itself (avoids a client-detail ⇄ chat
+  // import cycle). This modal lives inside the chat feature, so reading
+  // CONVERSATIONS here is a same-feature import.
+  const activity = useMemo(
+    () => CONVERSATIONS.find((c) => c.client.id === client.id)?.activity ?? [],
+    [client.id],
+  )
 
   // Escape closes, focus starts inside and returns to the opener, Tab stays
   // within the card, and the page behind stops scrolling — same dialog
@@ -103,6 +112,7 @@ export function ProgramProgressModal({
           <ProgramTrackerDashboard
             client={client}
             detail={detail}
+            activity={activity}
             hideSwitcher
           />
         </div>
