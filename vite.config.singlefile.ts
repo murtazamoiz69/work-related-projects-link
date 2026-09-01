@@ -98,9 +98,11 @@ export default defineConfig({
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },
   // Baked in rather than read from the shell so the bundle always ships with
-  // hash routing, whatever the caller's environment looks like.
+  // hash routing and its own mock backend (the demo has no server), whatever
+  // the caller's environment looks like.
   define: {
     'import.meta.env.VITE_HASH_ROUTER': '"true"',
+    'import.meta.env.VITE_USE_MOCKS': '"true"',
   },
   build: {
     outDir: 'dist-single',

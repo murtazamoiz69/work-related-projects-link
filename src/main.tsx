@@ -1,7 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App'
-import { env } from './lib/api/env'
 import { setUnauthorizedHandler } from './lib/api/auth'
 import { router } from './lib/router'
 import { useAuthStore } from './store/useAuthStore'
@@ -16,12 +15,18 @@ setUnauthorizedHandler(() => {
 })
 
 // Start the MSW mock worker before the app renders when mocks are enabled
-// (dev by default; controlled by VITE_USE_MOCKS). Dynamically imported so the
-// worker and handlers are never bundled into a real-backend production build.
+// (dev by default; controlled by VITE_USE_MOCKS). The guard below reads
+// `import.meta.env` directly (not the parsed `env.useMocks`) so it folds to a
+// compile-time constant: a real-backend `vite build` sees `false` and Rollup
+// drops the dynamic import, keeping MSW + all handlers out of that bundle.
+// `build:single` bakes VITE_USE_MOCKS='true', so the demo still ships mocks.
 const MSW_RELOAD_FLAG = 'nws-msw-reload'
 
 async function enableMocking(): Promise<void> {
-  if (!env.useMocks) return
+  const useMocks =
+    import.meta.env.VITE_USE_MOCKS === 'true' ||
+    (import.meta.env.VITE_USE_MOCKS == null && import.meta.env.DEV)
+  if (!useMocks) return
   const { worker } = await import('./mocks/browser')
   await worker.start({ onUnhandledRequest: 'bypass' })
 
