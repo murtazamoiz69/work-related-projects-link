@@ -3,6 +3,7 @@ import { createRoute, redirect } from '@tanstack/react-router'
 import { useAuthStore } from '@/store/useAuthStore'
 import type { ClientsSearch } from '@/features/clients/api/clients.types'
 import type { NutritionistsSearch } from '@/features/nutritionists/api/nutritionists.types'
+import { RouteFallback } from '@/components/molecules/RouteFallback'
 import { authedRoute } from './authed'
 
 // Lazy-load each screen so heavy routes (Chat + Plan Workspace, Program,
@@ -29,7 +30,7 @@ const NutritionistsPage = lazy(() =>
 )
 
 function Lazy({ children }: { children: ReactNode }) {
-  return <Suspense fallback={null}>{children}</Suspense>
+  return <Suspense fallback={<RouteFallback />}>{children}</Suspense>
 }
 
 export const indexRoute = createRoute({

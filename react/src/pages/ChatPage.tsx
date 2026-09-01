@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Topbar } from '@/components/organisms/Topbar'
 import type { Client } from '@/features/clients'
 import { ConversationList } from '@/features/chat/components/ConversationList'
@@ -41,7 +41,10 @@ export function ChatPage({
   const [programClient, setProgramClient] = useState<Client | null>(null)
 
   const listQuery = useConversationsQuery()
-  const summaries = listQuery.data ?? []
+  // Stable identity: the empty-fallback would otherwise be a new [] each render,
+  // re-triggering the default-selection effect below.
+  const listData = listQuery.data
+  const summaries = useMemo(() => listData ?? [], [listData])
   const markRead = useMarkRead()
   const setStar = useSetStar()
 

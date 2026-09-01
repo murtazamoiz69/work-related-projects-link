@@ -3,7 +3,7 @@ import { Icon } from '@/components/atoms/Icon'
 import { formatJoinDate } from '@/features/clients'
 import { useMealTemplatesStore } from '../store'
 import type { MealTemplate, MealTemplateType } from '../types'
-import { ConfirmDialog } from './ConfirmDialog'
+import { ConfirmDialog } from '@/components/molecules/ConfirmDialog'
 
 // A single unconditional confirm before an apply that would overwrite
 // existing meals — the target (a whole week or a single day) is already
@@ -201,6 +201,7 @@ export function AddFromLibraryDrawer({
           }
           confirmText="Replace"
           danger
+          overlayClassName="modal-overlay pw-modal-overlay"
           onConfirm={() => {
             onUse(flow.template)
             onClose()

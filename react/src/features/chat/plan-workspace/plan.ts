@@ -132,13 +132,7 @@ function toMealEntries(mealsObj: Record<string, string>): MealEntry[] {
   )
 }
 
-export function formatTime12(t: string): string {
-  if (!t) return ''
-  const [h, m] = t.split(':').map(Number)
-  const period = h >= 12 ? 'PM' : 'AM'
-  const hr = h % 12 || 12
-  return `${hr}:${String(m).padStart(2, '0')} ${period}`
-}
+export { formatTime12 } from '@/lib/utils'
 
 // ===================== Custom (edited) meals =====================
 export function resolveMeal(ws: Workspace, id: string): Meal | undefined {

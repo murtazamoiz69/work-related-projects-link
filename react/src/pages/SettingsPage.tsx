@@ -8,6 +8,7 @@ import { Topbar } from '@/components/organisms/Topbar'
 import { apiErrorMessage } from '@/lib/api/errors'
 import { isApiError } from '@/lib/api/types'
 import { showToast } from '@/lib/toast'
+import { getInitials } from '@/lib/utils'
 import { useAuthStore } from '@/store/useAuthStore'
 import {
   useChangePassword,
@@ -44,18 +45,6 @@ const AVATAR_COLOR_POOL = [
 ] as const
 
 type SectionKey = 'profile' | 'notifications' | 'security' | 'practice'
-
-function initials(name: string): string {
-  return (
-    name
-      .trim()
-      .split(/\s+/)
-      .map((w) => w[0])
-      .join('')
-      .slice(0, 2)
-      .toUpperCase() || '??'
-  )
-}
 
 const NAV_ITEMS: { key: SectionKey; icon: string; label: string }[] = [
   { key: 'profile', icon: 'user-round', label: 'Profile' },
@@ -116,7 +105,7 @@ export function SettingsPage() {
       email: email.trim(),
       phone: phone.trim(),
       bio: bio.trim(),
-      initials: initials(nextName),
+      initials: getInitials(nextName, '??'),
       color,
     })
     flashProfile()

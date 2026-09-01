@@ -12,6 +12,7 @@ export function ConfirmDialog({
   danger = false,
   onConfirm,
   onClose,
+  overlayClassName = 'modal-overlay',
 }: {
   title: string
   message: ReactNode
@@ -21,6 +22,9 @@ export function ConfirmDialog({
   danger?: boolean
   onConfirm: () => void
   onClose: () => void
+  /** Overlay classes. Pass `'modal-overlay pw-modal-overlay'` to layer above a
+   *  Plan-Workspace drawer/modal. */
+  overlayClassName?: string
 }) {
   const titleId = useId()
   const cancelRef = useRef<HTMLButtonElement>(null)
@@ -44,7 +48,7 @@ export function ConfirmDialog({
 
   return (
     <div
-      className="modal-overlay"
+      className={overlayClassName}
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose()
       }}

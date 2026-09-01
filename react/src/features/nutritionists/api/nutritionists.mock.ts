@@ -5,6 +5,7 @@
 // Fixtures derive from the shared NUTRITIONISTS_DATA seed (Date -> ISO). MSW
 // handlers (nutritionists.handlers.ts) serve from here.
 import { CLIENTS_DATA } from '@/features/clients'
+import { getInitials } from '@/lib/utils'
 import { NUTRITIONISTS_DATA } from '../data'
 import type { Nutritionist } from '../types'
 import type {
@@ -26,17 +27,6 @@ const AVATAR_COLORS = [
   '#39816E',
   '#BE4F70',
 ]
-
-function initialsFor(name: string): string {
-  return (
-    name
-      .split(' ')
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((p) => p.charAt(0).toUpperCase())
-      .join('') || 'N'
-  )
-}
 
 function toDto(n: Nutritionist): NutritionistDto {
   return { ...n, joinDate: n.joinDate.toISOString() }
@@ -64,7 +54,7 @@ export function createNutritionist(
   const dto: NutritionistDto = {
     id: `nut-new-${Date.now()}`,
     name: body.name,
-    initials: initialsFor(body.name),
+    initials: getInitials(body.name, 'N'),
     color: AVATAR_COLORS[store.length % AVATAR_COLORS.length] ?? '#2F5D50',
     email: body.email,
     qualification: body.qualification,
@@ -86,7 +76,7 @@ export function updateNutritionist(
   const next: NutritionistDto = {
     ...current,
     ...patch,
-    initials: patch.name ? initialsFor(patch.name) : current.initials,
+    initials: patch.name ? getInitials(patch.name, 'N') : current.initials,
   }
   store = store.map((n) => (n.id === id ? next : n))
   return next

@@ -85,7 +85,7 @@ export function PhotoTriplet({
               <img
                 className="upload-thumb"
                 src={val}
-                alt={`${s} progress photo`}
+                alt={`Progress, ${s} view`}
               />
             ) : (
               <div className={`upload-thumb${val ? '' : ' is-missing'}`}>

@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { Icon } from '@/components/atoms/Icon'
 import { formatCheckIn, formatJoinDate } from '@/features/clients'
+import { getInitials } from '@/lib/utils'
 import { useAddNote } from '../hooks/useConversations'
 import { deriveClinicalProfile } from '../plan-workspace'
 import { formatTime, isToday, summarizeNotes } from '../data'
@@ -188,12 +189,7 @@ function NotesSection({ convo }: { convo: Conversation }) {
                       n.author === 'Sarah Nolan' ? '#2F5D50' : '#55789D',
                   }}
                 >
-                  {n.author
-                    .split(' ')
-                    .map((w) => w[0])
-                    .join('')
-                    .slice(0, 2)
-                    .toUpperCase()}
+                  {getInitials(n.author)}
                 </span>
                 <div className="note-body">
                   <div className="note-meta">
