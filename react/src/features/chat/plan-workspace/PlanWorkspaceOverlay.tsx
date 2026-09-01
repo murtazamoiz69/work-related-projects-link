@@ -22,14 +22,14 @@ import { CONVERSATIONS } from '../data'
 import { ActivityFilterBar } from '../components/ActivityFilterBar'
 import { ActivityLogList } from '../components/ActivityLogList'
 import { useActivityFilters } from '../hooks/useActivityFilters'
-import { deriveClinicalProfile } from './clinical'
+import { apiErrorMessage } from '@/lib/api/errors'
 import {
   applyMealTemplateToDay,
   applyMealTemplateToWeek,
   extractWeekAsTemplateDays,
-  getWorkspace,
   resolveMeal,
 } from './plan'
+import { usePlanQuery, useSavePlan } from './hooks/usePlan'
 import { addDays } from './schedule'
 import { getDay, getWorkoutRef } from './context'
 import type { PwConfirm, PwCtx, PwModal } from './context'
@@ -62,15 +62,12 @@ export function PlanWorkspaceOverlay({
   client: Client
   onClose: () => void
 }) {
-  // getWorkspace caches per client (mutated in place across opens), so the
-  // profile it stores is the source of truth once built.
-  const ws = useMemo<Workspace>(
-    () => getWorkspace(client, deriveClinicalProfile(client)),
-    [client],
-  )
-  const profile = ws.profile
-  // The narrative half of the profile — AI summary, notes — which the
-  // workspace now owns outright since there is no separate profile view.
+  // The plan workspace is loaded from the API and then edited IN PLACE by the
+  // tabs/modals (unchanged); refresh() persists it (below).
+  const planQuery = usePlanQuery(client.id)
+  const savePlan = useSavePlan(client.id)
+  // The narrative half of the profile — AI summary, notes — a local
+  // client-detail derivation (not part of the plan).
   const detail = useMemo(() => deriveDetail(client), [client])
 
   const [activeTab, setActiveTab] = useState<PwTab>('glance')
@@ -83,7 +80,7 @@ export function PlanWorkspaceOverlay({
   const [notes, setNotes] = useState<InternalNote[]>(detail.notes)
   const [modal, setModal] = useState<PwModal | null>(null)
   const [confirm, setConfirm] = useState<PwConfirm | null>(null)
-  const [, refresh] = useReducer((x: number) => x + 1, 0)
+  const [, bump] = useReducer((x: number) => x + 1, 0)
 
   useEffect(() => {
     document.body.classList.add('pw-open')
@@ -103,6 +100,45 @@ export function PlanWorkspaceOverlay({
     return () => document.removeEventListener('keydown', onKey)
   }, [onClose])
 
+  // Activity data + its filter hook read from CONVERSATIONS (not the plan) and
+  // must run unconditionally, before the loading guard below. Read on each
+  // render (not memoised) so new chat messages are reflected.
+  const convo = CONVERSATIONS.find((c) => c.client.id === client.id)
+  const activityItems = convo?.activity ?? []
+  const activityFirstName = client.name.split(' ')[0]
+  const activityFilters = useActivityFilters(activityItems, activityFirstName)
+
+  const ws = planQuery.data
+  if (planQuery.isPending || !ws) {
+    return (
+      <div className="pw-overlay" id="planWorkspaceOverlay">
+        <div className="pw-shell">
+          <PwStatus
+            onClose={onClose}
+            busy={planQuery.isPending}
+            message={
+              planQuery.isError
+                ? apiErrorMessage(planQuery.error)
+                : 'Loading plan…'
+            }
+            onRetry={
+              planQuery.isError ? () => void planQuery.refetch() : undefined
+            }
+          />
+        </div>
+      </div>
+    )
+  }
+
+  const profile = ws.profile
+  // Autosave: re-render now (the edit is already applied in place), then persist
+  // the whole workspace. The cache object identity is preserved (savePlan does
+  // not write back), so open editor modals holding refs into `ws` stay valid.
+  const refresh = () => {
+    bump()
+    savePlan.mutate(ws)
+  }
+
   const totalWeeks = ws.workoutWeeks.length
   const currentWeek = Math.min(Math.max(profile.currentWeek, 1), totalWeeks)
   const weekExists = (n: number | null): boolean =>
@@ -111,13 +147,6 @@ export function PlanWorkspaceOverlay({
     ? (activeWeekOverride as number)
     : currentWeek
 
-  // Read on each render rather than memoised: new messages happen in the
-  // chat thread and mutate the same CONVERSATIONS entry, so the Activity
-  // action below has to reflect whatever the array holds at render time.
-  const convo = CONVERSATIONS.find((c) => c.client.id === client.id)
-  const activityItems = convo?.activity ?? []
-  const activityFirstName = client.name.split(' ')[0]
-  const activityFilters = useActivityFilters(activityItems, activityFirstName)
   const activitySubtitle = activityFilters.filterActive
     ? `${activityFilters.filtered.length} of ${activityFilters.total} ${activityFilters.total === 1 ? 'entry' : 'entries'}`
     : `${activityFilters.total} ${activityFilters.total === 1 ? 'entry' : 'entries'} logged for ${activityFirstName}, newest first`
@@ -295,6 +324,51 @@ export function PlanWorkspaceOverlay({
           onClose={() => setConfirm(null)}
         />
       ) : null}
+    </div>
+  )
+}
+
+/** Loading / error state shown inside the workspace shell while the plan
+ *  loads (or if it fails), with a close button so the user is never trapped. */
+function PwStatus({
+  onClose,
+  message,
+  busy,
+  onRetry,
+}: {
+  onClose: () => void
+  message: string
+  busy?: boolean
+  onRetry?: () => void
+}) {
+  return (
+    <div
+      className="pw-status"
+      aria-busy={busy || undefined}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 12,
+        padding: 48,
+        minHeight: 240,
+      }}
+    >
+      <p className="pw-muted">{message}</p>
+      {onRetry ? (
+        <button className="btn-secondary" onClick={onRetry}>
+          Try again
+        </button>
+      ) : null}
+      <button
+        className="icon-btn sm pw-topbar-close"
+        onClick={onClose}
+        title="Close workspace (Esc)"
+        aria-label="Close Plan Workspace and return to the conversation"
+      >
+        <Icon name="x" />
+      </button>
     </div>
   )
 }
