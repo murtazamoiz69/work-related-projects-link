@@ -1,17 +1,29 @@
-import { useEffect, useMemo, useReducer, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Topbar } from '@/components/organisms/Topbar'
 import type { Client } from '@/features/clients'
-import {
-  CONVERSATIONS,
-  conversationsForTab,
-  filterConversations,
-} from '@/features/chat/data'
 import { ConversationList } from '@/features/chat/components/ConversationList'
 import { MessageThread } from '@/features/chat/components/MessageThread'
 import { ClientOverview } from '@/features/chat/components/ClientOverview'
 import { PlanWorkspaceOverlay } from '@/features/chat/plan-workspace'
 import { ProgramProgressModal } from '@/features/chat/components/ProgramProgressModal'
+import {
+  useConversationQuery,
+  useConversationsQuery,
+  useMarkRead,
+  useSetStar,
+} from '@/features/chat/hooks/useConversations'
+import type { ConversationSummary } from '@/features/chat/api/chat.types'
 import type { ChatTab } from '@/features/chat/types'
+
+// Pinned first, then most-recent message — the default inbox ordering.
+function mostRecent(
+  summaries: ConversationSummary[],
+): ConversationSummary | undefined {
+  return [...summaries].sort((a, b) => {
+    if (a.starred !== b.starred) return a.starred ? -1 : 1
+    return b.lastMessage.time.getTime() - a.lastMessage.time.getTime()
+  })[0]
+}
 
 export function ChatPage({
   initialConversationId,
@@ -22,87 +34,72 @@ export function ChatPage({
 }) {
   const [tab, setTab] = useState<ChatTab>('inbox')
   const [query, setQuery] = useState('')
-  const [, refresh] = useReducer((x: number) => x + 1, 0)
+  const [selectedId, setSelectedId] = useState<string | null>(
+    initialConversationId ?? null,
+  )
+  const [planClient, setPlanClient] = useState<Client | null>(null)
   const [programClient, setProgramClient] = useState<Client | null>(null)
 
-  const initialId = useMemo(() => {
-    if (
-      initialConversationId &&
-      CONVERSATIONS.some((c) => c.id === initialConversationId)
-    )
-      return initialConversationId
-    const first =
-      filterConversations(conversationsForTab('inbox'), '')[0] ??
-      CONVERSATIONS[0]
-    return first ? first.id : null
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  const [selectedId, setSelectedId] = useState<string | null>(initialId)
-  // Arriving from a "Manage Plan" action opens the workspace immediately, on
-  // the conversation the link selected. Seeded as initial state rather than in
-  // an effect so closing the overlay can't re-trigger it.
-  const [planClient, setPlanClient] = useState<Client | null>(
-    () =>
-      (openPlanWorkspace &&
-        CONVERSATIONS.find((c) => c.id === initialId)?.client) ||
-      null,
-  )
+  const listQuery = useConversationsQuery()
+  const summaries = listQuery.data ?? []
+  const markRead = useMarkRead()
+  const setStar = useSetStar()
 
   useEffect(() => {
     document.body.classList.add('chat-page')
     return () => document.body.classList.remove('chat-page')
   }, [])
 
-  // Opening a conversation clears its unread state.
+  // Default selection once the list loads — honour a valid ?c=, else the most
+  // recent conversation.
   useEffect(() => {
-    const convo = CONVERSATIONS.find((c) => c.id === selectedId)
-    if (convo && convo.unread) {
-      convo.unread = 0
-      refresh()
+    if (!summaries.length) return
+    if (selectedId && summaries.some((s) => s.id === selectedId)) return
+    const first = mostRecent(summaries)
+    if (first) setSelectedId(first.id)
+  }, [summaries, selectedId])
+
+  const detailQuery = useConversationQuery(selectedId)
+  const current = detailQuery.data ?? null
+
+  // Opening a conversation clears its unread.
+  useEffect(() => {
+    if (current && current.unread) markRead.mutate(current.id)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [current?.id])
+
+  // Arriving via "Manage Plan" opens the workspace once the conversation loads.
+  const planOpened = useRef(false)
+  useEffect(() => {
+    if (openPlanWorkspace && current && !planOpened.current) {
+      planOpened.current = true
+      setPlanClient(current.client)
     }
-  }, [selectedId])
-
-  const current = CONVERSATIONS.find((c) => c.id === selectedId) ?? null
-
-  const selectConversation = (id: string) => {
-    const convo = CONVERSATIONS.find((c) => c.id === id)
-    if (!convo) return
-    convo.unread = 0
-    setSelectedId(id)
-  }
-
-  const toggleStar = (id: string) => {
-    const convo = CONVERSATIONS.find((c) => c.id === id)
-    if (convo) {
-      convo.starred = !convo.starred
-      refresh()
-    }
-  }
+  }, [openPlanWorkspace, current])
 
   return (
     <>
-      {/* No title/subtitle: the thread header already names who you're talking
-          to, and "Chat" over a chat screen was a label for a label. The Topbar
-          stays for the account chip. */}
+      {/* The thread header names who you're talking to, so the Topbar carries
+          only the account chip here. */}
       <Topbar />
       <main className="content chat-content">
         <div className="chat-shell">
           <ConversationList
+            summaries={summaries}
+            loading={listQuery.isPending}
             tab={tab}
             query={query}
             selectedId={selectedId}
             onTab={setTab}
             onQuery={setQuery}
-            onSelect={selectConversation}
-            onToggleStar={toggleStar}
+            onSelect={setSelectedId}
+            onToggleStar={(id, starred) => setStar.mutate({ id, starred })}
           />
 
           {current ? (
             <MessageThread
               key={`thread-${current.id}`}
               convo={current}
-              refresh={refresh}
               onManagePlan={() => setPlanClient(current.client)}
               onViewProgram={() => setProgramClient(current.client)}
             />
@@ -111,11 +108,7 @@ export function ChatPage({
           )}
 
           {current ? (
-            <ClientOverview
-              key={`overview-${current.id}`}
-              convo={current}
-              refresh={refresh}
-            />
+            <ClientOverview key={`overview-${current.id}`} convo={current} />
           ) : (
             <aside className="chat-right-col">
               <div className="chat-right-scroll" />

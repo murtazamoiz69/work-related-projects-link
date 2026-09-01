@@ -4,18 +4,15 @@ import { Avatar } from '@/components/atoms/Avatar'
 import { PhotoLightbox } from '@/components/molecules/PhotoLightbox'
 import { showToast } from '@/lib/toast'
 import {
-  CLIENT_FOLLOWUPS,
-  COACH_REPLIES,
   EMOJI_PICKER_POOL,
   formatDateSep,
   formatTime,
   randomSuggestions,
 } from '../data'
 import type { ChatAttachment, ChatMessage, Conversation } from '../types'
-
-function randOf<T>(arr: readonly T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)]
-}
+import type { SendMessageBody } from '../api/chat.types'
+import { useHandoff, useSendMessage } from '../hooks/useConversations'
+import { useConversationRealtime } from '../hooks/useConversationRealtime'
 
 function Attachment({
   att,
@@ -39,8 +36,6 @@ function Attachment({
     </button>
   ) : null
 
-  // Documents get a compact, WhatsApp-style horizontal chip — a filled
-  // icon tile plus name/size — instead of a fake page preview.
   if (att.type === 'file') {
     const ext = (att.name.match(/\.([a-z0-9]+)$/i)?.[1] ?? 'file').toUpperCase()
     return (
@@ -201,12 +196,10 @@ function Thread({
 
 export function MessageThread({
   convo,
-  refresh,
   onManagePlan,
   onViewProgram,
 }: {
   convo: Conversation
-  refresh: () => void
   onManagePlan: () => void
   onViewProgram: () => void
 }) {
@@ -219,13 +212,21 @@ export function MessageThread({
   const [suggestions, setSuggestions] = useState<string[]>(() =>
     randomSuggestions(3),
   )
-  const [typing, setTyping] = useState<'client' | 'ai' | null>(null)
   const [emojiOpen, setEmojiOpen] = useState(false)
 
   const scrollRef = useRef<HTMLDivElement | null>(null)
   const inputRef = useRef<HTMLTextAreaElement | null>(null)
-  const timers = useRef<ReturnType<typeof setTimeout>[]>([])
   const fileRef = useRef<HTMLInputElement | null>(null)
+
+  const sendMessageMutation = useSendMessage()
+  const handoff = useHandoff()
+  // Realtime source (client-side sim for the mock; websocket/poll later). It
+  // appends inbound messages to the detail cache and owns the typing indicator.
+  const { typing, triggerClientReply } = useConversationRealtime(
+    convo.id,
+    convo.handledBy,
+    convo.status,
+  )
 
   const scrollToBottom = () => {
     const area = scrollRef.current
@@ -243,110 +244,33 @@ export function MessageThread({
     el.style.height = `${Math.min(el.scrollHeight, 120)}px`
   }
 
-  // Clear all pending timers on unmount / conversation change.
-  useEffect(() => {
-    const list = timers.current
-    return () => {
-      list.forEach((t) => clearTimeout(t))
-    }
-  }, [])
-
-  // A conversation Nourish AI is still handling keeps moving while the
-  // nutritionist watches — one live exchange per view.
-  useEffect(() => {
-    if (
-      convo.handledBy !== 'ai' ||
-      convo.status !== 'active' ||
-      convo.liveSimulated
-    )
-      return
-    convo.liveSimulated = true
-    const t1 = setTimeout(
-      () => {
-        convo.messages.push({
-          from: 'client',
-          text: randOf(CLIENT_FOLLOWUPS),
-          time: new Date(),
-          attachment: null,
-        })
-        refresh()
-        setTyping('ai')
-        const t2 = setTimeout(
-          () => {
-            setTyping(null)
-            convo.messages.push({
-              from: 'ai',
-              text: randOf(COACH_REPLIES),
-              time: new Date(),
-              attachment: null,
-            })
-            refresh()
-          },
-          1300 + Math.random() * 1100,
-        )
-        timers.current.push(t2)
-      },
-      2600 + Math.random() * 2600,
-    )
-    timers.current.push(t1)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  const simulateClientReply = () => {
-    setTyping('client')
-    const delay = 1100 + Math.random() * 1300
-    const t = setTimeout(() => {
-      setTyping(null)
-      convo.messages.push({
-        from: 'client',
-        text: randOf(CLIENT_FOLLOWUPS),
-        time: new Date(),
-        attachment: null,
-      })
-      refresh()
-    }, delay)
-    timers.current.push(t)
-  }
-
   const sendMessage = () => {
     const text = input.trim()
     if ((!text && !pendingAttachment) || convo.handledBy !== 'nutritionist')
       return
-    convo.messages.push({
-      from: 'coach',
-      text,
-      time: new Date(),
-      attachment: pendingAttachment,
-    })
+    const body: SendMessageBody = { text, attachment: pendingAttachment }
     setInput('')
     setPendingAttachment(null)
-    convo.unread = 0
-    refresh()
     if (inputRef.current) inputRef.current.style.height = 'auto'
-    simulateClientReply()
+    // The message appears immediately (optimistic); once it's persisted the
+    // client sends a simulated reply.
+    sendMessageMutation.mutate(
+      { id: convo.id, body },
+      { onSuccess: () => triggerClientReply() },
+    )
   }
 
   const takeOver = () => {
-    convo.handledBy = 'nutritionist'
-    convo.messages.push({
-      from: 'system',
-      text: 'Sarah Nolan took over this conversation',
-      time: new Date(),
-      attachment: null,
-    })
-    showToast(`You're now chatting live with ${c.name}`)
-    refresh()
+    handoff.mutate(
+      { id: convo.id, handledBy: 'nutritionist' },
+      { onSuccess: () => showToast(`You're now chatting live with ${c.name}`) },
+    )
   }
   const handBack = () => {
-    convo.handledBy = 'ai'
-    convo.messages.push({
-      from: 'system',
-      text: 'Handed the conversation back to Nourish AI',
-      time: new Date(),
-      attachment: null,
-    })
-    showToast(`Nourish AI is handling ${c.name} again`)
-    refresh()
+    handoff.mutate(
+      { id: convo.id, handledBy: 'ai' },
+      { onSuccess: () => showToast(`Nourish AI is handling ${c.name} again`) },
+    )
   }
 
   const onFile = (file: File) => {
@@ -372,9 +296,6 @@ export function MessageThread({
   return (
     <section className="chat-center-col" id="chatCenterCol">
       <div className="chat-header">
-        {/* The thread header is now the only place the client is identified —
-            the right rail used to repeat the same avatar, name and meta line
-            directly opposite it. */}
         <div className="chat-header-meta">
           <Avatar initials={c.initials} color={c.color} />
           <div className="chat-header-id">

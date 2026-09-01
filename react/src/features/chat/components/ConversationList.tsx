@@ -1,7 +1,8 @@
 import { Icon } from '@/components/atoms/Icon'
 import { Avatar } from '@/components/atoms/Avatar'
-import { conversationsForTab, filterConversations, timeAgoShort } from '../data'
-import type { ChatTab, Conversation } from '../types'
+import { timeAgoShort } from '../data'
+import type { ConversationSummary } from '../api/chat.types'
+import type { ChatTab } from '../types'
 
 const BASE_TABS: { id: ChatTab; label: string }[] = [
   { id: 'inbox', label: 'All' },
@@ -14,19 +15,52 @@ const STARRED_TAB: { id: ChatTab; label: string } = {
   label: 'Pinned',
 }
 
+// Pinned float to the top, then most-recent message first — matches the
+// original conversationsForTab ordering, on summaries.
+function summariesForTab(
+  tab: ChatTab,
+  all: ConversationSummary[],
+): ConversationSummary[] {
+  const base =
+    tab === 'inbox'
+      ? all
+      : tab === 'new'
+        ? all.filter((c) => c.client.status === 'new')
+        : tab === 'starred'
+          ? all.filter((c) => c.starred)
+          : all.filter((c) => c.status === tab)
+  return base.slice().sort((a, b) => {
+    if (a.starred !== b.starred) return a.starred ? -1 : 1
+    return b.lastMessage.time.getTime() - a.lastMessage.time.getTime()
+  })
+}
+
+function filterSummaries(
+  list: ConversationSummary[],
+  query: string,
+): ConversationSummary[] {
+  const q = query.trim().toLowerCase()
+  if (!q) return list
+  return list.filter(
+    (c) =>
+      c.client.name.toLowerCase().includes(q) ||
+      c.lastMessage.text.toLowerCase().includes(q),
+  )
+}
+
 function ConvoCard({
   c,
   selected,
   onSelect,
   onToggleStar,
 }: {
-  c: Conversation
+  c: ConversationSummary
   selected: boolean
   onSelect: (id: string) => void
-  onToggleStar: (id: string) => void
+  onToggleStar: (id: string, starred: boolean) => void
 }) {
-  const last = c.messages[c.messages.length - 1]
-  const preview = (last.attachment ? '📎 ' : '') + last.text
+  const preview =
+    (c.lastMessage.hasAttachment ? '📎 ' : '') + c.lastMessage.text
   const needsNutritionist = c.status === 'waiting'
   return (
     <li>
@@ -62,12 +96,14 @@ function ConvoCard({
                 }
                 onClick={(e) => {
                   e.stopPropagation()
-                  onToggleStar(c.id)
+                  onToggleStar(c.id, !c.starred)
                 }}
               >
                 <Icon name="star" />
               </button>
-              <span className="convo-time">{timeAgoShort(last.time)}</span>
+              <span className="convo-time">
+                {timeAgoShort(c.lastMessage.time)}
+              </span>
             </span>
           </span>
           <span className="convo-preview">{preview}</span>
@@ -95,6 +131,8 @@ function ConvoCard({
 }
 
 export function ConversationList({
+  summaries,
+  loading,
   tab,
   query,
   selectedId,
@@ -103,16 +141,18 @@ export function ConversationList({
   onSelect,
   onToggleStar,
 }: {
+  summaries: ConversationSummary[]
+  loading: boolean
   tab: ChatTab
   query: string
   selectedId: string | null
   onTab: (t: ChatTab) => void
   onQuery: (q: string) => void
   onSelect: (id: string) => void
-  onToggleStar: (id: string) => void
+  onToggleStar: (id: string, starred: boolean) => void
 }) {
-  const list = filterConversations(conversationsForTab(tab), query)
-  const hasStarred = conversationsForTab('starred').length > 0
+  const list = filterSummaries(summariesForTab(tab, summaries), query)
+  const hasStarred = summaries.some((c) => c.starred)
   const tabs = hasStarred
     ? [BASE_TABS[0], BASE_TABS[1], STARRED_TAB, BASE_TABS[2], BASE_TABS[3]]
     : BASE_TABS
@@ -132,7 +172,7 @@ export function ConversationList({
 
       <div className="chat-tabs" role="tablist">
         {tabs.map((t) => {
-          const tabConvos = conversationsForTab(t.id)
+          const tabConvos = summariesForTab(t.id, summaries)
           const total = tabConvos.length
           const unread = tabConvos.filter((c) => c.unread).length
           return (
@@ -154,7 +194,11 @@ export function ConversationList({
       </div>
 
       <ul className="chat-convo-list">
-        {list.length ? (
+        {loading ? (
+          <li className="convo-empty" aria-busy="true">
+            <span className="skel skel-wide" />
+          </li>
+        ) : list.length ? (
           list.map((c) => (
             <ConvoCard
               key={c.id}

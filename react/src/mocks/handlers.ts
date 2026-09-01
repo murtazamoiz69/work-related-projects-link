@@ -6,6 +6,7 @@ import { programsHandlers } from '@/features/programs/api/programs.handlers'
 import { dashboardHandlers } from '@/features/dashboard/api/dashboard.handlers'
 import { settingsHandlers } from '@/features/settings/api/settings.handlers'
 import { authHandlers } from '@/features/auth/api/auth.handlers'
+import { chatHandlers } from '@/features/chat/api/chat.handlers'
 
 export const handlers = [
   ...authHandlers,
@@ -14,4 +15,5 @@ export const handlers = [
   ...programsHandlers,
   ...dashboardHandlers,
   ...settingsHandlers,
+  ...chatHandlers,
 ]

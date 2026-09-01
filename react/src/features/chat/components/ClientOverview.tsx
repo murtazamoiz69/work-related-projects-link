@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { Icon } from '@/components/atoms/Icon'
 import { formatCheckIn, formatJoinDate } from '@/features/clients'
-import { showToast } from '@/lib/toast'
+import { useAddNote } from '../hooks/useConversations'
 import { deriveClinicalProfile } from '../plan-workspace'
 import { formatTime, isToday, summarizeNotes } from '../data'
 import { ActivityLogModal } from './ActivityLogModal'
@@ -33,33 +33,25 @@ const PROFILE_SECTIONS: {
 ]
 const UPLOADS_PREVIEW_MAX = 6
 
-export function ClientOverview({
-  convo,
-  refresh,
-}: {
-  convo: Conversation
-  refresh: () => void
-}) {
+export function ClientOverview({ convo }: { convo: Conversation }) {
   const c = convo.client
   const [section, setSection] = useState<ProfileSectionId>('notes')
   const [noteText, setNoteText] = useState('')
   const [noteAttachment, setNoteAttachment] =
     useState<ChatNoteAttachment | null>(null)
   const noteFileRef = useRef<HTMLInputElement>(null)
+  const addNoteMutation = useAddNote()
 
   const addNote = () => {
     const text = noteText.trim()
     if (!text && !noteAttachment) return
-    convo.notes.unshift({
-      author: 'Sarah Nolan',
-      text,
-      days: 0,
-      attachment: noteAttachment,
+    // The note is prepended + a toast shown by the mutation's onSuccess.
+    addNoteMutation.mutate({
+      id: convo.id,
+      body: { text, attachment: noteAttachment },
     })
     setNoteText('')
     setNoteAttachment(null)
-    refresh()
-    showToast('Note added')
   }
 
   return (
