@@ -4,16 +4,7 @@
     {
       "name": "nws-dev",
       "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "--prefix",
-        "react",
-        "run",
-        "dev",
-        "--",
-        "--port",
-        "5180",
-        "--strictPort"
-      ],
+      "runtimeArgs": ["run", "dev", "--", "--port", "5180", "--strictPort"],
       "port": 5180
     }
   ]

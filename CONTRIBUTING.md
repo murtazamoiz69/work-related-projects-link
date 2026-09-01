@@ -5,12 +5,11 @@ How humans work in this repo. Agents: see [`AGENTS.md`](./AGENTS.md). Rules: see
 ## Prerequisites
 
 - Node 20+ and npm.
-- Work happens inside `react/`.
+- The app lives at the repository root.
 
 ## Setup
 
 ```bash
-cd react
 npm install
 cp .env.example .env   # then fill in values
 npm run dev            # http://localhost:5173

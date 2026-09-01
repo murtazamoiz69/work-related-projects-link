@@ -2,7 +2,7 @@
 # Text files are stored with LF in the repo; Git converts on checkout per the
 # user's core.autocrlf. This stops Windows CRLF checkouts from showing every
 # file as "modified" and keeps diffs clean. Prettier's endOfLine:"auto"
-# (react/.prettierrc.json) accepts whatever the working tree uses.
+# (.prettierrc.json) accepts whatever the working tree uses.
 * text=auto
 
 # Explicit text types (belt-and-suspenders).
