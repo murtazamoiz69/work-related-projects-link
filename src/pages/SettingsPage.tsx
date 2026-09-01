@@ -425,7 +425,9 @@ function SecuritySection() {
         </label>
       </div>
       {firstError ? (
-        <p className="settings-hint is-error">{firstError}</p>
+        <p className="settings-hint is-error" role="alert">
+          {firstError}
+        </p>
       ) : null}
 
       <div className="settings-section-foot">
@@ -460,6 +462,7 @@ function SecuritySection() {
         <span className="toggle-switch">
           <input
             type="checkbox"
+            aria-label="Two-factor authentication"
             checked={prefs ? prefs.twoFactor : false}
             disabled={!prefs}
             onChange={(e) => toggle2FA(e.target.checked)}

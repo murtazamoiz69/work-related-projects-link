@@ -149,7 +149,9 @@ export function LoginPage({ redirect }: LoginPageProps) {
             </div>
 
             {firstError ? (
-              <p className="settings-hint is-error">{firstError}</p>
+              <p className="settings-hint is-error" role="alert">
+                {firstError}
+              </p>
             ) : null}
 
             <button

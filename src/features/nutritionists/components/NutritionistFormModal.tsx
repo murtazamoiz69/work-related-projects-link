@@ -105,14 +105,18 @@ export function NutritionistFormModal({
         <span>Full name</span>
         <input type="text" autoFocus {...register('name')} />
         {errors.name ? (
-          <span className="settings-hint is-error">{errors.name.message}</span>
+          <span className="settings-hint is-error" role="alert">
+            {errors.name.message}
+          </span>
         ) : null}
       </label>
       <label className="modal-field">
         <span>Email</span>
         <input type="email" {...register('email')} />
         {errors.email ? (
-          <span className="settings-hint is-error">{errors.email.message}</span>
+          <span className="settings-hint is-error" role="alert">
+            {errors.email.message}
+          </span>
         ) : null}
       </label>
       <label className="modal-field">
@@ -123,7 +127,7 @@ export function NutritionistFormModal({
           {...register('qualification')}
         />
         {errors.qualification ? (
-          <span className="settings-hint is-error">
+          <span className="settings-hint is-error" role="alert">
             {errors.qualification.message}
           </span>
         ) : null}
@@ -136,7 +140,7 @@ export function NutritionistFormModal({
           {...register('experienceYears', { valueAsNumber: true })}
         />
         {errors.experienceYears ? (
-          <span className="settings-hint is-error">
+          <span className="settings-hint is-error" role="alert">
             {errors.experienceYears.message}
           </span>
         ) : null}

@@ -157,7 +157,7 @@ export function ExtendProgramModal({
           <span>New expiry date</span>
           <input type="date" {...register('customDate')} />
           {errors.customDate ? (
-            <span className="settings-hint is-error">
+            <span className="settings-hint is-error" role="alert">
               {errors.customDate.message}
             </span>
           ) : null}
