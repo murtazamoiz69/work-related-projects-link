@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Icon } from '@/components/atoms/Icon'
+import { Backdrop } from '@/components/molecules/Backdrop'
 import { showToast } from '@/lib/toast'
 import { MEAL_LIBRARY, MEAL_SLOTS, newMealEntry } from '@/features/programs'
 import type { MealSlot } from '@/features/programs'
@@ -101,12 +102,7 @@ export function MealPickerModal({
   }
 
   return (
-    <div
-      className="modal-overlay pw-modal-overlay"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose()
-      }}
-    >
+    <Backdrop className="modal-overlay pw-modal-overlay" onClose={onClose}>
       <div className="modal-card tpl-picker-card pw-tpl-picker">
         <div className="modal-head">
           <h3>
@@ -214,7 +210,7 @@ export function MealPickerModal({
           </button>
         </div>
       </div>
-    </div>
+    </Backdrop>
   )
 }
 

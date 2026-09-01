@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Icon } from '@/components/atoms/Icon'
+import { Backdrop } from '@/components/molecules/Backdrop'
 import { showToast } from '@/lib/toast'
 import {
   buildMealTemplate,
@@ -63,12 +64,7 @@ export function SaveWeekTemplateModal({
   }
 
   return (
-    <div
-      className="modal-overlay pw-modal-overlay"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose()
-      }}
-    >
+    <Backdrop className="modal-overlay pw-modal-overlay" onClose={onClose}>
       <div className="modal-card save-week-tpl-modal">
         <div className="modal-head">
           <h3>Save Week {weekNum} to Library</h3>
@@ -127,6 +123,6 @@ export function SaveWeekTemplateModal({
           </button>
         </div>
       </div>
-    </div>
+    </Backdrop>
   )
 }

@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef } from 'react'
 import { Icon } from '@/components/atoms/Icon'
+import { Backdrop } from '@/components/molecules/Backdrop'
 import { ActivityFilterBar } from './ActivityFilterBar'
 import { ActivityLogList } from './ActivityLogList'
 import { useActivityFilters } from '../hooks/useActivityFilters'
@@ -89,12 +90,7 @@ export function ActivityLogModal({
   }, [onClose])
 
   return (
-    <div
-      className="modal-overlay"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose()
-      }}
-    >
+    <Backdrop className="modal-overlay" onClose={onClose}>
       <div
         className="modal-card activity-log-modal-card"
         role="dialog"
@@ -157,6 +153,6 @@ export function ActivityLogModal({
           />
         </div>
       </div>
-    </div>
+    </Backdrop>
   )
 }

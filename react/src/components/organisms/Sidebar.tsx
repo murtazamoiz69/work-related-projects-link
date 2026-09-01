@@ -18,6 +18,9 @@ export function Sidebar() {
   }
 
   return (
+    // Hover-to-expand is mirrored by onFocus/onBlur, so keyboard users get the
+    // same expand behavior when they tab into the nav.
+    // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
     <aside
       className={`sidebar${expanded ? ' is-expanded' : ''}`}
       aria-label="Main navigation"

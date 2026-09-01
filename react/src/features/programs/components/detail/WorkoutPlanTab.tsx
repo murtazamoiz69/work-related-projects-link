@@ -122,6 +122,9 @@ export function WorkoutPlanTab({
           <div className="wk-day-list">
             {week
               ? week.days.map((day) => (
+                  // Drop target for pointer drag-and-drop reordering; keyboard
+                  // users add/edit via the buttons within each day.
+                  // eslint-disable-next-line jsx-a11y/no-static-element-interactions
                   <div
                     className="wk-day-row"
                     key={day.dayNum}
@@ -133,6 +136,9 @@ export function WorkoutPlanTab({
                   >
                     <span className="wk-day-label">{day.label}</span>
                     {day.type === 'rest' || !day.workout ? (
+                      // Drag source for pointer reordering; the "Add workout"
+                      // button below is the keyboard path.
+                      // eslint-disable-next-line jsx-a11y/no-static-element-interactions
                       <div
                         className="wk-rest-card"
                         draggable
@@ -155,6 +161,9 @@ export function WorkoutPlanTab({
                         </button>
                       </div>
                     ) : (
+                      // Drag source for pointer reordering; the card body is a
+                      // keyboard-activatable button (below) for editing.
+                      // eslint-disable-next-line jsx-a11y/no-static-element-interactions
                       <div
                         className="workout-card"
                         draggable
@@ -167,9 +176,17 @@ export function WorkoutPlanTab({
                         </span>
                         <div
                           className="workout-card-body"
+                          role="button"
+                          tabIndex={0}
                           onClick={() =>
                             handleCardAction('edit', resolvedWeek, day.dayNum)
                           }
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault()
+                              handleCardAction('edit', resolvedWeek, day.dayNum)
+                            }
+                          }}
                         >
                           <span className="workout-card-name">
                             {day.workout.name}

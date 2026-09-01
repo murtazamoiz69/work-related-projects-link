@@ -101,6 +101,11 @@ function LibraryHoverMenu({
   }
 
   return (
+    // Hover/focus-triggered library menu. The pointer handlers are mirrored by
+    // onFocus/onBlur, so keyboard users get the same menu; the trigger wraps
+    // arbitrary children (some interactive), so it stays a span rather than a
+    // nested button.
+    // eslint-disable-next-line jsx-a11y/no-static-element-interactions
     <span
       className={`pw-lib-trigger${pos ? ' open' : ''}${className ? ` ${className}` : ''}`}
       onMouseEnter={(e) => open(e.currentTarget)}
@@ -126,6 +131,7 @@ function LibraryHoverMenu({
         <span
           className="pw-lib-menu"
           role="menu"
+          tabIndex={-1}
           style={{ top: pos.top, left: pos.left }}
           onMouseEnter={cancelClose}
           onMouseLeave={scheduleClose}
@@ -196,19 +202,28 @@ function MealCard({
     showToast('Meal removed')
   }
 
+  const openSwap = () =>
+    ctx.openModal({
+      kind: 'mealPicker',
+      weekNum,
+      dayNum: day.dayNum,
+      entryUid: entry.uid,
+      enforceUpcoming: false,
+    })
+
   return (
     <div
       className={`meal-card${risky ? ' risk' : ''}`}
       title="View & swap"
-      onClick={() =>
-        ctx.openModal({
-          kind: 'mealPicker',
-          weekNum,
-          dayNum: day.dayNum,
-          entryUid: entry.uid,
-          enforceUpcoming: false,
-        })
-      }
+      role="button"
+      tabIndex={0}
+      onClick={openSwap}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          openSwap()
+        }
+      }}
     >
       <span className="meal-card-slot">
         <span>

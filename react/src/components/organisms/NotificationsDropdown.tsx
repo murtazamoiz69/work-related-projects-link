@@ -8,6 +8,9 @@ export function NotificationsDropdown() {
   const markAllRead = useNotificationsStore((s) => s.markAllRead)
 
   return (
+    // Container guard: swallows clicks so they don't reach the Topbar's
+    // click-outside handler. Not an interactive control itself.
+    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
     <div
       className="shell-dropdown notif-dropdown"
       onClick={(e) => e.stopPropagation()}
@@ -20,6 +23,10 @@ export function NotificationsDropdown() {
       </div>
       <ul className="notif-list">
         {notifications.map((n, i) => (
+          // Clicking an item marks it read — a pointer convenience. Keyboard
+          // users have the "Mark all read" button above, so the <li> stays a
+          // list item rather than being forced into an interactive role.
+          // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions
           <li
             key={i}
             className={`notif-item${n.read ? '' : ' unread'}`}

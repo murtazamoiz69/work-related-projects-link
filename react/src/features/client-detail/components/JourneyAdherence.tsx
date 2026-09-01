@@ -42,9 +42,26 @@ function AdherenceRow({ w }: { w: ProgramWeek }) {
     <li
       className={`adh-row${clickable ? '' : ' is-muted'}${open ? ' is-open' : ''}`}
     >
+      {/* When clickable, role/tabIndex/onKeyDown are applied in lockstep with
+          onClick (below); the linter can't see the correlation across the
+          conditionals, so the static-interaction check is disabled here. */}
+      {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
       <div
         className="adh-row-head"
+        role={clickable ? 'button' : undefined}
+        tabIndex={clickable ? 0 : undefined}
+        aria-expanded={clickable ? open : undefined}
         onClick={clickable ? () => setOpen((o) => !o) : undefined}
+        onKeyDown={
+          clickable
+            ? (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  setOpen((o) => !o)
+                }
+              }
+            : undefined
+        }
       >
         <span className="adh-week">Week {w.week}</span>
         <div className="adh-bars">

@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { Icon } from '@/components/atoms/Icon'
+import { Backdrop } from '@/components/molecules/Backdrop'
 
 // Full-size viewer for anything the user has sent in: progress photos, meal
 // shots, screenshots, and the page previews standing in for documents.
@@ -30,14 +31,12 @@ export function PhotoLightbox({
   }, [index, photos.length, onNavigate, onClose])
 
   return (
-    <div
+    <Backdrop
       className="photo-lightbox-overlay"
       role="dialog"
       aria-modal="true"
       aria-label={caption ?? 'Photo viewer'}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose()
-      }}
+      onClose={onClose}
     >
       <button
         type="button"
@@ -87,6 +86,6 @@ export function PhotoLightbox({
           {index + 1} / {photos.length}
         </span>
       ) : null}
-    </div>
+    </Backdrop>
   )
 }

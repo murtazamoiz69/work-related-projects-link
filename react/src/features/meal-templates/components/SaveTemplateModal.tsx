@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Icon } from '@/components/atoms/Icon'
+import { Backdrop } from '@/components/molecules/Backdrop'
 
 export function SaveTemplateModal({
   dayCount,
@@ -31,12 +32,7 @@ export function SaveTemplateModal({
   }
 
   return (
-    <div
-      className="modal-overlay pw-modal-overlay"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose()
-      }}
-    >
+    <Backdrop className="modal-overlay pw-modal-overlay" onClose={onClose}>
       <div className="modal-card">
         <div className="modal-head">
           <h3>Save Meal Template</h3>
@@ -73,6 +69,6 @@ export function SaveTemplateModal({
           </button>
         </div>
       </div>
-    </div>
+    </Backdrop>
   )
 }

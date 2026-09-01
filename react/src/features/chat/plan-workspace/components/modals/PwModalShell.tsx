@@ -1,5 +1,6 @@
 import { useEffect, type ReactNode } from 'react'
 import { Icon } from '@/components/atoms/Icon'
+import { Backdrop } from '@/components/molecules/Backdrop'
 
 // V2's openPwModal — a centered modal that renders above the full-screen plan
 // workspace overlay (`.modal-overlay.pw-modal-overlay`).
@@ -25,12 +26,7 @@ export function PwModalShell({
   }, [onClose])
 
   return (
-    <div
-      className="modal-overlay pw-modal-overlay"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose()
-      }}
-    >
+    <Backdrop className="modal-overlay pw-modal-overlay" onClose={onClose}>
       <div
         className={`modal-card pw-modal-card${cardClassName ? ` ${cardClassName}` : ''}`}
       >
@@ -43,6 +39,6 @@ export function PwModalShell({
         <div className="modal-body pw-modal-body">{children}</div>
         {footer ? <div className="modal-foot">{footer}</div> : null}
       </div>
-    </div>
+    </Backdrop>
   )
 }

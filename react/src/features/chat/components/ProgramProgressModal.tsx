@@ -1,5 +1,6 @@
 import { useEffect, useId, useMemo, useRef } from 'react'
 import { Icon } from '@/components/atoms/Icon'
+import { Backdrop } from '@/components/molecules/Backdrop'
 import type { Client } from '@/features/clients'
 import {
   CurrentProgramLabel,
@@ -75,12 +76,7 @@ export function ProgramProgressModal({
   }, [onClose])
 
   return (
-    <div
-      className="modal-overlay"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose()
-      }}
-    >
+    <Backdrop className="modal-overlay" onClose={onClose}>
       <div
         className="modal-card prog-progress-card"
         role="dialog"
@@ -117,6 +113,6 @@ export function ProgramProgressModal({
           />
         </div>
       </div>
-    </div>
+    </Backdrop>
   )
 }

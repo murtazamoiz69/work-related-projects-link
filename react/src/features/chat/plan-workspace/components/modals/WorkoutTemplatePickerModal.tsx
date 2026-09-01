@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Icon } from '@/components/atoms/Icon'
+import { Backdrop } from '@/components/molecules/Backdrop'
 import { showToast } from '@/lib/toast'
 import {
   buildWorkout,
@@ -188,12 +189,7 @@ export function WorkoutTemplatePickerModal({
   }
 
   return (
-    <div
-      className="modal-overlay pw-modal-overlay"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose()
-      }}
-    >
+    <Backdrop className="modal-overlay pw-modal-overlay" onClose={onClose}>
       <div className="modal-card tpl-picker-card pw-tpl-picker">
         <div className="modal-head">
           <h3>Add workout · {day?.label}</h3>
@@ -415,6 +411,6 @@ export function WorkoutTemplatePickerModal({
           </button>
         </div>
       </div>
-    </div>
+    </Backdrop>
   )
 }

@@ -128,6 +128,21 @@ function SessionCard({
     ctx.refresh()
   }
 
+  const openCard = () =>
+    isPast
+      ? ctx.openModal({
+          kind: 'workoutPreview',
+          weekNum: week.weekNum,
+          dayNum: day.dayNum,
+          wid,
+        })
+      : ctx.openModal({
+          kind: 'workoutEditor',
+          weekNum: week.weekNum,
+          dayNum: day.dayNum,
+          wid,
+        })
+
   return (
     <div
       className={`workout-card${risky ? ' risk' : ''}`}
@@ -135,21 +150,15 @@ function SessionCard({
     >
       <div
         className="workout-card-body"
-        onClick={() =>
-          isPast
-            ? ctx.openModal({
-                kind: 'workoutPreview',
-                weekNum: week.weekNum,
-                dayNum: day.dayNum,
-                wid,
-              })
-            : ctx.openModal({
-                kind: 'workoutEditor',
-                weekNum: week.weekNum,
-                dayNum: day.dayNum,
-                wid,
-              })
-        }
+        role="button"
+        tabIndex={0}
+        onClick={openCard}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            openCard()
+          }
+        }}
       >
         <span className="workout-card-name">{wk.name}</span>
         <div className="workout-card-meta">

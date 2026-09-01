@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { Icon } from '@/components/atoms/Icon'
+import { Backdrop } from '@/components/molecules/Backdrop'
 import { exerciseById, makeSlot } from '../../data'
 import type { Workout, WorkoutSlot } from '../../types'
 import { ExercisePickerModal } from './ExercisePickerModal'
@@ -85,12 +86,7 @@ export function WorkoutEditorModal({
 
   return (
     <>
-      <div
-        className="modal-overlay"
-        onClick={(e) => {
-          if (e.target === e.currentTarget) commit()
-        }}
-      >
+      <Backdrop className="modal-overlay" onClose={commit}>
         <div className="modal-card pw-modal-card pw-editor">
           <div className="modal-head">
             <h3>
@@ -118,6 +114,9 @@ export function WorkoutEditorModal({
                 const ex = exerciseById(slot.exerciseId)
                 if (!ex) return null
                 return (
+                  // Drag-to-reorder is a pointer-only affordance; keyboard
+                  // users reorder via the Swap/Remove controls in each row.
+                  // eslint-disable-next-line jsx-a11y/no-static-element-interactions
                   <div
                     key={slot.uid}
                     className="pw-edit-row"
@@ -217,7 +216,7 @@ export function WorkoutEditorModal({
             </button>
           </div>
         </div>
-      </div>
+      </Backdrop>
       {picker ? (
         <ExercisePickerModal
           slots={exercises}

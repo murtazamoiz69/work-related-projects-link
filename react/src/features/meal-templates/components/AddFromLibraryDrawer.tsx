@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Icon } from '@/components/atoms/Icon'
+import { Backdrop } from '@/components/molecules/Backdrop'
 import { formatJoinDate } from '@/features/clients'
 import { useMealTemplatesStore } from '../store'
 import type { MealTemplate, MealTemplateType } from '../types'
@@ -120,12 +121,7 @@ export function AddFromLibraryDrawer({
 
   return (
     <>
-      <div
-        className="drawer-overlay pw-drawer-overlay"
-        onClick={(e) => {
-          if (e.target === e.currentTarget) onClose()
-        }}
-      >
+      <Backdrop className="drawer-overlay pw-drawer-overlay" onClose={onClose}>
         <div className="drawer-panel">
           <div className="drawer-head">
             <div>
@@ -185,7 +181,7 @@ export function AddFromLibraryDrawer({
             )}
           </div>
         </div>
-      </div>
+      </Backdrop>
 
       {flow.step === 'confirm' ? (
         <ConfirmDialog

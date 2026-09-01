@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, type ReactNode } from 'react'
 import { Icon } from '@/components/atoms/Icon'
+import { Backdrop } from '@/components/molecules/Backdrop'
 
 /** Shared confirmation dialog. Escape cancels, focus starts on Cancel so the
  *  safe choice is the one a stray Enter picks, and focus returns to whatever
@@ -47,12 +48,7 @@ export function ConfirmDialog({
   }, [onClose])
 
   return (
-    <div
-      className={overlayClassName}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose()
-      }}
-    >
+    <Backdrop className={overlayClassName} onClose={onClose}>
       <div
         className="modal-card confirm-dialog-card"
         role="dialog"
@@ -84,6 +80,6 @@ export function ConfirmDialog({
           </button>
         </div>
       </div>
-    </div>
+    </Backdrop>
   )
 }

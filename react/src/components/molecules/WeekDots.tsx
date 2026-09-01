@@ -47,11 +47,12 @@ export function WeekDots({
   return (
     <div className={`week-dots week-dots-${size}`}>
       {days.map((d) => (
+        // The hover tooltip is pointer-only sugar; its text is already exposed
+        // to assistive tech via aria-label, so no keyboard handler is needed.
+        // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
         <span
           key={d.daysAgo}
           className={`week-dot tier-${d.tier}`}
-          // The hover tooltip is pointer-only, so the same text is exposed
-          // to assistive tech here rather than being lost with the pointer.
           role="img"
           aria-label={d.popover.replace(/\n/g, '. ')}
           onMouseEnter={

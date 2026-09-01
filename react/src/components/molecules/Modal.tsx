@@ -1,5 +1,6 @@
 import { useEffect, type ReactNode } from 'react'
 import { Icon } from '@/components/atoms/Icon'
+import { Backdrop } from '@/components/molecules/Backdrop'
 
 type ModalProps = {
   title: ReactNode
@@ -27,12 +28,7 @@ export function Modal({
   }, [onClose])
 
   return (
-    <div
-      className="modal-overlay"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose()
-      }}
-    >
+    <Backdrop className="modal-overlay" onClose={onClose}>
       <div className={`modal-card${cardClassName ? ` ${cardClassName}` : ''}`}>
         <div className="modal-head">
           <h3>{title}</h3>
@@ -43,6 +39,6 @@ export function Modal({
         <div className="modal-body">{children}</div>
         {footer ? <div className="modal-foot">{footer}</div> : null}
       </div>
-    </div>
+    </Backdrop>
   )
 }
