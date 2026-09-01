@@ -4,10 +4,12 @@ import { clientsHandlers } from '@/features/clients/api/clients.handlers'
 import { nutritionistsHandlers } from '@/features/nutritionists/api/nutritionists.handlers'
 import { programsHandlers } from '@/features/programs/api/programs.handlers'
 import { dashboardHandlers } from '@/features/dashboard/api/dashboard.handlers'
+import { settingsHandlers } from '@/features/settings/api/settings.handlers'
 
 export const handlers = [
   ...clientsHandlers,
   ...nutritionistsHandlers,
   ...programsHandlers,
   ...dashboardHandlers,
+  ...settingsHandlers,
 ]
