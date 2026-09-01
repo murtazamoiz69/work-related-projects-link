@@ -1,0 +1,59 @@
+# CI for the NWS frontend. Runs the same gate contributors run locally
+# (see CLAUDE.md "Before you call a change done") on every push and MR.
+# Separate jobs so the pipeline graph shows exactly which check failed.
+
+image: node:20
+
+stages:
+  - verify
+
+# Cache npm's download cache (not node_modules — `npm ci` wipes that) keyed on
+# the lockfile, so installs across jobs/pipelines are fast.
+variables:
+  npm_config_cache: '$CI_PROJECT_DIR/.npm'
+
+cache:
+  key:
+    files:
+      - package-lock.json
+  paths:
+    - .npm/
+
+default:
+  before_script:
+    - npm ci --prefer-offline --no-audit
+
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH'
+
+typecheck:
+  stage: verify
+  script:
+    - npm run typecheck
+
+lint:
+  stage: verify
+  script:
+    - npm run lint
+
+format:
+  stage: verify
+  script:
+    - npm run format:check
+
+test:
+  stage: verify
+  script:
+    - npm run test:run
+
+build:
+  stage: verify
+  script:
+    - npm run build
+  artifacts:
+    name: 'dist-$CI_COMMIT_SHORT_SHA'
+    paths:
+      - dist/
+    expire_in: 1 week
