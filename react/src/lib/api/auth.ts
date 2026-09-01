@@ -20,3 +20,17 @@ export function setAccessToken(token: string | null): void {
     /* storage unavailable — nothing to persist */
   }
 }
+
+// --- Unauthorized (401) seam ---
+// The HTTP client can't import the router/store without a cycle, so it notifies
+// through this callback. The app registers a handler (main.tsx) that logs out
+// and redirects to /login.
+let unauthorizedHandler: (() => void) | null = null
+
+export function setUnauthorizedHandler(fn: (() => void) | null): void {
+  unauthorizedHandler = fn
+}
+
+export function notifyUnauthorized(): void {
+  unauthorizedHandler?.()
+}

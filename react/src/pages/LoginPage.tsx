@@ -4,8 +4,10 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useNavigate } from '@tanstack/react-router'
 import { Icon } from '@/components/atoms/Icon'
+import { apiErrorMessage } from '@/lib/api/errors'
+import { isApiError } from '@/lib/api/types'
 import { showToast } from '@/lib/toast'
-import { useAuthStore } from '@/store/useAuthStore'
+import { useForgotPassword, useLogin } from '@/features/auth'
 
 const loginSchema = z.object({
   email: z.string().email('Enter a valid email address.'),
@@ -19,9 +21,9 @@ type LoginPageProps = { redirect?: string }
 
 export function LoginPage({ redirect }: LoginPageProps) {
   const navigate = useNavigate()
-  const login = useAuthStore((s) => s.login)
+  const loginMutation = useLogin()
+  const forgotPassword = useForgotPassword()
   const [showPassword, setShowPassword] = useState(false)
-  const [submitting, setSubmitting] = useState(false)
 
   const {
     register,
@@ -47,12 +49,17 @@ export function LoginPage({ redirect }: LoginPageProps) {
   const firstError = errors.email?.message ?? errors.password?.message ?? ''
 
   const onSubmit = (data: LoginForm) => {
-    void data
-    setSubmitting(true)
-    setTimeout(() => {
-      login()
-      navigate({ to: redirect ?? '/' })
-    }, 500)
+    loginMutation.mutate(data, {
+      onSuccess: () => navigate({ to: redirect ?? '/' }),
+      onError: (error) => {
+        setError('password', {
+          message:
+            isApiError(error) && error.kind === 'unauthorized'
+              ? 'Invalid email or password.'
+              : apiErrorMessage(error),
+        })
+      },
+    })
   }
 
   const onForgotPassword = () => {
@@ -64,8 +71,13 @@ export function LoginPage({ redirect }: LoginPageProps) {
       return
     }
     clearErrors()
-    showToast(`Password reset link sent to ${email}`)
+    forgotPassword.mutate(
+      { email },
+      { onSuccess: () => showToast(`Password reset link sent to ${email}`) },
+    )
   }
+
+  const submitting = loginMutation.isPending
 
   return (
     <>

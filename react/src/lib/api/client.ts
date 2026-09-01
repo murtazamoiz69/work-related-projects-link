@@ -5,7 +5,7 @@
 // (MSW) layer, invisible to callers. See docs/api-guidelines.md.
 import axios, { type AxiosRequestConfig } from 'axios'
 import { env } from './env'
-import { getAccessToken, setAccessToken } from './auth'
+import { getAccessToken, notifyUnauthorized, setAccessToken } from './auth'
 import { normalizeError } from './errors'
 
 const TIMEOUT_MS = 15_000
@@ -31,7 +31,10 @@ instance.interceptors.response.use(
   (response) => response,
   (error: unknown) => {
     const apiError = normalizeError(error)
-    if (apiError.kind === 'unauthorized') setAccessToken(null)
+    if (apiError.kind === 'unauthorized') {
+      setAccessToken(null)
+      notifyUnauthorized()
+    }
     return Promise.reject(apiError)
   },
 )

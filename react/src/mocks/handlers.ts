@@ -5,8 +5,10 @@ import { nutritionistsHandlers } from '@/features/nutritionists/api/nutritionist
 import { programsHandlers } from '@/features/programs/api/programs.handlers'
 import { dashboardHandlers } from '@/features/dashboard/api/dashboard.handlers'
 import { settingsHandlers } from '@/features/settings/api/settings.handlers'
+import { authHandlers } from '@/features/auth/api/auth.handlers'
 
 export const handlers = [
+  ...authHandlers,
   ...clientsHandlers,
   ...nutritionistsHandlers,
   ...programsHandlers,

@@ -1,16 +1,8 @@
 import { create } from 'zustand'
+import { getAccessToken, setAccessToken } from '@/lib/api/auth'
 import { SWITCH_PROFILES, type Profile } from '@/features/shell/data'
 
-const AUTH_KEY = 'isAuthenticated'
 const PROFILE_KEY = 'activeProfile'
-
-function readAuth(): boolean {
-  try {
-    return sessionStorage.getItem(AUTH_KEY) === 'true'
-  } catch {
-    return false
-  }
-}
 
 function readProfile(): Profile {
   try {
@@ -22,39 +14,39 @@ function readProfile(): Profile {
   return SWITCH_PROFILES[0]
 }
 
+function persistProfile(profile: Profile): void {
+  try {
+    sessionStorage.setItem(PROFILE_KEY, JSON.stringify(profile))
+  } catch {
+    /* ignore */
+  }
+}
+
 type AuthState = {
   isAuthenticated: boolean
   activeProfile: Profile
-  login: () => void
+  /** Sign in: persist the access token and the session profile. */
+  login: (profile: Profile, token: string) => void
   logout: () => void
   switchProfile: (profile: Profile) => void
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
-  isAuthenticated: readAuth(),
+  // Authentication is now driven by the presence of an access token, set at
+  // login and cleared on logout / a 401 (see lib/api/client.ts).
+  isAuthenticated: getAccessToken() != null,
   activeProfile: readProfile(),
-  login: () => {
-    try {
-      sessionStorage.setItem(AUTH_KEY, 'true')
-    } catch {
-      /* ignore */
-    }
-    set({ isAuthenticated: true })
+  login: (profile, token) => {
+    setAccessToken(token)
+    persistProfile(profile)
+    set({ isAuthenticated: true, activeProfile: profile })
   },
   logout: () => {
-    try {
-      sessionStorage.removeItem(AUTH_KEY)
-    } catch {
-      /* ignore */
-    }
+    setAccessToken(null)
     set({ isAuthenticated: false })
   },
   switchProfile: (profile) => {
-    try {
-      sessionStorage.setItem(PROFILE_KEY, JSON.stringify(profile))
-    } catch {
-      /* ignore */
-    }
+    persistProfile(profile)
     set({ activeProfile: profile })
   },
 }))
