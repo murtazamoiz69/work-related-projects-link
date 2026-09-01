@@ -1,8 +1,11 @@
-import { useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import { Icon } from '@/components/atoms/Icon'
+import { apiErrorMessage } from '@/lib/api/errors'
 import { useMiniTooltip } from '@/hooks/useMiniTooltip'
-import { CLIENTS_DATA } from '@/features/clients'
-import { buildClientProgress } from '../data'
+import {
+  useClientProgressQuery,
+  useDashboardProgramsQuery,
+} from '../hooks/useDashboardQueries'
 
 function roundedTopBarPath(
   x: number,
@@ -105,14 +108,9 @@ function BarChart({ values, ticks, tips, colorVar }: BarChartProps) {
 export function ClientProgressPanel() {
   const [rangeDays, setRangeDays] = useState(30)
   const [program, setProgram] = useState('all')
-  const programs = useMemo(
-    () => Array.from(new Set(CLIENTS_DATA.map((c) => c.program))).sort(),
-    [],
-  )
-  const data = useMemo(
-    () => buildClientProgress(rangeDays, program),
-    [rangeDays, program],
-  )
+  const { data: programs = [] } = useDashboardProgramsQuery()
+  const { data, isPending, isError, error, refetch, isFetching } =
+    useClientProgressQuery(rangeDays, program)
 
   return (
     <section className="panel">
@@ -120,7 +118,8 @@ export function ClientProgressPanel() {
         <div>
           <h2>User Progress</h2>
           <p className="panel-sub">
-            Cohort-wide trends across your {data.activeClients} active users
+            Cohort-wide trends across your {data?.activeClients ?? 0} active
+            users
           </p>
         </div>
         <div className="panel-head-actions">
@@ -150,49 +149,76 @@ export function ClientProgressPanel() {
         </div>
       </div>
 
-      <div className="progress-chart-grid">
-        <div className="panel progress-card">
-          <div className="progress-card-head">
-            <span className="progress-card-icon tone-blue">
-              <Icon name="utensils" />
-            </span>
-            <div className="progress-card-heading">
-              <span className="progress-card-label">Meal Adherence</span>
-              <span className="progress-card-headline">
-                {data.meals.headline}%
-                <span className="progress-card-sub"> on-plan this week</span>
-              </span>
-            </div>
-          </div>
-          <BarChart
-            values={data.meals.values}
-            ticks={data.ticks}
-            tips={data.tips}
-            colorVar="--blue"
-          />
+      {isError && !data ? (
+        <div className="clients-empty is-error" role="alert">
+          <Icon name="alert-triangle" />
+          <p>{apiErrorMessage(error)}</p>
+          <button
+            className="link-btn clients-empty-retry"
+            onClick={() => refetch()}
+          >
+            Try again
+          </button>
         </div>
+      ) : isPending || !data ? (
+        <div className="progress-chart-grid" aria-busy="true">
+          <div className="panel progress-card">
+            <span className="skel skel-wide" style={{ height: '1.25rem' }} />
+            <div style={{ height: 160 }} />
+          </div>
+          <div className="panel progress-card">
+            <span className="skel skel-wide" style={{ height: '1.25rem' }} />
+            <div style={{ height: 160 }} />
+          </div>
+        </div>
+      ) : (
+        <div
+          className="progress-chart-grid"
+          aria-busy={isFetching || undefined}
+        >
+          <div className="panel progress-card">
+            <div className="progress-card-head">
+              <span className="progress-card-icon tone-blue">
+                <Icon name="utensils" />
+              </span>
+              <div className="progress-card-heading">
+                <span className="progress-card-label">Meal Adherence</span>
+                <span className="progress-card-headline">
+                  {data.meals.headline}%
+                  <span className="progress-card-sub"> on-plan this week</span>
+                </span>
+              </div>
+            </div>
+            <BarChart
+              values={data.meals.values}
+              ticks={data.ticks}
+              tips={data.tips}
+              colorVar="--blue"
+            />
+          </div>
 
-        <div className="panel progress-card">
-          <div className="progress-card-head">
-            <span className="progress-card-icon tone-coral">
-              <Icon name="dumbbell" />
-            </span>
-            <div className="progress-card-heading">
-              <span className="progress-card-label">Workout Completion</span>
-              <span className="progress-card-headline">
-                {data.workouts.headline}%
-                <span className="progress-card-sub"> completion rate</span>
+          <div className="panel progress-card">
+            <div className="progress-card-head">
+              <span className="progress-card-icon tone-coral">
+                <Icon name="dumbbell" />
               </span>
+              <div className="progress-card-heading">
+                <span className="progress-card-label">Workout Completion</span>
+                <span className="progress-card-headline">
+                  {data.workouts.headline}%
+                  <span className="progress-card-sub"> completion rate</span>
+                </span>
+              </div>
             </div>
+            <BarChart
+              values={data.workouts.values}
+              ticks={data.ticks}
+              tips={data.tips}
+              colorVar="--coral"
+            />
           </div>
-          <BarChart
-            values={data.workouts.values}
-            ticks={data.ticks}
-            tips={data.tips}
-            colorVar="--coral"
-          />
         </div>
-      </div>
+      )}
     </section>
   )
 }

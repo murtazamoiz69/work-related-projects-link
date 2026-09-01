@@ -16,8 +16,9 @@ import type {
 
 const DAY_MS = 86_400_000
 
-/** Domain `Client` (Date fields) -> wire `ClientDto` (ISO strings). */
-function toDto(c: Client): ClientDto {
+/** Domain `Client` (Date fields) -> wire `ClientDto` (ISO strings). Exported so
+ *  other features (e.g. dashboard) can embed a client in their own responses. */
+export function toClientDto(c: Client): ClientDto {
   return {
     ...c,
     expiryDate: c.expiryDate.toISOString(),
@@ -29,7 +30,7 @@ function toDto(c: Client): ClientDto {
 // cases the UI must handle — nullable adherence/checkInDays (new users),
 // expired / expiring-soon / active expiries, disabled and paused users, and
 // realistic program ↔ plan relationships — because CLIENTS_DATA does.
-export const CLIENT_FIXTURES: ClientDto[] = CLIENTS_DATA.map(toDto)
+export const CLIENT_FIXTURES: ClientDto[] = CLIENTS_DATA.map(toClientDto)
 
 // Calendar-day difference between now and an ISO date — negative once past.
 // Mirrors features/clients/utils.ts `daysUntil`, on the wire (string) shape.

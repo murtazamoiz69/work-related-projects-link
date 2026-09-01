@@ -1,12 +1,18 @@
-import { useMemo } from 'react'
 import { Link } from '@tanstack/react-router'
 import { Avatar } from '@/components/atoms/Avatar'
 import { Icon } from '@/components/atoms/Icon'
 import { ClientActions } from '@/components/molecules/ClientActions'
-import { buildUpcomingExpirations } from '../data'
+import { apiErrorMessage } from '@/lib/api/errors'
+import { useUpcomingExpiryQuery } from '../hooks/useDashboardQueries'
 
 export function UpcomingExpiryPanel() {
-  const rows = useMemo(() => buildUpcomingExpirations(), [])
+  const {
+    data: rows,
+    isPending,
+    isError,
+    error,
+    refetch,
+  } = useUpcomingExpiryQuery()
 
   return (
     <section className="panel">
@@ -16,7 +22,7 @@ export function UpcomingExpiryPanel() {
           <p className="panel-sub">Plans expiring in the next 7 days</p>
         </div>
       </div>
-      <div className="clients-table-wrap">
+      <div className="clients-table-wrap" aria-busy={isPending || undefined}>
         <table className="client-table">
           <thead>
             <tr>
@@ -27,7 +33,35 @@ export function UpcomingExpiryPanel() {
             </tr>
           </thead>
           <tbody>
-            {rows.length ? (
+            {isPending ? (
+              Array.from({ length: 4 }, (_, i) => (
+                <tr key={i}>
+                  <td>
+                    <span className="skel skel-wide" />
+                  </td>
+                  <td>
+                    <span className="skel skel-narrow" />
+                  </td>
+                  <td>
+                    <span className="skel skel-narrow" />
+                  </td>
+                  <td>
+                    <span className="skel skel-narrow" />
+                  </td>
+                </tr>
+              ))
+            ) : isError ? (
+              <tr>
+                <td colSpan={4}>
+                  <p className="pw-muted" role="alert">
+                    {apiErrorMessage(error)}{' '}
+                    <button className="link-btn" onClick={() => refetch()}>
+                      Try again
+                    </button>
+                  </p>
+                </td>
+              </tr>
+            ) : rows && rows.length ? (
               rows.map(({ client, daysLeft }) => {
                 const tier =
                   daysLeft <= 2

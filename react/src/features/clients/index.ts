@@ -22,6 +22,7 @@ export {
   extendClientExpiry,
   toClient,
 } from './api/clients.api'
+export { toClientDto } from './api/clients.mock'
 export type {
   ListClientsParams,
   ClientsSearch,

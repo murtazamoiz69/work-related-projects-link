@@ -1,5 +1,5 @@
 import { Icon } from '@/components/atoms/Icon'
-import { buildKpiCounts } from '../data'
+import { useKpisQuery } from '../hooks/useDashboardQueries'
 
 type KpiCard = {
   accent: string
@@ -10,26 +10,29 @@ type KpiCard = {
 }
 
 export function KpiRow() {
-  const k = buildKpiCounts()
+  const { data: k, isPending } = useKpisQuery()
+  const dash = isPending && !k
+  const total = k?.total ?? 0
+
   const cards: KpiCard[] = [
     {
       accent: 'blue',
       icon: 'users',
-      value: k.total,
+      value: dash ? '—' : total,
       label: 'Total Users',
       tooltip: 'Every user currently assigned to your caseload.',
     },
     {
       accent: 'green',
       icon: 'user-plus',
-      value: k.newToday,
+      value: dash ? '—' : (k?.newToday ?? 0),
       label: 'New Users (24h)',
       tooltip: 'Users who joined in the last 24 hours.',
     },
     {
       accent: 'amber',
       icon: 'utensils',
-      value: `${k.mealsLogged} / ${k.total}`,
+      value: dash ? '—' : `${k?.mealsLogged ?? 0} / ${total}`,
       label: 'Logged Meals Today',
       tooltip:
         "Users who've logged at least one meal today, out of your total caseload.",
@@ -37,7 +40,7 @@ export function KpiRow() {
     {
       accent: 'coral',
       icon: 'dumbbell',
-      value: `${k.workoutsLogged} / ${k.total}`,
+      value: dash ? '—' : `${k?.workoutsLogged ?? 0} / ${total}`,
       label: 'Logged Workouts Today',
       tooltip:
         "Users who've logged a workout today, out of your total caseload.",
@@ -45,7 +48,11 @@ export function KpiRow() {
   ]
 
   return (
-    <div className="dash-kpi-grid" aria-label="User roster snapshot">
+    <div
+      className="dash-kpi-grid"
+      aria-label="User roster snapshot"
+      aria-busy={dash || undefined}
+    >
       {cards.map((c) => (
         <div className={`dash-kpi-card accent-${c.accent}`} key={c.label}>
           <button

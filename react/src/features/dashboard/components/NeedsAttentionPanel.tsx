@@ -5,14 +5,9 @@ import { CONVERSATIONS } from '@/features/chat'
 import { Icon } from '@/components/atoms/Icon'
 import { ClientActions } from '@/components/molecules/ClientActions'
 import { WeekDayHeader, WeekDots } from '@/components/molecules/WeekDots'
+import { apiErrorMessage } from '@/lib/api/errors'
 import { useMiniTooltip } from '@/hooks/useMiniTooltip'
-import {
-  ATTN_FILTER_DEFS,
-  buildFilteredAttentionList,
-  dashCurrentWeekRangeLabel,
-  dashFilterCounts,
-  dashWeeklyProgress,
-} from '../data'
+import { useNeedsAttentionQuery } from '../hooks/useDashboardQueries'
 
 const PAGE_SIZE = 8
 
@@ -24,6 +19,9 @@ export function NeedsAttentionPanel() {
   const scrollOnCollapse = useRef(false)
   const { show, hide, tooltip } = useMiniTooltip()
 
+  const { data, isPending, isError, error, refetch, isFetching } =
+    useNeedsAttentionQuery(activeFilter)
+
   // Scrolling here has to wait until *after* the collapsed (shorter) list
   // has actually committed to the DOM — scrolling before that targets the
   // still-expanded layout and lands short, stranding the user mid-page.
@@ -34,16 +32,17 @@ export function NeedsAttentionPanel() {
     }
   }, [showAll])
 
-  const counts = useMemo(() => dashFilterCounts(), [])
-  const weekRange = useMemo(() => dashCurrentWeekRangeLabel(), [])
+  const filters = data?.filters ?? []
+  const counts = data?.counts ?? {}
+  const weekRange = data?.weekRange ?? ''
 
   const matches = useMemo(() => {
-    const all = buildFilteredAttentionList([activeFilter])
+    const all = data?.rows ?? []
     const q = search.trim().toLowerCase()
     return q
       ? all.filter((row) => row.client.name.toLowerCase().includes(q))
       : all
-  }, [activeFilter, search])
+  }, [data, search])
   const shown = showAll ? matches : matches.slice(0, PAGE_SIZE)
 
   const selectFilter = (key: string) => {
@@ -88,19 +87,19 @@ export function NeedsAttentionPanel() {
       </div>
 
       <div className="attn-filter-bar">
-        {ATTN_FILTER_DEFS.map((chip) => (
+        {filters.map((chip) => (
           <button
             key={chip.key}
             className={`chip-filter${activeFilter === chip.key ? ' active' : ''}`}
             onClick={() => selectFilter(chip.key)}
           >
             {chip.label}
-            <span className="chip-count">{counts[chip.key]}</span>
+            <span className="chip-count">{counts[chip.key] ?? 0}</span>
           </button>
         ))}
       </div>
 
-      <div className="clients-table-wrap">
+      <div className="clients-table-wrap" aria-busy={isFetching || undefined}>
         <table className="client-table attn-table">
           <thead>
             <tr>
@@ -123,58 +122,68 @@ export function NeedsAttentionPanel() {
             </tr>
           </thead>
           <tbody>
-            {shown.length ? (
-              shown.map(({ client, index, icon, text }) => {
-                const week = dashWeeklyProgress(client, index)
-                return (
-                  <tr key={client.id}>
-                    <td>
-                      <div className="ct-client">
-                        <Avatar
-                          initials={client.initials}
-                          color={client.color}
-                          size="sm"
-                        />
-                        <div className="ct-client-id">
-                          <span className="ct-name">{client.name}</span>
-                          <span className="ct-sub">{client.program}</span>
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      {/* The reason is the row's headline, so it's the thing
-                          you click. Every reason here — an unanswered chat, a
-                          missed workout, a logged meal — is answered on the
-                          client's chat thread, which is also where the row's
-                          message button goes. A real Link (not an onClick) so
-                          middle-click and "open in new tab" behave. */}
-                      <Link
-                        to="/chat"
-                        search={{
-                          c: CONVERSATIONS.find(
-                            (cv) => cv.client.id === client.id,
-                          )?.id,
-                        }}
-                        className="attn-why"
-                        title={`Open ${client.name}'s chat`}
-                      >
-                        <Icon name={icon} />
-                        {text}
-                      </Link>
-                    </td>
-                    <td>
-                      <WeekDots
-                        days={week}
-                        onDotEnter={show}
-                        onDotLeave={hide}
+            {isPending ? (
+              <tr>
+                <td colSpan={4}>
+                  <p className="pw-muted" aria-busy="true">
+                    Loading…
+                  </p>
+                </td>
+              </tr>
+            ) : isError ? (
+              <tr>
+                <td colSpan={4}>
+                  <p className="pw-muted" role="alert">
+                    {apiErrorMessage(error)}{' '}
+                    <button className="link-btn" onClick={() => refetch()}>
+                      Try again
+                    </button>
+                  </p>
+                </td>
+              </tr>
+            ) : shown.length ? (
+              shown.map(({ client, icon, text, week }) => (
+                <tr key={client.id}>
+                  <td>
+                    <div className="ct-client">
+                      <Avatar
+                        initials={client.initials}
+                        color={client.color}
+                        size="sm"
                       />
-                    </td>
-                    <td>
-                      <ClientActions client={client} />
-                    </td>
-                  </tr>
-                )
-              })
+                      <div className="ct-client-id">
+                        <span className="ct-name">{client.name}</span>
+                        <span className="ct-sub">{client.program}</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    {/* The reason is the row's headline, so it's the thing you
+                        click — every reason is answered on the client's chat
+                        thread. A real Link (not an onClick) so middle-click and
+                        "open in new tab" behave. */}
+                    <Link
+                      to="/chat"
+                      search={{
+                        c: CONVERSATIONS.find(
+                          (cv) => cv.client.id === client.id,
+                        )?.id,
+                      }}
+                      className="attn-why"
+                      title={`Open ${client.name}'s chat`}
+                    >
+                      <Icon name={icon} />
+                      {text}
+                    </Link>
+                  </td>
+                  <td>
+                    <WeekDots days={week} onDotEnter={show} onDotLeave={hide} />
+                  </td>
+                  <td>
+                    <ClientActions client={client} />
+                  </td>
+                </tr>
+              ))
             ) : (
               <tr>
                 <td colSpan={4}>
@@ -186,20 +195,25 @@ export function NeedsAttentionPanel() {
         </table>
       </div>
 
-      {!showAll && matches.length > shown.length ? (
-        <button className="link-btn view-all" onClick={() => setShowAll(true)}>
-          Show all {matches.length} users <Icon name="arrow-right" />
-        </button>
-      ) : showAll && matches.length > PAGE_SIZE ? (
-        <button className="link-btn view-all" onClick={collapse}>
-          Show fewer users
-        </button>
-      ) : (
-        <p className="pw-muted view-all">
-          {matches.length} user{matches.length === 1 ? '' : 's'} match
-          {matches.length === 1 ? 'es' : ''} your filters
-        </p>
-      )}
+      {!isPending && !isError ? (
+        !showAll && matches.length > shown.length ? (
+          <button
+            className="link-btn view-all"
+            onClick={() => setShowAll(true)}
+          >
+            Show all {matches.length} users <Icon name="arrow-right" />
+          </button>
+        ) : showAll && matches.length > PAGE_SIZE ? (
+          <button className="link-btn view-all" onClick={collapse}>
+            Show fewer users
+          </button>
+        ) : (
+          <p className="pw-muted view-all">
+            {matches.length} user{matches.length === 1 ? '' : 's'} match
+            {matches.length === 1 ? 'es' : ''} your filters
+          </p>
+        )
+      ) : null}
 
       {tooltip}
     </div>
