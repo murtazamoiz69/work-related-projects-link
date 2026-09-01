@@ -3,97 +3,118 @@ import { useNavigate } from '@tanstack/react-router'
 import { Icon } from '@/components/atoms/Icon'
 import { Topbar } from '@/components/organisms/Topbar'
 import { ConfirmDialog } from '@/components/molecules/ConfirmDialog'
+import { apiErrorMessage } from '@/lib/api/errors'
 import { showToast } from '@/lib/toast'
-import { daysAgo } from '@/lib/seed'
 import { useAuthStore } from '@/store/useAuthStore'
 import {
-  nutritionistHaystack,
-  useNutritionistsStore,
+  useNutritionistsQuery,
+  useUpdateNutritionistAccess,
+  type ListNutritionistsParams,
   type Nutritionist,
+  type NutritionistStatusFilter,
+  type NutritionistsSearch,
 } from '@/features/nutritionists'
 import { NutritionistTableRow } from '@/features/nutritionists/components/NutritionistTableRow'
-import {
-  NutritionistFormModal,
-  type NutritionistFormValues,
-} from '@/features/nutritionists/components/NutritionistFormModal'
+import { NutritionistFormModal } from '@/features/nutritionists/components/NutritionistFormModal'
 import { NutritionistMembersModal } from '@/features/nutritionists/components/NutritionistMembersModal'
 
 const PAGE_SIZE = 12
 
-type StatusFilter = 'all' | 'active' | 'disabled'
-
-const AVATAR_COLORS = [
-  '#2F5D50',
-  '#55789D',
-  '#AF5688',
-  '#8A5FBF',
-  '#A3672E',
-  '#3C8260',
-  '#4A7A9D',
-  '#786CA4',
-  '#39816E',
-  '#BE4F70',
-]
-
-function initialsFor(name: string): string {
+function SkeletonRows() {
   return (
-    name
-      .split(' ')
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((p) => p.charAt(0).toUpperCase())
-      .join('') || 'N'
+    <>
+      {Array.from({ length: 8 }, (_, i) => (
+        <tr key={i}>
+          <td>
+            <span className="skel skel-wide" />
+          </td>
+          <td>
+            <span className="skel" />
+          </td>
+          <td>
+            <span className="skel skel-narrow" />
+          </td>
+          <td>
+            <span className="skel skel-narrow" />
+          </td>
+          <td>
+            <span className="skel skel-narrow" />
+          </td>
+          <td>
+            <span className="skel skel-narrow" />
+          </td>
+          <td>
+            <span className="skel skel-narrow" />
+          </td>
+        </tr>
+      ))}
+    </>
   )
 }
 
-// Super Admin's one added page — same roster pattern as the Users section
-// (search, status filter, table, toggle + confirm, pagination), just
-// pointed at nutritionists instead of users.
-export function NutritionistsPage() {
+// Super Admin's one added page — same roster pattern as the Users section,
+// pointed at nutritionists. Data flows through the nutritionists api via query
+// hooks; no component touches HTTP.
+export function NutritionistsPage({ search }: { search: NutritionistsSearch }) {
   const navigate = useNavigate()
   const isSuperAdmin =
     useAuthStore((s) => s.activeProfile.role) === 'Super Admin'
-  const nutritionists = useNutritionistsStore((s) => s.nutritionists)
-  const setNutritionists = useNutritionistsStore((s) => s.setNutritionists)
 
-  // The route's beforeLoad guard only runs on navigation, not on a live
-  // profile switch while already here — this catches that case too, so
-  // switching back to Nutritionist mid-visit leaves this page immediately.
+  // The route's beforeLoad guard only runs on navigation, not on a live profile
+  // switch while already here — this catches that case too.
   useEffect(() => {
     if (!isSuperAdmin) navigate({ to: '/' })
   }, [isSuperAdmin, navigate])
 
-  const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
-  const [page, setPage] = useState(1)
+  const q = search.q ?? ''
+  const status: NutritionistStatusFilter = search.status ?? 'all'
+  const page = search.page ?? 1
 
+  const [searchInput, setSearchInput] = useState(q)
   const [addOpen, setAddOpen] = useState(false)
   const [editTarget, setEditTarget] = useState<Nutritionist | null>(null)
   const [membersTarget, setMembersTarget] = useState<Nutritionist | null>(null)
   const [toggleTarget, setToggleTarget] = useState<Nutritionist | null>(null)
 
-  const list = useMemo(() => {
-    const q = search.trim().toLowerCase()
-    const filtered = nutritionists.filter((n) => {
-      if (statusFilter === 'active' && !n.accessEnabled) return false
-      if (statusFilter === 'disabled' && n.accessEnabled) return false
-      if (q && !nutritionistHaystack(n).includes(q)) return false
-      return true
-    })
-    return [...filtered].sort((a, b) => a.name.localeCompare(b.name))
-  }, [nutritionists, search, statusFilter])
+  useEffect(() => {
+    setSearchInput(q)
+  }, [q])
 
   useEffect(() => {
-    setPage(1)
-  }, [search, statusFilter])
+    const trimmed = searchInput.trim()
+    if (trimmed === q) return
+    const t = setTimeout(() => {
+      navigate({
+        to: '/nutritionists',
+        search: (prev) => ({
+          ...prev,
+          q: trimmed || undefined,
+          page: undefined,
+        }),
+      })
+    }, 250)
+    return () => clearTimeout(t)
+  }, [searchInput, q, navigate])
 
-  const total = list.length
+  const params: ListNutritionistsParams = useMemo(
+    () => ({ search: q || undefined, status, page, pageSize: PAGE_SIZE }),
+    [q, status, page],
+  )
+
+  const nutritionistsQuery = useNutritionistsQuery(params)
+  const updateAccess = useUpdateNutritionistAccess()
+
+  const data = nutritionistsQuery.data
+  const items = data?.items ?? []
+  const total = data?.total ?? 0
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
   const currentPage = Math.min(page, totalPages)
   const start = (currentPage - 1) * PAGE_SIZE
-  const pageItems = list.slice(start, start + PAGE_SIZE)
-  const hasFilters = statusFilter !== 'all' || search.trim().length > 0
-  const noResults = total === 0
+
+  const hasFilters = status !== 'all' || q.trim().length > 0
+  const showError = nutritionistsQuery.isError && !data
+  const showSkeleton = nutritionistsQuery.isPending
+  const noResults = !showSkeleton && !showError && total === 0
 
   const countLabel = noResults
     ? 'No nutritionists match your filters'
@@ -101,57 +122,27 @@ export function NutritionistsPage() {
         hasFilters ? ' matching nutritionists' : ' nutritionists'
       }`
 
+  const updateSearch = (patch: Partial<NutritionistsSearch>) => {
+    navigate({
+      to: '/nutritionists',
+      search: (prev) => ({ ...prev, ...patch }),
+    })
+  }
+
+  const goToPage = (n: number) => updateSearch({ page: n > 1 ? n : undefined })
+
   const clearFilters = () => {
-    setSearch('')
-    setStatusFilter('all')
-    setPage(1)
+    setSearchInput('')
+    navigate({ to: '/nutritionists', search: {} })
   }
 
   const confirmToggle = () => {
     if (!toggleTarget) return
-    const next = !toggleTarget.accessEnabled
-    setNutritionists((prev) =>
-      prev.map((n) =>
-        n.id === toggleTarget.id ? { ...n, accessEnabled: next } : n,
-      ),
-    )
-    showToast(`${toggleTarget.name} ${next ? 'enabled' : 'disabled'}`)
+    updateAccess.mutate({
+      id: toggleTarget.id,
+      enabled: !toggleTarget.accessEnabled,
+    })
     setToggleTarget(null)
-  }
-
-  const addNutritionist = (values: NutritionistFormValues) => {
-    const nutritionist: Nutritionist = {
-      id: `nut-new-${Date.now()}`,
-      name: values.name,
-      initials: initialsFor(values.name),
-      color:
-        AVATAR_COLORS[nutritionists.length % AVATAR_COLORS.length] ?? '#2F5D50',
-      email: values.email,
-      qualification: values.qualification,
-      experienceYears: values.experienceYears,
-      joinDate: daysAgo(0),
-      memberIds: [],
-      accessEnabled: true,
-    }
-    setNutritionists((prev) => [nutritionist, ...prev])
-  }
-
-  const saveEdit = (values: NutritionistFormValues) => {
-    if (!editTarget) return
-    setNutritionists((prev) =>
-      prev.map((n) =>
-        n.id === editTarget.id
-          ? {
-              ...n,
-              name: values.name,
-              initials: initialsFor(values.name),
-              email: values.email,
-              qualification: values.qualification,
-              experienceYears: values.experienceYears,
-            }
-          : n,
-      ),
-    )
   }
 
   if (!isSuperAdmin) return null
@@ -177,8 +168,8 @@ export function NutritionistsPage() {
                 type="text"
                 placeholder="Search nutritionists by name or email…"
                 autoComplete="off"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
               />
             </div>
 
@@ -186,9 +177,15 @@ export function NutritionistsPage() {
               <select
                 className="select-range"
                 aria-label="Filter by status"
-                value={statusFilter}
+                value={status}
                 onChange={(e) =>
-                  setStatusFilter(e.target.value as StatusFilter)
+                  updateSearch({
+                    status:
+                      e.target.value === 'all'
+                        ? undefined
+                        : (e.target.value as NutritionistStatusFilter),
+                    page: undefined,
+                  })
                 }
               >
                 <option value="all">All</option>
@@ -207,7 +204,18 @@ export function NutritionistsPage() {
             </div>
           </div>
 
-          {noResults ? (
+          {showError ? (
+            <div className="clients-empty is-error" role="alert">
+              <Icon name="alert-triangle" />
+              <p>{apiErrorMessage(nutritionistsQuery.error)}</p>
+              <button
+                className="link-btn clients-empty-retry"
+                onClick={() => nutritionistsQuery.refetch()}
+              >
+                Try again
+              </button>
+            </div>
+          ) : noResults ? (
             <div className="clients-empty">
               <Icon name="user-x" />
               <p>No nutritionists match your filters</p>
@@ -216,7 +224,10 @@ export function NutritionistsPage() {
               </button>
             </div>
           ) : (
-            <div className="clients-table-wrap">
+            <div
+              className="clients-table-wrap"
+              aria-busy={nutritionistsQuery.isFetching || undefined}
+            >
               <table className="client-table nutritionist-table">
                 <colgroup>
                   <col style={{ width: '14.1%' }} />
@@ -239,17 +250,21 @@ export function NutritionistsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {pageItems.map((n) => (
-                    <NutritionistTableRow
-                      key={n.id}
-                      nutritionist={n}
-                      onCall={(nut) => showToast(`Calling ${nut.name}…`)}
-                      onEmail={(nut) => showToast(`Emailing ${nut.name}…`)}
-                      onRequestToggle={setToggleTarget}
-                      onEdit={setEditTarget}
-                      onViewMembers={setMembersTarget}
-                    />
-                  ))}
+                  {showSkeleton ? (
+                    <SkeletonRows />
+                  ) : (
+                    items.map((n) => (
+                      <NutritionistTableRow
+                        key={n.id}
+                        nutritionist={n}
+                        onCall={(nut) => showToast(`Calling ${nut.name}…`)}
+                        onEmail={(nut) => showToast(`Emailing ${nut.name}…`)}
+                        onRequestToggle={setToggleTarget}
+                        onEdit={setEditTarget}
+                        onViewMembers={setMembersTarget}
+                      />
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
@@ -264,7 +279,7 @@ export function NutritionistsPage() {
                 className="icon-btn sm"
                 aria-label="Previous page"
                 disabled={currentPage <= 1}
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                onClick={() => goToPage(Math.max(1, currentPage - 1))}
               >
                 <Icon name="chevron-left" />
               </button>
@@ -272,7 +287,7 @@ export function NutritionistsPage() {
                 className="icon-btn sm"
                 aria-label="Next page"
                 disabled={currentPage >= totalPages}
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                onClick={() => goToPage(Math.min(totalPages, currentPage + 1))}
               >
                 <Icon name="chevron-right" />
               </button>
@@ -285,7 +300,6 @@ export function NutritionistsPage() {
         <NutritionistFormModal
           nutritionist={null}
           onClose={() => setAddOpen(false)}
-          onSave={addNutritionist}
         />
       ) : null}
 
@@ -293,7 +307,6 @@ export function NutritionistsPage() {
         <NutritionistFormModal
           nutritionist={editTarget}
           onClose={() => setEditTarget(null)}
-          onSave={saveEdit}
         />
       ) : null}
 

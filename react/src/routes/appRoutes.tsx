@@ -2,6 +2,7 @@ import { lazy, Suspense, type ReactNode } from 'react'
 import { createRoute, redirect } from '@tanstack/react-router'
 import { useAuthStore } from '@/store/useAuthStore'
 import type { ClientsSearch } from '@/features/clients/api/clients.types'
+import type { NutritionistsSearch } from '@/features/nutritionists/api/nutritionists.types'
 import { authedRoute } from './authed'
 
 // Lazy-load each screen so heavy routes (Chat + Plan Workspace, Program,
@@ -118,16 +119,28 @@ export const settingsRoute = createRoute({
 export const nutritionistsRoute = createRoute({
   getParentRoute: () => authedRoute,
   path: '/nutritionists',
+  validateSearch: (search: Record<string, unknown>): NutritionistsSearch => {
+    const { status } = search
+    const page = Number(search.page)
+    return {
+      q: typeof search.q === 'string' && search.q ? search.q : undefined,
+      status: status === 'active' || status === 'disabled' ? status : undefined,
+      page: Number.isFinite(page) && page > 1 ? page : undefined,
+    }
+  },
   beforeLoad: () => {
     if (useAuthStore.getState().activeProfile.role !== 'Super Admin') {
       throw redirect({ to: '/' })
     }
   },
-  component: () => (
-    <Lazy>
-      <NutritionistsPage />
-    </Lazy>
-  ),
+  component: () => {
+    const search = nutritionistsRoute.useSearch()
+    return (
+      <Lazy>
+        <NutritionistsPage search={search} />
+      </Lazy>
+    )
+  },
 })
 
 export const authedChildren = [

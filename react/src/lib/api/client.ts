@@ -73,6 +73,20 @@ export async function post<T>(
   return res.data
 }
 
+export async function put<T>(
+  url: string,
+  body?: unknown,
+  config?: RequestConfig,
+): Promise<T> {
+  const res = await instance.request<T>({
+    ...toAxiosConfig(config),
+    url,
+    method: 'put',
+    data: body,
+  })
+  return res.data
+}
+
 export async function patch<T>(
   url: string,
   body?: unknown,
