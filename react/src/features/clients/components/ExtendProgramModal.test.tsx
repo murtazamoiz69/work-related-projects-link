@@ -72,13 +72,14 @@ describe('ExtendProgramModal', () => {
   describe('valid submission', () => {
     it('extends with the quick option, closes, and toasts success', async () => {
       const onClose = vi.fn()
-      let received: { id: string; body: unknown } | null = null
+      const onRequest = vi.fn()
       server.use(
         http.patch(EXPIRY_ENDPOINT, async ({ params, request }) => {
-          received = { id: String(params.id), body: await request.json() }
+          const body = (await request.json()) as { expiryDate: string }
+          onRequest({ id: String(params.id), expiryDate: body.expiryDate })
           return HttpResponse.json({
             ...makeSerializedClient(),
-            expiryDate: (received.body as { expiryDate: string }).expiryDate,
+            expiryDate: body.expiryDate,
           })
         }),
       )
@@ -92,11 +93,10 @@ describe('ExtendProgramModal', () => {
       // close. (The success toast is raised by the mutation hook, not the
       // form, so it's asserted at that layer rather than here.)
       await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1))
-      expect(received).not.toBeNull()
-      expect(received?.id).toBe('c-1')
-      expect((received?.body as { expiryDate: string }).expiryDate).toMatch(
-        /^\d{4}-\d{2}-\d{2}T/,
-      )
+      expect(onRequest).toHaveBeenCalledWith({
+        id: 'c-1',
+        expiryDate: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T/),
+      })
     })
   })
 
