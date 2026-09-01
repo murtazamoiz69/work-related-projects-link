@@ -3,9 +3,13 @@ import { Icon } from '@/components/atoms/Icon'
 import { ToggleSwitch } from '@/components/atoms/ToggleSwitch'
 import { Topbar } from '@/components/organisms/Topbar'
 import { ConfirmDialog } from '@/components/molecules/ConfirmDialog'
-import { showToast } from '@/lib/toast'
+import { apiErrorMessage } from '@/lib/api/errors'
 import { CLIENTS_DATA } from '@/features/clients'
-import { useProgramsStore } from '@/features/programs'
+import {
+  useProgramQuery,
+  useUpdateProgram,
+  useUpdateProgramAvailability,
+} from '@/features/programs'
 import { ProgramOverview } from '@/features/programs/components/detail/ProgramOverview'
 import { EditProgramModal } from '@/features/programs/components/detail/EditProgramModal'
 import { WorkoutPlanTab } from '@/features/programs/components/detail/WorkoutPlanTab'
@@ -14,16 +18,14 @@ import { DietPlanTab } from '@/features/programs/components/detail/DietPlanTab'
 type ContentTab = 'workout' | 'diet'
 
 // There is a single global program — this page views/edits it and toggles its
-// availability. No list, no create/duplicate/delete, no user assignment; the
-// Users section owns all per-user access and progress.
+// availability. It loads the program from the API (React Query); editors mutate
+// the loaded program in place and call flashSaved(), which persists the whole
+// program via the update mutation (autosave). No component calls HTTP.
 export function ProgramsPage() {
-  const programs = useProgramsStore((s) => s.programs)
-  const rev = useProgramsStore((s) => s.rev)
-  const commit = useProgramsStore((s) => s.commit)
-  // Subscribes this page to the mutation nonce so it re-renders after
-  // in-place edits (flashSaved / toggling availability).
-  void rev
-  const program = programs[0]
+  const programQuery = useProgramQuery()
+  const program = programQuery.data
+  const updateProgram = useUpdateProgram()
+  const updateAvailability = useUpdateProgramAvailability()
 
   const [tab, setTab] = useState<ContentTab>('workout')
   const [activeWeek, setActiveWeek] = useState(1)
@@ -45,11 +47,11 @@ export function ProgramsPage() {
     [],
   )
 
-  // Autosave: stamp updatedDate, persist + re-render, and flash the pill.
+  // Autosave: stamp updatedDate, persist the whole program, and flash the pill.
   const flashSaved = () => {
     if (!program) return
     program.updatedDate = new Date()
-    commit()
+    updateProgram.mutate(program)
     setSaved(true)
     if (savedTimer.current) clearTimeout(savedTimer.current)
     savedTimer.current = setTimeout(() => setSaved(false), 1600)
@@ -57,13 +59,14 @@ export function ProgramsPage() {
 
   const confirmToggle = () => {
     if (!program) return
-    program.enabled = !program.enabled
-    flashSaved()
-    showToast(program.enabled ? 'Program enabled' : 'Program disabled')
+    updateAvailability.mutate(!program.enabled)
+    setSaved(true)
+    if (savedTimer.current) clearTimeout(savedTimer.current)
+    savedTimer.current = setTimeout(() => setSaved(false), 1600)
     setToggleConfirmOpen(false)
   }
 
-  if (!program) {
+  if (programQuery.isPending) {
     return (
       <>
         <Topbar
@@ -71,9 +74,39 @@ export function ProgramsPage() {
           subtitle="Manage the program available across the platform."
         />
         <main className="content">
-          <div className="clients-empty">
+          <div className="panel" aria-busy="true" style={{ padding: 24 }}>
+            <span className="skel skel-wide" style={{ height: '1.25rem' }} />
+            <div style={{ height: 12 }} />
+            <span className="skel" />
+          </div>
+        </main>
+      </>
+    )
+  }
+
+  if (programQuery.isError || !program) {
+    return (
+      <>
+        <Topbar
+          title="Program"
+          subtitle="Manage the program available across the platform."
+        />
+        <main className="content">
+          <div className="clients-empty is-error" role="alert">
             <Icon name="clipboard-x" />
-            <p>No program configured yet</p>
+            <p>
+              {programQuery.isError
+                ? apiErrorMessage(programQuery.error)
+                : 'No program configured yet'}
+            </p>
+            {programQuery.isError ? (
+              <button
+                className="link-btn clients-empty-retry"
+                onClick={() => programQuery.refetch()}
+              >
+                Try again
+              </button>
+            ) : null}
           </div>
         </main>
       </>

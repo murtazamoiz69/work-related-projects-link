@@ -27,4 +27,23 @@ export {
   TRAINING_PROGRAMS,
   type WorkoutTemplate,
 } from './data'
-export { useProgramsStore } from './store'
+
+// API layer
+export {
+  getProgram,
+  updateProgram,
+  updateProgramAvailability,
+  toProgram,
+} from './api/programs.api'
+export type {
+  TrainingProgramDto,
+  ProgramMemberDto,
+  UpdateProgramAvailabilityBody,
+} from './api/programs.types'
+
+// Query / mutation hooks
+export { useProgramQuery } from './hooks/useProgramQuery'
+export {
+  useUpdateProgram,
+  useUpdateProgramAvailability,
+} from './hooks/useProgramMutations'
