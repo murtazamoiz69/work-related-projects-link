@@ -10,7 +10,6 @@ import {
   NotesTab,
   CurrentProgramLabel,
   ProgramTrackerDashboard,
-  type InternalNote,
 } from '@/features/client-detail'
 import {
   AddFromLibraryDrawer,
@@ -77,7 +76,6 @@ export function PlanWorkspaceOverlay({
   const [openSections, setOpenSections] = useState<Set<string>>(
     () => new Set(['profile', 'medical']),
   )
-  const [notes, setNotes] = useState<InternalNote[]>(detail.notes)
   const [modal, setModal] = useState<PwModal | null>(null)
   const [confirm, setConfirm] = useState<PwConfirm | null>(null)
   const [, bump] = useReducer((x: number) => x + 1, 0)
@@ -291,8 +289,13 @@ export function PlanWorkspaceOverlay({
               {activeTab === 'notes' ? (
                 <div className="pw-panel-scroll">
                   <NotesTab
-                    notes={notes}
-                    onAdd={(note) => setNotes((prev) => [note, ...prev])}
+                    notes={ws.notes}
+                    onAdd={(note) => {
+                      // Persist with the plan: mutate in place + autosave,
+                      // the same pattern as every other workspace edit.
+                      ws.notes = [note, ...ws.notes]
+                      refresh()
+                    }}
                   />
                 </div>
               ) : null}

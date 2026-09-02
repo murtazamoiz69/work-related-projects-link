@@ -14,7 +14,8 @@ export function toWorkspace(dto: WorkspaceDto): Workspace {
     ...v,
     date: new Date(v.date),
   }))
-  return { ...dto, profile, versions }
+  // `notes` default guards plans saved before the field existed.
+  return { ...dto, profile, versions, notes: dto.notes ?? [] }
 }
 
 export async function getPlan(

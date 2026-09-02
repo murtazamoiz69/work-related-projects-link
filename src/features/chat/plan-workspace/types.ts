@@ -1,4 +1,5 @@
 import type { ClientStatus } from '@/features/clients'
+import type { InternalNote } from '@/features/client-detail'
 import type { Meal, MealEntry, Workout } from '@/features/programs'
 
 // The Plan Workspace works on richer week/day shapes than the shared Programs
@@ -122,6 +123,9 @@ export type Workspace = {
   versions: PlanVersion[]
   profile: ClinicalProfile
   customMeals?: Meal[]
+  /** Nutritionist's private notes on this client, persisted with the plan
+   *  (autosaved via PUT, like every other workspace edit). */
+  notes: InternalNote[]
 }
 
 export type MealTotalsLike = {

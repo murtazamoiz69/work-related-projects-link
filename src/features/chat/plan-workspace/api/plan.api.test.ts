@@ -27,6 +27,16 @@ describe('plan.api', () => {
     expect(reloaded.hydrationGoal).toBe(4)
   })
 
+  it('carries notes on the workspace and persists an added note', async () => {
+    const ws = await getPlan('c-1')
+    expect(Array.isArray(ws.notes)).toBe(true)
+    ws.notes = [{ author: 'Sarah Nolan', text: 'Prefers mornings', days: 0 }]
+    await savePlan('c-1', ws)
+
+    const reloaded = await getPlan('c-1')
+    expect(reloaded.notes[0]?.text).toBe('Prefers mornings')
+  })
+
   it('rejects saving a plan with no name (422)', async () => {
     const ws = await getPlan('c-1')
     await expect(

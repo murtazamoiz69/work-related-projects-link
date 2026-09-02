@@ -251,6 +251,9 @@ function buildClientPlan(client: Client, profile: ClinicalProfile): Workspace {
     published: false,
     versions: [],
     profile,
+    // Seeded by the (mock) backend from the client's derived notes; edited in
+    // place and persisted with the rest of the workspace.
+    notes: [],
   }
 }
 

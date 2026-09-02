@@ -4,6 +4,7 @@
 // The clinical profile + client-detail derivations stay local (like the
 // Programs libraries) — only the plan itself is served here.
 import { CLIENTS_DATA } from '@/features/clients'
+import { deriveDetail } from '@/features/client-detail'
 import { deriveClinicalProfile } from '../clinical'
 import { getWorkspace } from '../plan'
 import type { Workspace } from '../types'
@@ -26,6 +27,9 @@ function buildFor(clientId: string): WorkspaceDto | undefined {
   const client = CLIENTS_DATA.find((c) => c.id === clientId)
   if (!client) return undefined
   const ws = getWorkspace(client, deriveClinicalProfile(client))
+  // Seed the plan's notes from the client's derived notes (server-side data
+  // assembly lives here in the mock backend).
+  if (!ws.notes.length) ws.notes = deriveDetail(client).notes
   return structuredClone(toWorkspaceDto(ws)) as WorkspaceDto
 }
 
