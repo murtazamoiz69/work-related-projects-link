@@ -31,7 +31,8 @@ Return the user's workspace (built from their profile + goals on first access).
   "profile": { /* ClinicalProfile — see below */ },
   "workoutWeeks": [ /* WsWorkoutWeek[] */ ],
   "dietWeeks": [ /* WsDietWeek[] */ ],
-  "versions": [ /* PlanVersion[] — see below */ ]
+  "versions": [ /* PlanVersion[] — see below */ ],
+  "notes": [ { "author": "Sarah Nolan", "text": "Prefers morning check-ins", "days": 2, "attachment": null } ]
 }
 ```
 
@@ -49,6 +50,7 @@ Return the user's workspace (built from their profile + goals on first access).
 | workoutWeeks | `WsWorkoutWeek[]` | Week → days → workout → exercise slots (see below). |
 | dietWeeks | `WsDietWeek[]` | Week → days → meal entries. |
 | versions | `PlanVersion[]` | Version history; each has a `date` (ISO). |
+| notes | `Note[]` | Nutritionist's private notes on the client. Each: `{ author: string, text: string, days: number, attachment?: { name, type } \| null }`. `days` = age of the note in days (0 = today); no absolute date is stored. Newest first. Persisted with the workspace via `PUT` (edited in place like every other plan edit). |
 
 **`ClinicalProfile`** (large; the only date is `programStart`). Key fields:
 ```json
@@ -146,10 +148,17 @@ sets `published` and appends a `PlanVersion`).
 ---
 
 ## Not an API (this page)
-- **Meal templates** (save/apply from the library) — local store today; would
-  pair with `/meal-templates` (see [programs.md](./programs.md) reference note).
+- **Meal templates** (the library behind "Save to Library" / "Add from Library")
+  — a separate resource; see **[meal-templates.md](./meal-templates.md)** for the
+  contract. Client-side store today, backend endpoints proposed there.
 - **Exercise/meal libraries** — local reference data (join keys `exerciseId`/`mealId`).
-- **At-a-glance tracker, AI summary, notes tab** — derived/local (client-detail),
-  not part of the plan resource.
+- **At-a-glance tracker, AI summary** — derived/local (client-detail), not part of
+  the plan resource.
 - **Activity tab** — reads the conversation's `activity` (see [chat.md](./chat.md)),
   filtered client-side.
+
+> **Notes tab** — now **part of the `Workspace`** (`notes[]` above), persisted
+> with the plan via `PUT`. Previously local-only (added notes were lost on
+> reload); fixed. Distinct from the chat-side conversation notes
+> (`POST /conversations/:id/notes`, see [chat.md](./chat.md)) — the plan notes
+> travel with the plan resource.

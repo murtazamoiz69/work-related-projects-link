@@ -24,6 +24,7 @@ switches over by pointing `VITE_API_URL` at the real server and disabling mocks
 | [settings.md](./settings.md) | Settings | `/me/*` |
 | [chat.md](./chat.md) | Chat conversations | `/conversations` |
 | [plan-workspace.md](./plan-workspace.md) | Plan Workspace | `/clients/:id/plan` |
+| [meal-templates.md](./meal-templates.md) | Meal template library (proposed) | `/meal-templates` |
 
 ---
 
