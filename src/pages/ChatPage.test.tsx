@@ -85,6 +85,9 @@ describe('ChatPage — conversation list', () => {
   it('switches tabs (Needs Attention becomes selected)', async () => {
     const { user } = renderWithProviders(<ChatPage />)
     const tab = await screen.findByRole('tab', { name: /Needs Attention/ })
+    // The badge count is server-computed (GET /conversations/tabs), so a
+    // rendered number proves the tab is wired to that endpoint.
+    expect(tab.textContent).toMatch(/\d/)
     await user.click(tab)
     expect(tab).toHaveAttribute('aria-selected', 'true')
   })

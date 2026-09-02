@@ -10,6 +10,7 @@ import type {
 import {
   addMessageDto,
   addNoteDto,
+  conversationTabs,
   getConversationDto,
   listConversationSummaries,
   patchConversationDto,
@@ -23,6 +24,11 @@ const notFound = () =>
 export const chatHandlers = [
   http.get(`${base}/conversations`, () =>
     HttpResponse.json(listConversationSummaries()),
+  ),
+
+  // Must precede /conversations/:id so ":id" doesn't capture "tabs".
+  http.get(`${base}/conversations/tabs`, () =>
+    HttpResponse.json(conversationTabs()),
   ),
 
   http.get(`${base}/conversations/:id`, ({ params }) => {

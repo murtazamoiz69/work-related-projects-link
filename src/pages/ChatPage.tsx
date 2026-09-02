@@ -9,6 +9,7 @@ import { ProgramProgressModal } from '@/features/chat/components/ProgramProgress
 import {
   useConversationQuery,
   useConversationsQuery,
+  useConversationTabsQuery,
   useMarkRead,
   useSetStar,
 } from '@/features/chat/hooks/useConversations'
@@ -45,6 +46,7 @@ export function ChatPage({
   // re-triggering the default-selection effect below.
   const listData = listQuery.data
   const summaries = useMemo(() => listData ?? [], [listData])
+  const tabsQuery = useConversationTabsQuery()
   const markRead = useMarkRead()
   const setStar = useSetStar()
 
@@ -89,6 +91,7 @@ export function ChatPage({
         <div className="chat-shell">
           <ConversationList
             summaries={summaries}
+            tabs={tabsQuery.data ?? []}
             loading={listQuery.isPending}
             tab={tab}
             query={query}

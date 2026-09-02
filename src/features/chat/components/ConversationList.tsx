@@ -1,19 +1,8 @@
 import { Icon } from '@/components/atoms/Icon'
 import { Avatar } from '@/components/atoms/Avatar'
 import { timeAgoShort } from '../data'
-import type { ConversationSummary } from '../api/chat.types'
+import type { ConversationSummary, ConversationTab } from '../api/chat.types'
 import type { ChatTab } from '../types'
-
-const BASE_TABS: { id: ChatTab; label: string }[] = [
-  { id: 'inbox', label: 'All' },
-  { id: 'waiting', label: 'Needs Attention' },
-  { id: 'new', label: 'New' },
-  { id: 'active', label: 'Active' },
-]
-const STARRED_TAB: { id: ChatTab; label: string } = {
-  id: 'starred',
-  label: 'Pinned',
-}
 
 // Pinned float to the top, then most-recent message first — matches the
 // original conversationsForTab ordering, on summaries.
@@ -132,6 +121,7 @@ function ConvoCard({
 
 export function ConversationList({
   summaries,
+  tabs,
   loading,
   tab,
   query,
@@ -142,6 +132,10 @@ export function ConversationList({
   onToggleStar,
 }: {
   summaries: ConversationSummary[]
+  // Which tabs to show + their badge counts, computed server-side (Pinned
+  // appears only when something is pinned). The rows are still filtered from
+  // the loaded `summaries` by the active tab.
+  tabs: ConversationTab[]
   loading: boolean
   tab: ChatTab
   query: string
@@ -152,10 +146,6 @@ export function ConversationList({
   onToggleStar: (id: string, starred: boolean) => void
 }) {
   const list = filterSummaries(summariesForTab(tab, summaries), query)
-  const hasStarred = summaries.some((c) => c.starred)
-  const tabs = hasStarred
-    ? [BASE_TABS[0], BASE_TABS[1], STARRED_TAB, BASE_TABS[2], BASE_TABS[3]]
-    : BASE_TABS
 
   return (
     <aside className="chat-list-col">
@@ -171,26 +161,21 @@ export function ConversationList({
       </div>
 
       <div className="chat-tabs" role="tablist">
-        {tabs.map((t) => {
-          const tabConvos = summariesForTab(t.id, summaries)
-          const total = tabConvos.length
-          const unread = tabConvos.filter((c) => c.unread).length
-          return (
-            <button
-              key={t.id}
-              className={`chat-tab${tab === t.id ? ' active' : ''}`}
-              role="tab"
-              aria-selected={tab === t.id}
-              onClick={() => onTab(t.id)}
-            >
-              {t.label}
-              <span className="chat-tab-total">{total}</span>
-              {unread > 0 && unread < total ? (
-                <span className="chat-tab-count">{unread}</span>
-              ) : null}
-            </button>
-          )
-        })}
+        {tabs.map((t) => (
+          <button
+            key={t.id}
+            className={`chat-tab${tab === t.id ? ' active' : ''}`}
+            role="tab"
+            aria-selected={tab === t.id}
+            onClick={() => onTab(t.id)}
+          >
+            {t.label}
+            <span className="chat-tab-total">{t.total}</span>
+            {t.unread > 0 && t.unread < t.total ? (
+              <span className="chat-tab-count">{t.unread}</span>
+            ) : null}
+          </button>
+        ))}
       </div>
 
       <ul className="chat-convo-list">

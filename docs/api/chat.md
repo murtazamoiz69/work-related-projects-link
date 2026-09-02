@@ -8,7 +8,9 @@ own doc: [plan-workspace.md](./plan-workspace.md).) See [README.md](./README.md)
 > its user's `id` (e.g. `c-1`). The frontend deep-links with `?c=<clientId>`.
 
 ## Page functionality
-- Left: conversation list (tabs + search + counts — **client-side**, see below).
+- Left: conversation list. **Tab chips + badge counts are server-computed**
+  (`GET /conversations/tabs`); row filtering by the active tab and the search box
+  run client-side over the loaded `GET /conversations` set.
 - Center: message thread; take over from the AI / hand back; send messages.
 - Right: overview (AI insights, notes, medical, activity); add a note.
 - Live incoming messages + typing — via **realtime (websocket/poll)**, not REST.
@@ -16,8 +18,8 @@ own doc: [plan-workspace.md](./plan-workspace.md).) See [README.md](./README.md)
 ---
 
 ## `GET /conversations`
-Return **all** conversation summaries (the client does tab-filtering, search, and
-counts locally over this set).
+Return **all** conversation summaries. The client filters this set by the active
+tab and search box locally; the tab **counts** come from `GET /conversations/tabs`.
 
 **Success `200`** — array of `ConversationSummary`:
 ```json
@@ -45,9 +47,38 @@ counts locally over this set).
 
 **Errors:** `401`; `500`.
 
-> Client-side over this list: the tabs (All / Needs Attention / New / Active /
-> Pinned), the search box, and all tab counts. No server params needed. If the
-> caseload grows large enough to need server paging, we'll add query params.
+> Client-side over this list: **which tab is active** (row filtering) and the
+> **search box**. The tab set and their counts are the server's (below), so the
+> badges stay correct even once the list is paginated.
+
+---
+
+## `GET /conversations/tabs`
+The conversation-list **tab chips + badge counts**, computed server-side over the
+whole caseload (independent of the active tab, like the dashboard's Catch Up
+chips). Ordered for display; **Pinned is present only when something is pinned**.
+
+**Success `200`** — array of `ConversationTab`:
+```json
+[
+  { "id": "inbox", "label": "All", "total": 48, "unread": 30 },
+  { "id": "waiting", "label": "Needs Attention", "total": 26, "unread": 26 },
+  { "id": "starred", "label": "Pinned", "total": 3, "unread": 0 },
+  { "id": "new", "label": "New", "total": 6, "unread": 6 },
+  { "id": "active", "label": "Active", "total": 22, "unread": 4 }
+]
+```
+| Field | Type | Notes |
+| --- | --- | --- |
+| id | `inbox` \| `waiting` \| `starred` \| `new` \| `active` | Drives the client's active-tab row filter. |
+| label | string | Chip text. |
+| total | number | Conversations in that tab. Tab membership: `inbox` = all; `waiting`/`active` by `status`; `new` by the user's `status === "new"`; `starred` by `starred`. |
+| unread | number | Of those, how many have `unread > 0` (the small badge shows when `0 < unread < total`). |
+
+The client **refetches this after star / mark-read / handoff / send**, since those
+change a tab's membership or unread count.
+
+**Errors:** `401`; `500`.
 
 ---
 
@@ -180,6 +211,7 @@ these events into the UI, so either transport drops in there. Tell us which
 you'll provide and the exact event/response shape.
 
 ## Not an API (this page)
-- **Conversation tabs, search, counts** — client-side over `GET /conversations`.
+- **Tab row-filtering + search** — client-side over `GET /conversations` (the tab
+  chips/counts themselves are the API's — `GET /conversations/tabs`).
 - **AI suggestion chips** — local pool today (could become `GET /ai/suggestions?conversationId=`; flag if you want it).
 - Emoji picker, attachment staging — local composer state.

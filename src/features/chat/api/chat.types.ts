@@ -8,6 +8,7 @@ import type {
   ChatMessage,
   ChatNote,
   ChatNoteAttachment,
+  ChatTab,
   ConversationInsights,
   ConversationStatus,
   HandledBy,
@@ -54,6 +55,17 @@ export type ConversationSummary = {
   unread: number
   starred: boolean
   lastMessage: { text: string; time: Date; hasAttachment: boolean }
+}
+
+// Conversation-list tab, server-computed: which tabs to show (Pinned only when
+// something is pinned), their labels, and the badge counts. No date fields, so
+// the wire and domain shapes are identical (see getConversationTabs). `id` is a
+// ChatTab so the client drives its active-tab filtering off it.
+export type ConversationTab = {
+  id: ChatTab
+  label: string
+  total: number
+  unread: number
 }
 
 // ---- Request bodies ----

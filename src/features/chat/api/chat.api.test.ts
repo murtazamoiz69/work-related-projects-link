@@ -4,6 +4,8 @@ import {
   addNote,
   getConversation,
   getConversations,
+  getConversationTabs,
+  patchConversation,
   sendMessage,
   setHandoff,
 } from './chat.api'
@@ -57,6 +59,38 @@ describe('chat.api', () => {
     const updated = await addNote(id, { text: 'Prefers mornings' })
     expect(updated.notes[0].text).toBe('Prefers mornings')
     expect(updated.notes[0].author).toBe('Sarah Nolan')
+  })
+
+  it('serves tab counts that agree with the listed conversations', async () => {
+    const list = await getConversations()
+    const tabs = await getConversationTabs()
+
+    const byId = Object.fromEntries(tabs.map((t) => [t.id, t]))
+    expect(byId.inbox.total).toBe(list.length)
+    expect(byId.waiting.total).toBe(
+      list.filter((c) => c.status === 'waiting').length,
+    )
+    expect(byId.new.total).toBe(
+      list.filter((c) => c.client.status === 'new').length,
+    )
+    // Order is All, Needs Attention, [Pinned], New, Active.
+    expect(tabs.map((t) => t.id).filter((id) => id !== 'starred')).toEqual([
+      'inbox',
+      'waiting',
+      'new',
+      'active',
+    ])
+  })
+
+  it('adds the Pinned tab once something is pinned', async () => {
+    const list = await getConversations()
+    expect((await getConversationTabs()).some((t) => t.id === 'starred')).toBe(
+      false,
+    )
+
+    await patchConversation(list[0].id, { starred: true })
+    const pinned = (await getConversationTabs()).find((t) => t.id === 'starred')
+    expect(pinned?.total).toBe(1)
   })
 
   it('rejects an unknown conversation id (404)', async () => {

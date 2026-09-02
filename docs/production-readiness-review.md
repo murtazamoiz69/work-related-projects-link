@@ -199,8 +199,14 @@ A page-by-page pass for data resolved client-side instead of from the API:
     derivation (`deriveDetail`) now runs server-side; the UI fetches it from
     `GET /clients/:id/detail` (see [api/users.md](./api/users.md)). *Boundary:* the
     mock still runs `deriveDetail` in-browser — backend logic in real integration.
+  - **chat list tab counts** — the Chat conversation-list chips
+    (All / Needs Attention / Pinned / New / Active) counted the loaded list
+    client-side; now `GET /conversations/tabs` (see [api/chat.md](./api/chat.md)),
+    matching the dashboard's server-driven Catch Up chips. The Dashboard "Catch
+    Up" chips were already server-side (`GET /dashboard/needs-attention`).
 - **Correctly client-side (keep):** formatters/helpers/factories (`formatTime`,
-  `dietDayTotals`, `makeSlot`, colour maps…) — presentation logic, not data.
+  `dietDayTotals`, `makeSlot`, colour maps…) — presentation logic, not data;
+  and filtering/searching an already-loaded API list (e.g. the chat list rows).
 
 ### Recommended cutover path
 1. **Auth first** — everything else is gated behind a session.

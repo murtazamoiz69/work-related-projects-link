@@ -9,6 +9,7 @@ import type {
   ConversationDto,
   ConversationSummary,
   ConversationSummaryDto,
+  ConversationTab,
   PatchConversationBody,
   SendMessageBody,
 } from './chat.types'
@@ -49,6 +50,14 @@ export async function getConversations(
 ): Promise<ConversationSummary[]> {
   const dtos = await get<ConversationSummaryDto[]>('/conversations', { signal })
   return dtos.map(toSummary)
+}
+
+// The list's tab chips + badge counts, computed server-side. No date fields, so
+// this is a straight read (no DTO mapping).
+export async function getConversationTabs(
+  signal?: AbortSignal,
+): Promise<ConversationTab[]> {
+  return get<ConversationTab[]>('/conversations/tabs', { signal })
 }
 
 export async function getConversation(

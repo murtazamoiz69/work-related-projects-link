@@ -10,6 +10,7 @@ import type {
   AddNoteBody,
   ConversationDto,
   ConversationSummaryDto,
+  ConversationTab,
   SendMessageBody,
 } from './chat.types'
 
@@ -66,6 +67,39 @@ function summaryOf(c: ConversationDto): ConversationSummaryDto {
 
 export function listConversationSummaries(): ConversationSummaryDto[] {
   return [...store.values()].map(summaryOf)
+}
+
+// Server-computed conversation-list tabs + badge counts, over the whole store.
+// A `predicate` per tab mirrors the list's own filtering; `total`/`unread` are
+// counts, not a page. Pinned is included only when something is pinned, matching
+// the UI's conditional tab. Real backend owns this so a paginated list still
+// gets correct badges.
+export function conversationTabs(): ConversationTab[] {
+  const all = [...store.values()]
+  const count = (predicate: (c: ConversationDto) => boolean): number =>
+    all.filter(predicate).length
+  const unread = (predicate: (c: ConversationDto) => boolean): number =>
+    all.filter((c) => predicate(c) && c.unread > 0).length
+
+  const defs: { tab: ConversationTab; when?: boolean }[] = [
+    { tab: mkTab('inbox', 'All', () => true) },
+    { tab: mkTab('waiting', 'Needs Attention', (c) => c.status === 'waiting') },
+    {
+      tab: mkTab('starred', 'Pinned', (c) => c.starred),
+      when: all.some((c) => c.starred),
+    },
+    { tab: mkTab('new', 'New', (c) => c.client.status === 'new') },
+    { tab: mkTab('active', 'Active', (c) => c.status === 'active') },
+  ]
+  return defs.filter((d) => d.when !== false).map((d) => d.tab)
+
+  function mkTab(
+    id: ConversationTab['id'],
+    label: string,
+    predicate: (c: ConversationDto) => boolean,
+  ): ConversationTab {
+    return { id, label, total: count(predicate), unread: unread(predicate) }
+  }
 }
 
 export function getConversationDto(id: string): ConversationDto | undefined {

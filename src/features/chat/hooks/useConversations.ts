@@ -11,6 +11,7 @@ import {
   addNote,
   getConversation,
   getConversations,
+  getConversationTabs,
   patchConversation,
   sendMessage,
   setHandoff,
@@ -46,12 +47,25 @@ function writeConversation(queryClient: QueryClient, c: Conversation): void {
       ? prev.map((s) => (s.id === c.id ? summaryFromConversation(c) : s))
       : prev,
   )
+  // Star / read / handoff / send can change a tab's membership or unread count.
+  // The list cache is patched in place above (no refetch, to keep realtime
+  // messages), but the server owns the tab counts — refetch just those.
+  queryClient.invalidateQueries({ queryKey: chatKeys.tabs() })
 }
 
 export function useConversationsQuery() {
   return useQuery({
     queryKey: chatKeys.list(),
     queryFn: ({ signal }) => getConversations(signal),
+  })
+}
+
+// The list's tab chips + badge counts. Kept fresh after mutations via the
+// invalidation in writeConversation.
+export function useConversationTabsQuery() {
+  return useQuery({
+    queryKey: chatKeys.tabs(),
+    queryFn: ({ signal }) => getConversationTabs(signal),
   })
 }
 
