@@ -1,7 +1,8 @@
 import { useRef, useState } from 'react'
 import { Icon } from '@/components/atoms/Icon'
 import { Backdrop } from '@/components/molecules/Backdrop'
-import { exerciseById, makeSlot } from '../../data'
+import { makeSlot } from '../../data'
+import { exerciseById } from '../../library-store'
 import type { Workout, WorkoutSlot } from '../../types'
 import { ExercisePickerModal } from './ExercisePickerModal'
 

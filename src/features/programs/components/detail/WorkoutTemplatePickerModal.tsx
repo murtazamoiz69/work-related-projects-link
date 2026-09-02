@@ -2,14 +2,16 @@ import { useMemo, useState } from 'react'
 import { Icon } from '@/components/atoms/Icon'
 import { Backdrop } from '@/components/molecules/Backdrop'
 import {
-  EXERCISE_LIBRARY,
-  WORKOUT_TEMPLATES,
   buildWorkout,
-  exerciseById,
   makeSlot,
   templateEquipment,
   templateMuscles,
 } from '../../data'
+import {
+  EXERCISE_LIBRARY,
+  WORKOUT_TEMPLATES,
+  exerciseById,
+} from '../../library-store'
 import type { Workout, WorkoutSlot } from '../../types'
 
 // Template picker for a rest day — search + type chips + muscle/equipment

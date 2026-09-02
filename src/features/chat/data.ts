@@ -5,11 +5,14 @@
 import { pick, seededRandom, daysAgo } from '@/lib/seed'
 import { CLIENTS_DATA } from '@/features/clients'
 import type { Client } from '@/features/clients'
+// Built at module load (CONVERSATIONS below), before the library cache is
+// primed — so read the seed catalogs directly (the mock backend's copy), not
+// the API-populated cache.
 import {
   MEAL_SLOTS,
   WORKOUT_TEMPLATES,
   mealsByCategory,
-} from '@/features/programs'
+} from '@/features/programs/data'
 import type { MealSlot } from '@/features/programs'
 import type {
   ChatActivityItem,

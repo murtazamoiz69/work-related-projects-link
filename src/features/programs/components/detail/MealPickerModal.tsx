@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
 import { Icon } from '@/components/atoms/Icon'
 import { Backdrop } from '@/components/molecules/Backdrop'
-import { MEAL_LIBRARY, MEAL_SLOTS, mealById } from '../../data'
+import { MEAL_SLOTS } from '../../data'
+import { MEAL_LIBRARY, mealById } from '../../library-store'
 import type { Meal, MealEntry } from '../../types'
 
 // Add meal / Swap meal — same picker shell as the AI Plan Workspace's meal

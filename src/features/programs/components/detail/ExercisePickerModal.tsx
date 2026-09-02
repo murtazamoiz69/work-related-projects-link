@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Icon } from '@/components/atoms/Icon'
 import { Backdrop } from '@/components/molecules/Backdrop'
-import { EXERCISE_LIBRARY } from '../../data'
+import { EXERCISE_LIBRARY } from '../../library-store'
 import type { Exercise, WorkoutSlot } from '../../types'
 
 // Predefined exercise catalog, filterable by muscle group — used for both
