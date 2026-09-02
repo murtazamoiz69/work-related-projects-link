@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
+import { isApiError } from '@/lib/api/types'
 import {
+  getAttentionFilters,
   getClientProgress,
   getDashboardPrograms,
   getKpis,
@@ -14,14 +16,33 @@ describe('dashboard.api', () => {
     expect(k.mealsLogged).toBeLessThanOrEqual(k.total)
   })
 
-  it('returns needs-attention rows with embedded clients + week dots + counts', async () => {
-    const res = await getNeedsAttention('needs-attention')
+  it('returns the chip metadata with a default key the client can open with', async () => {
+    const meta = await getAttentionFilters()
+    expect(meta.filters.length).toBeGreaterThan(0)
+    expect(meta.counts).toHaveProperty('needs-attention')
+    expect(meta.weekRange).toBeTruthy()
+    // defaultKey must be one of the offered chips — the client opens on it.
+    expect(meta.filters.map((f) => f.key)).toContain(meta.defaultKey)
+  })
+
+  it('returns needs-attention rows with embedded clients + week dots', async () => {
+    const meta = await getAttentionFilters()
+    const res = await getNeedsAttention(meta.defaultKey)
     expect(Array.isArray(res.rows)).toBe(true)
-    expect(res.filters.length).toBeGreaterThan(0)
-    expect(res.counts).toHaveProperty('needs-attention')
     if (res.rows.length) {
       expect(res.rows[0].client.name).toBeTruthy()
       expect(res.rows[0].week).toHaveLength(7)
+    }
+  })
+
+  it('rejects a rows request with no filter key (422)', async () => {
+    try {
+      // Bypass the typed api (which always sends a key) to prove the contract.
+      await getNeedsAttention('')
+      throw new Error('expected rejection')
+    } catch (e) {
+      expect(isApiError(e)).toBe(true)
+      if (isApiError(e)) expect(e.kind).toBe('validation')
     }
   })
 

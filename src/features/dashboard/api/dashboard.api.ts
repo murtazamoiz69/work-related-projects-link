@@ -4,6 +4,7 @@ import { get } from '@/lib/api/client'
 import { toClient } from '@/features/clients'
 import type { ClientProgress, KpiCounts } from '../types'
 import type {
+  AttentionFilters,
   AttentionItem,
   AttentionItemDto,
   ExpiryItem,
@@ -16,6 +17,15 @@ export async function getKpis(signal?: AbortSignal): Promise<KpiCounts> {
   return get<KpiCounts>('/dashboard/kpis', { signal })
 }
 
+// Step 1 — the Catch Up chip metadata (defs, counts, default key, week range).
+// No date fields, so this is a straight read.
+export async function getAttentionFilters(
+  signal?: AbortSignal,
+): Promise<AttentionFilters> {
+  return get<AttentionFilters>('/dashboard/attention-filters', { signal })
+}
+
+// Step 2 — the rows for one chip (the key comes from getAttentionFilters).
 export async function getNeedsAttention(
   filter: string,
   signal?: AbortSignal,
@@ -28,7 +38,7 @@ export async function getNeedsAttention(
     ...r,
     client: toClient(r.client),
   }))
-  return { ...dto, rows }
+  return { rows }
 }
 
 export async function getUpcomingExpirations(

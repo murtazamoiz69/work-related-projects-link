@@ -27,19 +27,22 @@ export type AttentionItem = {
   week: WeekDay[]
 }
 
-export type NeedsAttentionDto = {
-  rows: AttentionItemDto[]
-  counts: Record<string, number>
+// Step 1 — the Catch Up chips' metadata, independent of which chip is active:
+// the chip definitions, their badge counts, the week-range label, and the
+// server's default chip. The client fetches this first, then requests rows for
+// `defaultKey` (or whichever chip the user picks) — so it never has to name a
+// filter it hasn't been told exists. No date fields, so DTO == domain.
+export type AttentionFilters = {
   filters: AttnFilterDef[]
+  counts: Record<string, number>
+  defaultKey: string
   weekRange: string
 }
 
-export type NeedsAttention = {
-  rows: AttentionItem[]
-  counts: Record<string, number>
-  filters: AttnFilterDef[]
-  weekRange: string
-}
+// Step 2 — the rows for one chip. The rows themselves are the payload; the
+// chip metadata came from AttentionFilters.
+export type NeedsAttentionDto = { rows: AttentionItemDto[] }
+export type NeedsAttention = { rows: AttentionItem[] }
 
 // ---- Upcoming expiry ----
 

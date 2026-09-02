@@ -5,7 +5,8 @@ Each panel loads independently. See [README.md](./README.md) for conventions.
 
 ## Page functionality
 - KPI row (caseload snapshot).
-- "Catch Up" (needs-attention) list with a **server-side** filter (chips) plus a
+- "Catch Up" (needs-attention) list: **server-side** chips + counts and rows
+  (loaded in two steps — chip metadata, then rows for the active chip) plus a
   client-side search box and show-all toggle.
 - Cohort "User Progress" chart with **server-side** range + program filters.
 - Upcoming plan-expiry list.
@@ -28,13 +29,45 @@ Each panel loads independently. See [README.md](./README.md) for conventions.
 
 ---
 
+The Catch Up panel loads in **two steps**: first the chip metadata (which chips
+exist, their counts, and which one to open on), then the rows for the active
+chip. This way the client never names a filter key it hasn't been told exists.
+
+## `GET /dashboard/attention-filters`
+Step 1 — the chip metadata, independent of which chip is active. The client
+fetches this first and opens on `defaultKey`.
+
+**Success `200`**
+```json
+{
+  "filters": [
+    { "key": "needs-attention", "label": "Needs Attention", "icon": "message-circle" }
+    /* …one per chip */
+  ],
+  "counts": { "needs-attention": 26, "new-this-week": 6, "missed-workout-yesterday": 28,
+              "missed-diet-yesterday": 31, "logged-meal-today": 11, "logged-workout-today": 12 },
+  "defaultKey": "needs-attention",
+  "weekRange": "Aug 24 – 30"
+}
+```
+| Field | Type | Notes |
+| --- | --- | --- |
+| filters | array | The chip definitions (`key`, `label`, `icon`), server-driven and ordered for display. |
+| counts | map | Count **per chip key** (the chip badges) — over the whole caseload, independent of the active chip. |
+| defaultKey | string (chip key) | Which chip the client opens on. **Must** be one of `filters[].key`. |
+| weekRange | string | Label for the current week (e.g. "Aug 24 – 30"). |
+
+**Errors:** `401`; `500`.
+
+---
+
 ## `GET /dashboard/needs-attention`
-Users needing attention, for the active filter chip.
+Step 2 — the users for one chip.
 
 **Query params**
-| Param | Type | Default | Notes |
+| Param | Type | Required | Notes |
 | --- | --- | --- | --- |
-| filter | string (chip key) | `needs-attention` | One of the chip keys returned in `filters[].key` (below). Server filters by it. |
+| filter | string (chip key) | **yes** | One of the `filters[].key` from `/dashboard/attention-filters`. **422** if missing (the client always sends a key it learned from step 1). |
 
 **Success `200`**
 ```json
@@ -50,14 +83,7 @@ Users needing attention, for the active filter chip.
         /* …7 entries, Sun→Sat */
       ]
     }
-  ],
-  "counts": { "needs-attention": 26, "new-this-week": 6, "missed-workout-yesterday": 28,
-              "missed-diet-yesterday": 31, "logged-meal-today": 11, "logged-workout-today": 12 },
-  "filters": [
-    { "key": "needs-attention", "label": "Needs Attention", "icon": "message-circle" }
-    /* …one per chip */
-  ],
-  "weekRange": "Aug 24 – 30"
+  ]
 }
 ```
 | Field | Type | Notes |
@@ -66,11 +92,8 @@ Users needing attention, for the active filter chip.
 | rows[].icon | string | Icon name for the reason. |
 | rows[].text | string | Human-readable reason. |
 | rows[].week | `WeekDay[]` | **7 entries** (Sun→Sat) of that user's weekly-progress dots. `tier`: `done` \| `partial` \| `missed` \| `empty` \| `not-joined` \| `joined-today`. `popover` is the hover text; `dayLabel`/`dateLabel`/`dateShort` are display strings. |
-| counts | map | Count **per chip key** (for the chip badges) — computed over the whole caseload, independent of the active filter. |
-| filters | array | The chip definitions (`key`, `label`, `icon`), server-driven. |
-| weekRange | string | Label for the current week (e.g. "Aug 24 – 30"). |
 
-**Errors:** `401`; `500`.
+**Errors:** `422` (missing/blank `filter`) `{ "message": "A filter key is required." }`; `401`; `500`.
 
 > The Catch-Up **search box** and **"show all / fewer"** are applied
 > **client-side** to `rows` — no server param needed for those.

@@ -2,6 +2,7 @@
 // or failed panel doesn't block the others.
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import {
+  getAttentionFilters,
   getClientProgress,
   getDashboardPrograms,
   getKpis,
@@ -17,10 +18,22 @@ export function useKpisQuery() {
   })
 }
 
-export function useNeedsAttentionQuery(filter: string) {
+// Step 1: the chip metadata. The panel seeds its active chip from the
+// `defaultKey` this returns, then drives step 2.
+export function useAttentionFiltersQuery() {
   return useQuery({
-    queryKey: dashboardKeys.needsAttention(filter),
-    queryFn: ({ signal }) => getNeedsAttention(filter, signal),
+    queryKey: dashboardKeys.attentionFilters(),
+    queryFn: ({ signal }) => getAttentionFilters(signal),
+  })
+}
+
+// Step 2: rows for the active chip. Disabled until a key is known (from step 1
+// or a user click), so we never request rows without a valid filter.
+export function useNeedsAttentionQuery(filter: string | null) {
+  return useQuery({
+    queryKey: dashboardKeys.needsAttention(filter ?? ''),
+    queryFn: ({ signal }) => getNeedsAttention(filter as string, signal),
+    enabled: filter !== null,
     placeholderData: keepPreviousData,
   })
 }

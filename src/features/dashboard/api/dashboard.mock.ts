@@ -14,12 +14,29 @@ import {
   dashWeeklyProgress,
 } from '../data'
 import type { ClientProgress, KpiCounts } from '../types'
-import type { ExpiryItemDto, NeedsAttentionDto } from './dashboard.types'
+import type {
+  AttentionFilters,
+  ExpiryItemDto,
+  NeedsAttentionDto,
+} from './dashboard.types'
 
 export function kpisDto(): KpiCounts {
   return buildKpiCounts()
 }
 
+// Step 1: the Catch Up chip metadata. `defaultKey` is the server's choice of
+// which chip opens first (the first defined one), so the client doesn't hardcode
+// a filter key.
+export function attentionFiltersDto(): AttentionFilters {
+  return {
+    filters: ATTN_FILTER_DEFS,
+    counts: dashFilterCounts(),
+    defaultKey: ATTN_FILTER_DEFS[0].key,
+    weekRange: dashCurrentWeekRangeLabel(),
+  }
+}
+
+// Step 2: the rows for one chip.
 export function needsAttentionDto(filter: string): NeedsAttentionDto {
   const rows = buildFilteredAttentionList([filter]).map((r) => ({
     client: toClientDto(r.client),
@@ -27,12 +44,7 @@ export function needsAttentionDto(filter: string): NeedsAttentionDto {
     text: r.text,
     week: dashWeeklyProgress(r.client, r.index),
   }))
-  return {
-    rows,
-    counts: dashFilterCounts(),
-    filters: ATTN_FILTER_DEFS,
-    weekRange: dashCurrentWeekRangeLabel(),
-  }
+  return { rows }
 }
 
 export function upcomingExpirationsDto(): ExpiryItemDto[] {

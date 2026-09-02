@@ -132,6 +132,8 @@ describe('DashboardPage — Catch Up (needs attention)', () => {
   })
 
   it('collapses a long list behind "Show all", which expands', async () => {
+    // Rows come from step 2; the chips/counts come from the real step-1
+    // handler (/dashboard/attention-filters), left untouched here.
     server.use(
       http.get(ATTENTION, () =>
         HttpResponse.json({
@@ -141,11 +143,6 @@ describe('DashboardPage — Catch Up (needs attention)', () => {
             text: `reason ${i}`,
             week: week(),
           })),
-          counts: { 'needs-attention': 10 },
-          filters: [
-            { key: 'needs-attention', label: 'Needs Attention', icon: 'bell' },
-          ],
-          weekRange: 'Aug 1 – Aug 7',
         }),
       ),
     )

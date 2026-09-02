@@ -2,6 +2,7 @@
 export const dashboardKeys = {
   all: ['dashboard'] as const,
   kpis: () => ['dashboard', 'kpis'] as const,
+  attentionFilters: () => ['dashboard', 'attention-filters'] as const,
   needsAttention: (filter: string) =>
     ['dashboard', 'needs-attention', filter] as const,
   upcomingExpirations: () => ['dashboard', 'upcoming-expirations'] as const,

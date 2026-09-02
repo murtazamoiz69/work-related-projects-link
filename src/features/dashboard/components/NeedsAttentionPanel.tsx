@@ -6,20 +6,44 @@ import { ClientActions } from '@/components/molecules/ClientActions'
 import { WeekDayHeader, WeekDots } from '@/components/molecules/WeekDots'
 import { apiErrorMessage } from '@/lib/api/errors'
 import { useMiniTooltip } from '@/hooks/useMiniTooltip'
-import { useNeedsAttentionQuery } from '../hooks/useDashboardQueries'
+import {
+  useAttentionFiltersQuery,
+  useNeedsAttentionQuery,
+} from '../hooks/useDashboardQueries'
 
 const PAGE_SIZE = 8
 
 export function NeedsAttentionPanel() {
-  const [activeFilter, setActiveFilter] = useState('needs-attention')
+  // null until the chip metadata arrives — the server tells us which chip is
+  // the default (below), so we don't open by guessing a filter key.
+  const [activeFilter, setActiveFilter] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [showAll, setShowAll] = useState(false)
   const panelRef = useRef<HTMLDivElement>(null)
   const scrollOnCollapse = useRef(false)
   const { show, hide, tooltip } = useMiniTooltip()
 
-  const { data, isPending, isError, error, refetch, isFetching } =
-    useNeedsAttentionQuery(activeFilter)
+  // Step 1: chip defs + counts + week range + the default chip.
+  const filtersQuery = useAttentionFiltersQuery()
+  const meta = filtersQuery.data
+
+  // Adopt the server's default chip once, on first load. After that the user
+  // owns the selection.
+  useEffect(() => {
+    if (meta && activeFilter === null) setActiveFilter(meta.defaultKey)
+  }, [meta, activeFilter])
+
+  // Step 2: rows for the active chip (held until step 1 names one).
+  const rowsQuery = useNeedsAttentionQuery(activeFilter)
+
+  const isPending = filtersQuery.isPending || rowsQuery.isPending
+  const isError = filtersQuery.isError || rowsQuery.isError
+  const error = filtersQuery.error ?? rowsQuery.error
+  const isFetching = rowsQuery.isFetching
+  const refetch = () => {
+    void filtersQuery.refetch()
+    void rowsQuery.refetch()
+  }
 
   // Scrolling here has to wait until *after* the collapsed (shorter) list
   // has actually committed to the DOM — scrolling before that targets the
@@ -31,17 +55,17 @@ export function NeedsAttentionPanel() {
     }
   }, [showAll])
 
-  const filters = data?.filters ?? []
-  const counts = data?.counts ?? {}
-  const weekRange = data?.weekRange ?? ''
+  const filters = meta?.filters ?? []
+  const counts = meta?.counts ?? {}
+  const weekRange = meta?.weekRange ?? ''
 
   const matches = useMemo(() => {
-    const all = data?.rows ?? []
+    const all = rowsQuery.data?.rows ?? []
     const q = search.trim().toLowerCase()
     return q
       ? all.filter((row) => row.client.name.toLowerCase().includes(q))
       : all
-  }, [data, search])
+  }, [rowsQuery.data, search])
   const shown = showAll ? matches : matches.slice(0, PAGE_SIZE)
 
   const selectFilter = (key: string) => {
