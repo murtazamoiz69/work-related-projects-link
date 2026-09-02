@@ -26,6 +26,7 @@ function makeClient(overrides: Partial<Client> = {}): Client {
   today.setHours(0, 0, 0, 0)
   return {
     id: 'c-1',
+    conversationId: 'c-1',
     name: 'Priya Sharma',
     initials: 'PS',
     color: '#123456',
@@ -216,6 +217,7 @@ describe('ExtendProgramModal', () => {
 function makeSerializedClient() {
   return {
     id: 'c-1',
+    conversationId: 'c-1',
     name: 'Priya Sharma',
     initials: 'PS',
     color: '#123456',

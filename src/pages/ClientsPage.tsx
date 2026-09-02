@@ -5,7 +5,6 @@ import { Topbar } from '@/components/organisms/Topbar'
 import { ConfirmDialog } from '@/components/molecules/ConfirmDialog'
 import { apiErrorMessage } from '@/lib/api/errors'
 import { showToast } from '@/lib/toast'
-import { CONVERSATIONS } from '@/features/chat'
 import {
   useClientsQuery,
   useClientsSummaryQuery,
@@ -129,17 +128,14 @@ export function ClientsPage({ search }: { search: ClientsSearch }) {
     navigate({ to: '/clients', search: {} })
   }
 
-  const conversationIdFor = (client: Client) =>
-    CONVERSATIONS.find((c) => c.client.id === client.id)?.id
-
   const openChat = (client: Client) => {
-    navigate({ to: '/chat', search: { c: conversationIdFor(client) } })
+    navigate({ to: '/chat', search: { c: client.conversationId } })
   }
 
   const manageUser = (client: Client) => {
     navigate({
       to: '/chat',
-      search: { c: conversationIdFor(client), plan: true },
+      search: { c: client.conversationId, plan: true },
     })
   }
 

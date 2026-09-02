@@ -2,6 +2,9 @@ export type ClientStatus = 'active' | 'attention' | 'paused' | 'new'
 
 export type Client = {
   id: string
+  /** The client's chat thread — used to open their conversation. Supplied by
+   *  the API (today it equals `id`, but callers must not assume that). */
+  conversationId: string
   name: string
   initials: string
   color: string

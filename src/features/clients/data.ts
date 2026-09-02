@@ -25,7 +25,9 @@ export const PROGRAM_PLAN: Record<string, string> = {
   'Cardiac Health': 'Cardiac Health Nutrition',
 }
 
-type NamedClient = Omit<Client, 'plan'>
+// `plan` and `conversationId` are derived in the final map below, so the seed
+// rows don't carry them.
+type NamedClient = Omit<Client, 'plan' | 'conversationId'>
 
 const NAMED_CLIENTS: NamedClient[] = [
   {
@@ -488,4 +490,10 @@ function generateClients(count: number, startIndex: number): NamedClient[] {
 
 export const CLIENTS_DATA: Client[] = NAMED_CLIENTS.concat(
   generateClients(33, NAMED_CLIENTS.length),
-).map((c) => ({ ...c, plan: PROGRAM_PLAN[c.program] }))
+).map((c) => ({
+  ...c,
+  plan: PROGRAM_PLAN[c.program],
+  // The chat thread is keyed by the client id today; exposed as its own field
+  // so consumers don't hardcode that assumption.
+  conversationId: c.id,
+}))

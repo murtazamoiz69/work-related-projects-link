@@ -17,7 +17,7 @@ import {
   SaveTemplateModal,
   useMealTemplatesStore,
 } from '@/features/meal-templates'
-import { CONVERSATIONS } from '../data'
+import { useConversationQuery } from '../hooks/useConversations'
 import { ActivityFilterBar } from '../components/ActivityFilterBar'
 import { ActivityLogList } from '../components/ActivityLogList'
 import { useActivityFilters } from '../hooks/useActivityFilters'
@@ -98,11 +98,10 @@ export function PlanWorkspaceOverlay({
     return () => document.removeEventListener('keydown', onKey)
   }, [onClose])
 
-  // Activity data + its filter hook read from CONVERSATIONS (not the plan) and
-  // must run unconditionally, before the loading guard below. Read on each
-  // render (not memoised) so new chat messages are reflected.
-  const convo = CONVERSATIONS.find((c) => c.client.id === client.id)
-  const activityItems = convo?.activity ?? []
+  // Activity + its filter hook must run unconditionally, before the loading
+  // guard below. Activity comes from the client's conversation (the API).
+  const convoQuery = useConversationQuery(client.conversationId)
+  const activityItems = convoQuery.data?.activity ?? []
   const activityFirstName = client.name.split(' ')[0]
   const activityFilters = useActivityFilters(activityItems, activityFirstName)
 

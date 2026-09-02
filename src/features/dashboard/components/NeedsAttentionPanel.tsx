@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { Avatar } from '@/components/atoms/Avatar'
-import { CONVERSATIONS } from '@/features/chat'
 import { Icon } from '@/components/atoms/Icon'
 import { ClientActions } from '@/components/molecules/ClientActions'
 import { WeekDayHeader, WeekDots } from '@/components/molecules/WeekDots'
@@ -164,11 +163,7 @@ export function NeedsAttentionPanel() {
                         "open in new tab" behave. */}
                     <Link
                       to="/chat"
-                      search={{
-                        c: CONVERSATIONS.find(
-                          (cv) => cv.client.id === client.id,
-                        )?.id,
-                      }}
+                      search={{ c: client.conversationId }}
                       className="attn-why"
                       title={`Open ${client.name}'s chat`}
                     >

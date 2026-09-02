@@ -4,6 +4,7 @@
 // localStorage after every mutation (guarded in try/catch) so creating/editing
 // a program survives a navigation between the library and the workspace.
 import { daysAgo, pick, seededRandom } from '@/lib/seed'
+import { CLIENTS_DATA } from '@/features/clients'
 import type {
   DietDay,
   DietWeek,
@@ -930,6 +931,7 @@ export function buildProgram(index: number): TrainingProgram {
     updatedDate,
     version: `v1.${Math.floor(seededRandom(seed * 17) * 4)}`,
     members: [],
+    enrolledCount: CLIENTS_DATA.length,
     activeUsers: 0,
     completionRate: 0,
     workoutWeeks: buildWorkoutWeeks(durationWeeks, difficulty, seed),

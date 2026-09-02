@@ -4,7 +4,6 @@ import { ToggleSwitch } from '@/components/atoms/ToggleSwitch'
 import { Topbar } from '@/components/organisms/Topbar'
 import { ConfirmDialog } from '@/components/molecules/ConfirmDialog'
 import { apiErrorMessage } from '@/lib/api/errors'
-import { CLIENTS_DATA } from '@/features/clients'
 import {
   useProgramQuery,
   useUpdateProgram,
@@ -152,7 +151,7 @@ export function ProgramsPage() {
       <main className="content">
         <ProgramOverview
           program={program}
-          enrolledCount={CLIENTS_DATA.length}
+          enrolledCount={program.enrolledCount}
         />
 
         <section className="panel prog-tabs-panel">

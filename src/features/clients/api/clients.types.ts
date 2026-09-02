@@ -44,6 +44,7 @@ export type ExtendClientExpiryBody = {
 /** A client exactly as the backend would send it — dates are ISO strings. */
 export type ClientDto = {
   id: string
+  conversationId: string
   name: string
   initials: string
   color: string

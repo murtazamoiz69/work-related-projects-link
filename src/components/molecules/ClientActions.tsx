@@ -1,7 +1,6 @@
 import { useNavigate } from '@tanstack/react-router'
 import { Icon } from '@/components/atoms/Icon'
 import type { Client } from '@/features/clients'
-import { CONVERSATIONS } from '@/features/chat'
 import { showToast } from '@/lib/toast'
 
 type ClientActionsProps = {
@@ -14,9 +13,7 @@ type ClientActionsProps = {
 /** Message / Call / Email trio used in every client row across the app. */
 export function ClientActions({ client, showManagePlan }: ClientActionsProps) {
   const navigate = useNavigate()
-  const conversationId = CONVERSATIONS.find(
-    (c) => c.client.id === client.id,
-  )?.id
+  const conversationId = client.conversationId
   return (
     <div className="ct-actions">
       {showManagePlan ? (

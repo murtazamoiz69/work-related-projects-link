@@ -157,6 +157,8 @@ export type TrainingProgram = {
   updatedDate: Date
   version: string
   members: ProgramMember[]
+  /** How many users are enrolled on this program (served by the API). */
+  enrolledCount: number
   activeUsers: number
   completionRate: number
   workoutWeeks: WorkoutWeek[]
