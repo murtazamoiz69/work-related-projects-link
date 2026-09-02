@@ -34,6 +34,7 @@ Return the current global program.
   "updatedDate": "2026-08-26T00:00:00.000Z",
   "version": "1.4",
   "members": [ /* ProgramMember[] — see below */ ],
+  "enrolledCount": 48,
   "activeUsers": 48,
   "completionRate": 62,
   "nutritionTargets": { "calories": 2000, "protein": 160, "carbs": 180, "fat": 60, "water": 3 },
@@ -54,6 +55,7 @@ Return the current global program.
 | enabled | boolean | Availability (the toggle). |
 | createdDate / updatedDate | ISO date | Only date fields at top level. |
 | nutritionTargets | object | `{ calories, protein, carbs, fat, water }` (numbers). |
+| enrolledCount | number | Total users enrolled — the overview's "N users enrolled". Server-computed; the client must not count another resource for it. |
 | activeUsers / completionRate | number | Overview stats. |
 | notes / activity / versionHistory | arrays | `days` = "N days ago" (integer), not a date. |
 

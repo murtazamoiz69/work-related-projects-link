@@ -186,17 +186,19 @@ A page-by-page pass for data resolved client-side instead of from the API:
   [api/programs.md](./api/programs.md)). *Boundary:* the mock's plan/program
   builders still read the seed in-browser — backend logic that moves server-side
   in real integration.
-- **G2 — direct seed reads (follow-ups, not yet migrated):**
-  - **client → conversation id** — `ClientActions`, `ClientsPage`,
-    `NeedsAttentionPanel` do `CONVERSATIONS.find(c.client.id===id)?.id`. Should
-    be a field on the client payload.
-  - **client activity** — `ProgramProgressModal`, `PlanWorkspaceOverlay` read
-    `CONVERSATIONS.find(...).activity`. Should come from the conversation endpoint.
-  - **ProgramsPage enrolled count** — `CLIENTS_DATA.length`; should be a count on
-    the program payload.
-  - **client-detail "At a glance" tracker** — derives adherence client-side from
-    `clientSeed`/`MEAL_ITEMS_BASE`/`WORKOUT_ITEMS`; should be backend-computed
-    like the dashboard.
+- **G2 — direct seed reads (done).** Every UI component that reached into a
+  bundled seed array is now served by the API:
+  - **client → conversation id** — was `CONVERSATIONS.find(c.client.id===id)?.id`
+    in `ClientActions`, `ClientsPage`, `NeedsAttentionPanel`; now a
+    `conversationId` field on the client payload (see [api/users.md](./api/users.md)).
+  - **client activity** — `ProgramProgressModal`, `PlanWorkspaceOverlay` read it
+    from the conversation endpoint (`useConversationQuery`), not `CONVERSATIONS`.
+  - **ProgramsPage enrolled count** — was `CLIENTS_DATA.length`; now an
+    `enrolledCount` field on the program payload (see [api/programs.md](./api/programs.md)).
+  - **client-detail "At a glance" tracker** — the adherence/journey/AI-summary
+    derivation (`deriveDetail`) now runs server-side; the UI fetches it from
+    `GET /clients/:id/detail` (see [api/users.md](./api/users.md)). *Boundary:* the
+    mock still runs `deriveDetail` in-browser — backend logic in real integration.
 - **Correctly client-side (keep):** formatters/helpers/factories (`formatTime`,
   `dietDayTotals`, `makeSlot`, colour maps…) — presentation logic, not data.
 

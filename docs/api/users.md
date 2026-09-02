@@ -49,7 +49,8 @@ Filtered, sorted, paginated roster.
       "checkInDays": 4,
       "joinDate": "2026-05-05T00:00:00.000Z",
       "goals": ["Lose fat", "Build discipline"],
-      "diet": "Low carb"
+      "diet": "Low carb",
+      "conversationId": "c-1"
     }
   ],
   "total": 48, "page": 1, "pageSize": 12
@@ -74,6 +75,7 @@ Filtered, sorted, paginated roster.
 | joinDate | ISO date | |
 | goals | string[] | |
 | diet | string | |
+| conversationId | string | The user's chat conversation. The UI opens chat / "at a glance" by this id; the client must not resolve it from any other resource. |
 
 **Errors:** `401`; `500`.
 
@@ -130,7 +132,52 @@ Extend (or change) a user's program expiry.
 
 ---
 
+## `GET /clients/:id/detail`
+The user's **"At a glance"** profile — the derived program-tracker view shown in
+the Client 360 profile, the Chat "Program progress" modal, and the Plan
+Workspace header. All adherence/journey/summary numbers are **backend-computed**
+(like the dashboard); the client only renders them.
+
+**Success `200`** — `ClientDetail`:
+```json
+{
+  "heightCm": 170, "weightKg": 78, "targetWeightKg": 68,
+  "bmi": "27.0", "activityLevel": "Moderately active", "weeklyCommitment": 4,
+  "allergies": ["Peanuts"], "medicalConditions": [],
+  "notes": [{ "author": "Sim", "text": "…", "days": 3, "attachment": null }],
+  "timeline": [{ "text": "Joined the program", "days": 120 }],
+  "aiSummary": ["…", "…", "…"],
+  "programs": [
+    {
+      "id": "p-1", "name": "12-Week Weight Loss", "phase": "Cutting",
+      "goal": "Lose fat", "coach": "Sim", "totalWeeks": 12, "currentWeek": 6,
+      "startDate": "2026-07-03T18:30:00.000Z",
+      "endDate": "2026-09-25T18:30:00.000Z",
+      "status": "active", "weeksLogged": 5, "consistency": 83, "streak": 3,
+      "startWeight": 82, "latestWeight": 78, "weightChange": -4, "waistChange": -3,
+      "weeks": [
+        {
+          "week": 1, "date": "2026-07-03T18:30:00.000Z", "status": "done",
+          "submitted": true, "weightKg": 82,
+          "measurements": { "chest": 100, "waist": 90, "hips": 104 },
+          "photos": { "front": true, "side": true, "back": false },
+          "dietPct": 90, "workoutPct": 85, "coachNote": "Strong start."
+        }
+      ]
+    }
+  ]
+}
+```
+Nested dates are ISO strings on the wire (`programs[].startDate`/`endDate`,
+`programs[].weeks[].date`); the client maps them to `Date`. `consistency`,
+`weightKg`, `measurements`, `photos`, `coachNote`, and the weight deltas are
+nullable (no data yet). `photos` slot values are `true`/`false` or a photo URL.
+
+**Errors:** `401`; `404` `{ "message": "User not found." }`; `500`.
+
+---
+
 ## Not an API (this page)
-- **Open chat / Manage plan** — client-side navigation (`/chat?c=<id>`; the
-  conversation id equals the client id). See [chat.md](./chat.md).
+- **Open chat / Manage plan** — client-side navigation to `/chat?c=<conversationId>`
+  using the client's `conversationId` field (above). See [chat.md](./chat.md).
 - **Call / Email** buttons — UI stubs (no request).
