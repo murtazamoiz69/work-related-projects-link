@@ -1,11 +1,11 @@
-import { useEffect, useId, useMemo, useRef } from 'react'
+import { useEffect, useId, useRef } from 'react'
 import { Icon } from '@/components/atoms/Icon'
 import { Backdrop } from '@/components/molecules/Backdrop'
 import type { Client } from '@/features/clients'
 import {
   CurrentProgramLabel,
   ProgramTrackerDashboard,
-  deriveDetail,
+  useClientDetailQuery,
 } from '@/features/client-detail'
 import { useConversationQuery } from '../hooks/useConversations'
 
@@ -22,7 +22,9 @@ export function ProgramProgressModal({
   const titleId = useId()
   const cardRef = useRef<HTMLDivElement>(null)
   const closeRef = useRef<HTMLButtonElement>(null)
-  const detail = useMemo(() => deriveDetail(client), [client])
+  // The tracker data (programs, journey, adherence) is derived server-side and
+  // fetched from the client-detail API.
+  const { data: detail } = useClientDetailQuery(client.id)
   // The user's real logged activity comes from their conversation (the API),
   // injected into the tracker (which is client-detail and must not import chat).
   const { data: conversation } = useConversationQuery(client.conversationId)
@@ -89,7 +91,9 @@ export function ProgramProgressModal({
             <p className="prog-progress-subtitle">{client.program}</p>
           </div>
           <div className="prog-progress-head-actions">
-            <CurrentProgramLabel program={detail.programs[0]} />
+            {detail ? (
+              <CurrentProgramLabel program={detail.programs[0]} />
+            ) : null}
             <button
               className="icon-btn sm"
               onClick={onClose}
@@ -100,13 +104,17 @@ export function ProgramProgressModal({
             </button>
           </div>
         </div>
-        <div className="prog-progress-body">
-          <ProgramTrackerDashboard
-            client={client}
-            detail={detail}
-            activity={activity}
-            hideSwitcher
-          />
+        <div className="prog-progress-body" aria-busy={!detail || undefined}>
+          {detail ? (
+            <ProgramTrackerDashboard
+              client={client}
+              detail={detail}
+              activity={activity}
+              hideSwitcher
+            />
+          ) : (
+            <span className="skel skel-wide" style={{ height: 200 }} />
+          )}
         </div>
       </div>
     </Backdrop>

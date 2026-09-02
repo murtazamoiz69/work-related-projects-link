@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useReducer, useState, type ReactNode } from 'react'
+import { useEffect, useReducer, useState, type ReactNode } from 'react'
 import { Avatar } from '@/components/atoms/Avatar'
 import { Icon } from '@/components/atoms/Icon'
 import { ConfirmDialog } from '@/components/molecules/ConfirmDialog'
@@ -6,7 +6,7 @@ import { showToast } from '@/lib/toast'
 import { STATUS_LABEL, formatJoinDate } from '@/features/clients'
 import type { Client } from '@/features/clients'
 import {
-  deriveDetail,
+  useClientDetailQuery,
   NotesTab,
   CurrentProgramLabel,
   ProgramTrackerDashboard,
@@ -65,9 +65,10 @@ export function PlanWorkspaceOverlay({
   // tabs/modals (unchanged); refresh() persists it (below).
   const planQuery = usePlanQuery(client.id)
   const savePlan = useSavePlan(client.id)
-  // The narrative half of the profile — AI summary, notes — a local
-  // client-detail derivation (not part of the plan).
-  const detail = useMemo(() => deriveDetail(client), [client])
+  // The narrative half of the profile — AI summary, programs — served by the
+  // client-detail API (derived server-side), not the plan.
+  const detailQuery = useClientDetailQuery(client.id)
+  const detail = detailQuery.data
 
   const [activeTab, setActiveTab] = useState<PwTab>('glance')
   const [activeWeekOverride, setActiveWeekOverride] = useState<number | null>(
@@ -106,20 +107,26 @@ export function PlanWorkspaceOverlay({
   const activityFilters = useActivityFilters(activityItems, activityFirstName)
 
   const ws = planQuery.data
-  if (planQuery.isPending || !ws) {
+  if (planQuery.isPending || !ws || detailQuery.isPending || !detail) {
     return (
       <div className="pw-overlay" id="planWorkspaceOverlay">
         <div className="pw-shell">
           <PwStatus
             onClose={onClose}
-            busy={planQuery.isPending}
+            busy={planQuery.isPending || detailQuery.isPending}
             message={
               planQuery.isError
                 ? apiErrorMessage(planQuery.error)
-                : 'Loading plan…'
+                : detailQuery.isError
+                  ? apiErrorMessage(detailQuery.error)
+                  : 'Loading plan…'
             }
             onRetry={
-              planQuery.isError ? () => void planQuery.refetch() : undefined
+              planQuery.isError
+                ? () => void planQuery.refetch()
+                : detailQuery.isError
+                  ? () => void detailQuery.refetch()
+                  : undefined
             }
           />
         </div>

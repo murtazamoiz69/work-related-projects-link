@@ -1,4 +1,5 @@
 export { deriveDetail, summarizeNotes } from './data'
+export { useClientDetailQuery } from './hooks/useClientDetail'
 export type {
   ClientDetail,
   InternalNote,
