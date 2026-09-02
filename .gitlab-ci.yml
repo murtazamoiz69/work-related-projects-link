@@ -52,6 +52,7 @@ build:
   stage: verify
   script:
     - npm run build
+    - npm run size
   artifacts:
     name: 'dist-$CI_COMMIT_SHORT_SHA'
     paths:
