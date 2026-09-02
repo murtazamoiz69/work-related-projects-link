@@ -1,4 +1,5 @@
 import { Icon } from '@/components/atoms/Icon'
+import { apiErrorMessage } from '@/lib/api/errors'
 import { useKpisQuery } from '../hooks/useDashboardQueries'
 
 type KpiCard = {
@@ -10,9 +11,27 @@ type KpiCard = {
 }
 
 export function KpiRow() {
-  const { data: k, isPending } = useKpisQuery()
+  const { data: k, isPending, isError, error, refetch } = useKpisQuery()
   const dash = isPending && !k
   const total = k?.total ?? 0
+
+  if (isError && !k) {
+    return (
+      <div className="dash-kpi-grid" aria-label="User roster snapshot">
+        <div
+          className="clients-empty is-error"
+          role="alert"
+          style={{ gridColumn: '1 / -1' }}
+        >
+          <Icon name="alert-triangle" />
+          <p>{apiErrorMessage(error)}</p>
+          <button className="link-btn" onClick={() => refetch()}>
+            Try again
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   const cards: KpiCard[] = [
     {

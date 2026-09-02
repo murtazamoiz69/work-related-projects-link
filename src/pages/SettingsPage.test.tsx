@@ -108,6 +108,20 @@ describe('SettingsPage — nav & profile', () => {
 })
 
 describe('SettingsPage — notifications', () => {
+  it('shows an error affordance when preferences fail to load', async () => {
+    server.use(
+      http.get(PREFS, () =>
+        HttpResponse.json({ message: 'prefs down' }, { status: 500 }),
+      ),
+    )
+    const { user } = renderWithProviders(<SettingsPage />)
+    await goTo(user, 'Notifications')
+    expect(await screen.findByText('prefs down')).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: /try again/i }),
+    ).toBeInTheDocument()
+  })
+
   it('reflects the saved preferences once loaded', async () => {
     const { user } = renderWithProviders(<SettingsPage />)
     await goTo(user, 'Notifications')
@@ -252,6 +266,20 @@ describe('SettingsPage — security (change password)', () => {
 })
 
 describe('SettingsPage — practice details', () => {
+  it('shows an error affordance when practice details fail to load', async () => {
+    server.use(
+      http.get(PRACTICE, () =>
+        HttpResponse.json({ message: 'practice down' }, { status: 500 }),
+      ),
+    )
+    const { user } = renderWithProviders(<SettingsPage />)
+    await goTo(user, 'Practice Details')
+    expect(await screen.findByText('practice down')).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: /try again/i }),
+    ).toBeInTheDocument()
+  })
+
   it('loads the prefilled practice form', async () => {
     const { user } = renderWithProviders(<SettingsPage />)
     await goTo(user, 'Practice Details')

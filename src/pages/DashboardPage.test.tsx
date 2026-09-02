@@ -81,6 +81,24 @@ describe('DashboardPage — KPI row', () => {
     expect(screen.getByText('New Users (24h)')).toBeInTheDocument()
     expect(screen.getByText('Logged Meals Today')).toBeInTheDocument()
   })
+
+  it('shows an error affordance when the KPIs fail to load', async () => {
+    server.use(
+      http.get(`${API}/dashboard/kpis`, () =>
+        HttpResponse.json({ message: 'kpis down' }, { status: 500 }),
+      ),
+    )
+    renderWithProviders(<DashboardPage />)
+    const alert = await screen.findByText('kpis down')
+    expect(alert).toBeInTheDocument()
+    // A retry lives in the same block, and no zeroed cards are shown.
+    expect(
+      within(alert.closest('[role="alert"]') as HTMLElement).getByRole(
+        'button',
+        { name: /try again/i },
+      ),
+    ).toBeInTheDocument()
+  })
 })
 
 describe('DashboardPage — Catch Up (needs attention)', () => {

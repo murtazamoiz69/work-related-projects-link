@@ -281,7 +281,13 @@ const NOTIFICATION_ROWS: {
 ]
 
 function NotificationsSection() {
-  const { data: prefs, isPending } = useNotificationPrefsQuery()
+  const {
+    data: prefs,
+    isPending,
+    isError,
+    error,
+    refetch,
+  } = useNotificationPrefsQuery()
   const updatePrefs = useUpdateNotificationPrefs()
   const { saved, flash } = useSavedPill()
 
@@ -300,25 +306,38 @@ function NotificationsSection() {
         </div>
       </div>
 
-      <div className="settings-toggle-list" aria-busy={isPending || undefined}>
-        {NOTIFICATION_ROWS.map((row) => (
-          <label key={row.key} className="settings-toggle-row">
-            <span>
-              <span className="settings-toggle-title">{row.title}</span>
-              <span className="settings-toggle-desc">{row.desc}</span>
-            </span>
-            <span className="toggle-switch">
-              <input
-                type="checkbox"
-                checked={prefs ? prefs[row.key] : false}
-                disabled={!prefs}
-                onChange={(e) => setPref(row.key, e.target.checked)}
-              />
-              <span className="toggle-track" />
-            </span>
-          </label>
-        ))}
-      </div>
+      {isError && !prefs ? (
+        <div className="clients-empty is-error" role="alert">
+          <Icon name="alert-triangle" />
+          <p>{apiErrorMessage(error)}</p>
+          <button className="link-btn" onClick={() => refetch()}>
+            Try again
+          </button>
+        </div>
+      ) : (
+        <div
+          className="settings-toggle-list"
+          aria-busy={isPending || undefined}
+        >
+          {NOTIFICATION_ROWS.map((row) => (
+            <label key={row.key} className="settings-toggle-row">
+              <span>
+                <span className="settings-toggle-title">{row.title}</span>
+                <span className="settings-toggle-desc">{row.desc}</span>
+              </span>
+              <span className="toggle-switch">
+                <input
+                  type="checkbox"
+                  checked={prefs ? prefs[row.key] : false}
+                  disabled={!prefs}
+                  onChange={(e) => setPref(row.key, e.target.checked)}
+                />
+                <span className="toggle-track" />
+              </span>
+            </label>
+          ))}
+        </div>
+      )}
       <div className="settings-section-foot">
         <SavedIndicator show={saved} />
       </div>
@@ -478,7 +497,29 @@ function SecuritySection() {
 // Practice details
 // ---------------------------------------------------------------------
 function PracticeSection() {
-  const { data, isPending } = usePracticeQuery()
+  const { data, isPending, isError, error, refetch } = usePracticeQuery()
+
+  if (isError && !data) {
+    return (
+      <section className="panel settings-section">
+        <div className="panel-head">
+          <div>
+            <h2>Practice Details</h2>
+            <p className="panel-sub">
+              Shown on user-facing reports and reminders
+            </p>
+          </div>
+        </div>
+        <div className="clients-empty is-error" role="alert">
+          <Icon name="alert-triangle" />
+          <p>{apiErrorMessage(error)}</p>
+          <button className="link-btn" onClick={() => refetch()}>
+            Try again
+          </button>
+        </div>
+      </section>
+    )
+  }
 
   if (isPending || !data) {
     return (
