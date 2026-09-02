@@ -73,14 +73,25 @@ export function ChatPage({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [current?.id])
 
-  // Arriving via "Manage Plan" opens the workspace once the conversation loads.
+  // Arriving via "Manage Plan" opens the workspace as soon as we have the
+  // client for ?c= — from the loaded detail, or the list summary if that lands
+  // first — so we don't wait on the slower of the two.
+  const planTarget =
+    current?.client ??
+    (selectedId
+      ? summaries.find((s) => s.id === selectedId)?.client
+      : undefined)
   const planOpened = useRef(false)
   useEffect(() => {
-    if (openPlanWorkspace && current && !planOpened.current) {
+    if (openPlanWorkspace && planTarget && !planOpened.current) {
       planOpened.current = true
-      setPlanClient(current.client)
+      setPlanClient(planTarget)
     }
-  }, [openPlanWorkspace, current])
+  }, [openPlanWorkspace, planTarget])
+
+  // Until that overlay is up, don't paint the chat behind it — arriving via
+  // Manage Plan should go straight to the workspace, not flash the inbox first.
+  const openingPlan = openPlanWorkspace && !planClient
 
   return (
     <>
@@ -88,39 +99,49 @@ export function ChatPage({
           only the account chip here. */}
       <Topbar />
       <main className="content chat-content">
-        <div className="chat-shell">
-          <ConversationList
-            summaries={summaries}
-            tabs={tabsQuery.data ?? []}
-            loading={listQuery.isPending}
-            tab={tab}
-            query={query}
-            selectedId={selectedId}
-            onTab={setTab}
-            onQuery={setQuery}
-            onSelect={setSelectedId}
-            onToggleStar={(id, starred) => setStar.mutate({ id, starred })}
-          />
-
-          {current ? (
-            <MessageThread
-              key={`thread-${current.id}`}
-              convo={current}
-              onManagePlan={() => setPlanClient(current.client)}
-              onViewProgram={() => setProgramClient(current.client)}
+        {openingPlan ? (
+          <div
+            className="chat-shell chat-shell-opening"
+            aria-busy="true"
+            aria-label="Opening plan workspace"
+          >
+            <span className="skel" style={{ width: 220, height: 16 }} />
+          </div>
+        ) : (
+          <div className="chat-shell">
+            <ConversationList
+              summaries={summaries}
+              tabs={tabsQuery.data ?? []}
+              loading={listQuery.isPending}
+              tab={tab}
+              query={query}
+              selectedId={selectedId}
+              onTab={setTab}
+              onQuery={setQuery}
+              onSelect={setSelectedId}
+              onToggleStar={(id, starred) => setStar.mutate({ id, starred })}
             />
-          ) : (
-            <section className="chat-center-col" />
-          )}
 
-          {current ? (
-            <ClientOverview key={`overview-${current.id}`} convo={current} />
-          ) : (
-            <aside className="chat-right-col">
-              <div className="chat-right-scroll" />
-            </aside>
-          )}
-        </div>
+            {current ? (
+              <MessageThread
+                key={`thread-${current.id}`}
+                convo={current}
+                onManagePlan={() => setPlanClient(current.client)}
+                onViewProgram={() => setProgramClient(current.client)}
+              />
+            ) : (
+              <section className="chat-center-col" />
+            )}
+
+            {current ? (
+              <ClientOverview key={`overview-${current.id}`} convo={current} />
+            ) : (
+              <aside className="chat-right-col">
+                <div className="chat-right-scroll" />
+              </aside>
+            )}
+          </div>
+        )}
       </main>
 
       {planClient ? (

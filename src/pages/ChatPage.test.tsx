@@ -15,11 +15,29 @@ import {
   patchConversationDto,
 } from '@/features/chat/api/chat.mock'
 import type { Conversation } from '@/features/chat/types'
+import { resetPlanStore } from '@/features/chat/plan-workspace/api/plan.mock'
 import { ChatPage } from './ChatPage'
 
 const API = 'http://localhost:3000'
 const DETAIL = `${API}/conversations/:id`
 const MESSAGES = `${API}/conversations/:id/messages`
+
+// jsdom stubs for the Plan Workspace's embedded charts / activity log, used by
+// the "opened via Manage Plan" case below.
+Element.prototype.scrollIntoView =
+  Element.prototype.scrollIntoView ?? (() => {})
+window.scrollTo = window.scrollTo ?? (() => {})
+class ObserverStub {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+  takeRecords() {
+    return []
+  }
+}
+globalThis.ResizeObserver = globalThis.ResizeObserver ?? (ObserverStub as never)
+globalThis.IntersectionObserver =
+  globalThis.IntersectionObserver ?? (ObserverStub as never)
 
 const { navigateSpy } = vi.hoisted(() => ({ navigateSpy: vi.fn() }))
 vi.mock('@tanstack/react-router', async (importOriginal) => {
@@ -186,6 +204,30 @@ describe('ChatPage — message thread & handoff', () => {
       <ChatPage initialConversationId={pick((c) => c.unread > 0).id} />,
     )
     await waitFor(() => expect(markedRead).toBe(true))
+  })
+})
+
+describe('ChatPage — opened via Manage Plan', () => {
+  beforeEach(() => resetPlanStore())
+
+  it('goes straight to the Plan Workspace without flashing the inbox', async () => {
+    const { container } = renderWithProviders(
+      <ChatPage initialConversationId="c-1" openPlanWorkspace />,
+    )
+    // Before the workspace opens, the conversation list is not painted — only a
+    // neutral placeholder — so the inbox never flashes behind the overlay.
+    expect(
+      screen.queryByPlaceholderText(/search conversations/i),
+    ).not.toBeInTheDocument()
+    expect(screen.getByLabelText('Opening plan workspace')).toBeInTheDocument()
+
+    // The Plan Workspace overlay opens on top (its wrapper renders in every
+    // load state).
+    await waitFor(() =>
+      expect(
+        container.querySelector('#planWorkspaceOverlay'),
+      ).toBeInTheDocument(),
+    )
   })
 })
 

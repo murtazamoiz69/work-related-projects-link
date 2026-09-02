@@ -48,3 +48,11 @@
 .clients-empty.is-error .clients-empty-retry {
   margin-top: 4px;
 }
+
+/* Arriving at Chat via "Manage Plan" opens the Plan Workspace overlay on top.
+   While it loads we show this neutral placeholder instead of the inbox, so the
+   conversation list never flashes before the workspace covers it. */
+.chat-shell-opening {
+  align-items: center;
+  justify-content: center;
+}
