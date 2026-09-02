@@ -15,29 +15,25 @@ import {
   patchConversationDto,
 } from '@/features/chat/api/chat.mock'
 import type { Conversation } from '@/features/chat/types'
-import { resetPlanStore } from '@/features/chat/plan-workspace/api/plan.mock'
 import { ChatPage } from './ChatPage'
 
 const API = 'http://localhost:3000'
 const DETAIL = `${API}/conversations/:id`
 const MESSAGES = `${API}/conversations/:id/messages`
 
-// jsdom stubs for the Plan Workspace's embedded charts / activity log, used by
-// the "opened via Manage Plan" case below.
-Element.prototype.scrollIntoView =
-  Element.prototype.scrollIntoView ?? (() => {})
-window.scrollTo = window.scrollTo ?? (() => {})
-class ObserverStub {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-  takeRecords() {
-    return []
-  }
-}
-globalThis.ResizeObserver = globalThis.ResizeObserver ?? (ObserverStub as never)
-globalThis.IntersectionObserver =
-  globalThis.IntersectionObserver ?? (ObserverStub as never)
+// The Plan Workspace overlay has its own suite (and embeds chart.js, which
+// can't tear down under jsdom). Here we only care about ChatPage's open/close
+// wiring around it, so stub it with a lightweight overlay that just exposes a
+// close button.
+vi.mock('@/features/chat/plan-workspace', () => ({
+  PlanWorkspaceOverlay: ({ onClose }: { onClose: () => void }) => (
+    <div id="planWorkspaceOverlay">
+      <button aria-label="Close Plan Workspace" onClick={onClose}>
+        close
+      </button>
+    </div>
+  ),
+}))
 
 const { navigateSpy } = vi.hoisted(() => ({ navigateSpy: vi.fn() }))
 vi.mock('@tanstack/react-router', async (importOriginal) => {
@@ -208,8 +204,6 @@ describe('ChatPage — message thread & handoff', () => {
 })
 
 describe('ChatPage — opened via Manage Plan', () => {
-  beforeEach(() => resetPlanStore())
-
   it('goes straight to the Plan Workspace without flashing the inbox', async () => {
     const { container } = renderWithProviders(
       <ChatPage initialConversationId="c-1" openPlanWorkspace />,
@@ -228,6 +222,24 @@ describe('ChatPage — opened via Manage Plan', () => {
         container.querySelector('#planWorkspaceOverlay'),
       ).toBeInTheDocument(),
     )
+  })
+
+  it('reveals the conversation, not a blank page, when the workspace is closed', async () => {
+    const { user } = renderWithProviders(
+      <ChatPage initialConversationId="c-1" openPlanWorkspace />,
+    )
+    // Close the workspace.
+    await user.click(
+      await screen.findByRole('button', { name: /close plan workspace/i }),
+    )
+    // Closing must fall back to the conversation behind it — not the opening
+    // placeholder (the ?c=&plan=true params are still set).
+    expect(
+      await screen.findByPlaceholderText(/search conversations/i),
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByLabelText('Opening plan workspace'),
+    ).not.toBeInTheDocument()
   })
 })
 

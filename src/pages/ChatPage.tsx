@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Topbar } from '@/components/organisms/Topbar'
 import type { Client } from '@/features/clients'
 import { ConversationList } from '@/features/chat/components/ConversationList'
@@ -81,17 +81,18 @@ export function ChatPage({
     (selectedId
       ? summaries.find((s) => s.id === selectedId)?.client
       : undefined)
-  const planOpened = useRef(false)
+  const [planEverOpened, setPlanEverOpened] = useState(false)
   useEffect(() => {
-    if (openPlanWorkspace && planTarget && !planOpened.current) {
-      planOpened.current = true
+    if (openPlanWorkspace && planTarget && !planEverOpened) {
+      setPlanEverOpened(true)
       setPlanClient(planTarget)
     }
-  }, [openPlanWorkspace, planTarget])
+  }, [openPlanWorkspace, planTarget, planEverOpened])
 
-  // Until that overlay is up, don't paint the chat behind it — arriving via
-  // Manage Plan should go straight to the workspace, not flash the inbox first.
-  const openingPlan = openPlanWorkspace && !planClient
+  // Show the neutral placeholder only for the *first* open — the gap before the
+  // overlay appears. Once it has opened, closing it (planClient back to null)
+  // must reveal the conversation behind it, not the placeholder again.
+  const openingPlan = openPlanWorkspace && !planClient && !planEverOpened
 
   return (
     <>
