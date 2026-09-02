@@ -176,6 +176,30 @@ built; it is an incremental, per-feature cutover — not a single flip-the-switc
 5. Optimistic mutations assume the server **echoes the full updated resource** —
    the backend must return those shapes.
 
+### Data-sourcing audit (source of truth = API)
+
+A page-by-page pass for data resolved client-side instead of from the API:
+
+- **G1 — reference libraries (done).** The program/plan payloads carry only
+  `exerciseId`/`mealId`; the UI used to resolve names from bundled arrays. Now
+  served by `GET /libraries`, fetched once + cached, resolved by id (see
+  [api/programs.md](./api/programs.md)). *Boundary:* the mock's plan/program
+  builders still read the seed in-browser — backend logic that moves server-side
+  in real integration.
+- **G2 — direct seed reads (follow-ups, not yet migrated):**
+  - **client → conversation id** — `ClientActions`, `ClientsPage`,
+    `NeedsAttentionPanel` do `CONVERSATIONS.find(c.client.id===id)?.id`. Should
+    be a field on the client payload.
+  - **client activity** — `ProgramProgressModal`, `PlanWorkspaceOverlay` read
+    `CONVERSATIONS.find(...).activity`. Should come from the conversation endpoint.
+  - **ProgramsPage enrolled count** — `CLIENTS_DATA.length`; should be a count on
+    the program payload.
+  - **client-detail "At a glance" tracker** — derives adherence client-side from
+    `clientSeed`/`MEAL_ITEMS_BASE`/`WORKOUT_ITEMS`; should be backend-computed
+    like the dashboard.
+- **Correctly client-side (keep):** formatters/helpers/factories (`formatTime`,
+  `dietDayTotals`, `makeSlot`, colour maps…) — presentation logic, not data.
+
 ### Recommended cutover path
 1. **Auth first** — everything else is gated behind a session.
 2. Integrate the **already-behind-the-API, read-heavy** features endpoint by

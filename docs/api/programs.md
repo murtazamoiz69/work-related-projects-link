@@ -140,12 +140,35 @@ Toggle availability.
 
 ---
 
-## Reference data (NOT part of this API yet)
-The pickers use static catalogs that are currently **local** to the frontend:
-- **Exercise library** (`exerciseId` targets), **Meal library** (`mealId`
-  targets), **Workout templates**.
+## `GET /libraries` — reference catalogs
+The program, plan, and template payloads carry only join keys (`exerciseId`,
+`mealId`); the display data (name, muscle, equipment, ingredients, steps…) comes
+from these read-only catalogs. The client fetches this **once at app load** and
+caches it, then resolves ids locally — so a slot like
+`{ "exerciseId": "ex-1", "sets": 3 }` becomes "Barbell Bench Press · Chest" from
+the catalog, never a bundled assumption.
 
-These are read-only reference data. If/when the backend owns them, expose
-`GET /libraries/exercises`, `GET /libraries/meals`,
-`GET /libraries/workout-templates`; we'll swap the local catalogs for those. The
-program's `exerciseId`/`mealId` values are the join keys.
+**Success `200`**
+```json
+{
+  "exercises": [
+    { "id": "ex-1", "name": "Barbell Bench Press", "muscle": "Chest",
+      "equipment": "Barbell", "description": "Lower the bar to mid-chest…", "…": "…" }
+  ],
+  "meals": [
+    { "id": "meal-oats", "name": "Overnight Oats", "category": "Breakfast",
+      "calories": 380, "protein": 18, "ingredients": ["oats","…"], "steps": ["…"], "…": "…" }
+  ],
+  "workoutTemplates": [
+    { "id": "tpl-push", "name": "Push", "muscle": "Chest", "…": "…" }
+  ]
+}
+```
+
+**Behaviour**
+- Read-only, session-stable — the client caches with `staleTime: Infinity` and
+  loads it before any library-dependent screen renders.
+- `exercises[].id` / `meals[].id` are the join keys for every `exerciseId` /
+  `mealId` in the program, plan, template, and activity payloads.
+- May be split into `GET /libraries/{exercises,meals,workout-templates}` if you
+  prefer independent caching; the client currently fetches all three in one call.

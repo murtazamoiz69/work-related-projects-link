@@ -151,7 +151,9 @@ sets `published` and appends a `PlanVersion`).
 - **Meal templates** (the library behind "Save to Library" / "Add from Library")
   — a separate resource; see **[meal-templates.md](./meal-templates.md)** for the
   contract. Client-side store today, backend endpoints proposed there.
-- **Exercise/meal libraries** — local reference data (join keys `exerciseId`/`mealId`).
+- **Exercise/meal/template libraries** — served by `GET /libraries` (see
+  [programs.md](./programs.md)); the client caches them and resolves the
+  `exerciseId`/`mealId` join keys in the plan.
 - **At-a-glance tracker, AI summary** — derived/local (client-detail), not part of
   the plan resource.
 - **Activity tab** — reads the conversation's `activity` (see [chat.md](./chat.md)),
