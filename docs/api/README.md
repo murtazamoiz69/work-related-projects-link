@@ -96,19 +96,25 @@ update its cache without an extra round-trip.
 These are handled entirely in the frontend today; each page doc repeats the ones
 relevant to it. Listed here so the backend scope is unambiguous:
 
-- **Reference catalogs** (exercise library, meal library, workout templates) and
-  **saved meal templates** — currently local. *May* become `/libraries/*` and
-  `/meal-templates` later; not in this spec.
-- **Client-detail derivations** (the At-a-glance tracker, AI summaries, clinical
-  profile narrative) — currently derived on the client from the user record.
+- **Saved meal templates** ("Save to Library" / "Add from Library") — a Zustand
+  store backed by `localStorage`, no MSW. Contract proposed in
+  [meal-templates.md](./meal-templates.md) but **not yet wired**.
 - **Chat AI suggestion chips** — currently a local pool; could become an endpoint.
 - **Chat live updates** (typing indicator, incoming AI/client messages) — the
   frontend expects these via **websocket or polling**, not REST. See
   [chat.md](./chat.md) § Realtime.
-- **Some list filtering/search is client-side** where noted (Chat tabs/search,
-  Dashboard "Catch Up" search, activity-log filters) — the server returns the
-  full set and the client filters. Where filtering is **server-side** (Users,
-  Nutritionists, Dashboard cohort filters) it is called out explicitly.
+- **Some list filtering/search is client-side** where noted (**Chat search** and
+  active-tab row filtering, Dashboard "Catch Up" search, activity-log filters) —
+  the server returns the full set and the client filters. Where filtering **or a
+  count** is **server-side** (Users, Nutritionists, Dashboard cohort filters, the
+  Dashboard Catch Up chips, and the **Chat tab counts** — `GET /conversations/tabs`)
+  it is called out explicitly.
 - **Call / Email** row actions are UI stubs.
 - **Settings → Profile** (name/email/avatar) is not yet an endpoint (belongs with
   auth; see [settings.md](./settings.md) and [auth.md](./auth.md)).
+
+> **Now served by an API (previously in this list):** the **reference catalogs**
+> (exercise/meal/workout-template libraries) are `GET /libraries`
+> ([programs.md](./programs.md)), and the **client-detail "At a glance" tracker /
+> AI summary** is `GET /clients/:id/detail` ([users.md](./users.md)) —
+> backend-computed, no longer derived in the client.
