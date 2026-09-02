@@ -22,11 +22,13 @@ export {
   buildEmptyDietWeek,
   buildEmptyWorkoutWeeks,
   buildEmptyDietWeeks,
+  type WorkoutTemplate,
+} from './data'
+export {
   saveTrainingPrograms,
   seedTrainingPrograms,
   TRAINING_PROGRAMS,
-  type WorkoutTemplate,
-} from './data'
+} from './store'
 
 // API layer
 export {

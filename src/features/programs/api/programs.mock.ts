@@ -7,7 +7,7 @@
 // data (features/programs/data.ts) — they are a static, non-editable catalog
 // resolved synchronously all over the UI (macro totals, names). Moving them
 // behind /libraries endpoints is a separate, larger step.
-import { TRAINING_PROGRAMS } from '../data'
+import { TRAINING_PROGRAMS } from '../store'
 import type { TrainingProgram } from '../types'
 import type { ProgramMemberDto, TrainingProgramDto } from './programs.types'
 
