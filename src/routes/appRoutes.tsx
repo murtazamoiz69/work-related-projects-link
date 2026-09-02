@@ -4,6 +4,8 @@ import { useAuthStore } from '@/store/useAuthStore'
 import type { ClientsSearch } from '@/features/clients/api/clients.types'
 import type { NutritionistsSearch } from '@/features/nutritionists/api/nutritionists.types'
 import { RouteFallback } from '@/components/molecules/RouteFallback'
+import { RouteErrorFallback } from '@/components/molecules/RouteErrorFallback'
+import { ErrorBoundary } from '@/components/organisms/ErrorBoundary'
 import { authedRoute } from './authed'
 
 // Lazy-load each screen so heavy routes (Chat + Plan Workspace, Program,
@@ -29,8 +31,15 @@ const NutritionistsPage = lazy(() =>
   })),
 )
 
+// Each route gets its own error boundary so a page crash shows a scoped
+// fallback in the content column (the shell stays usable) rather than tripping
+// the app-wide boundary. It resets on navigation — the route component unmounts.
 function Lazy({ children }: { children: ReactNode }) {
-  return <Suspense fallback={<RouteFallback />}>{children}</Suspense>
+  return (
+    <ErrorBoundary fallback={<RouteErrorFallback />}>
+      <Suspense fallback={<RouteFallback />}>{children}</Suspense>
+    </ErrorBoundary>
+  )
 }
 
 export const indexRoute = createRoute({
