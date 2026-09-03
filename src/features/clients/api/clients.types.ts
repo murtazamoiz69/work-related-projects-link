@@ -4,6 +4,7 @@
 // mapper is the single boundary that turns a `ClientDto` (ISO strings) into a
 // domain `Client` (Date objects).
 import type { ClientStatus } from '../types'
+import type { DietProfile } from '@/features/programs/diet/dietPlan.types'
 import type { Paginated } from '@/lib/api/types'
 
 // ---- Request types ----
@@ -93,6 +94,9 @@ export type ClientDto = {
   diet: string
   /** Only present on users created through "Add User". */
   phone?: string
+  /** Onboarding answers that drive the diet plan: the calorie band the user was
+   *  placed in, plus the filters the engine narrows the master sheet with. */
+  dietProfile?: DietProfile
   /** The nutritionist who owns this user's caseload. Embedded rather than
    *  referenced by id so the roster can render the column without a second
    *  request. `null` only if no nutritionist could take them (all disabled). */

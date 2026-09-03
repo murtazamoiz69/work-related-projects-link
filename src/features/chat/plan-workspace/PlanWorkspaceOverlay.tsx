@@ -2,7 +2,6 @@ import { useEffect, useReducer, useState, type ReactNode } from 'react'
 import { Avatar } from '@/components/atoms/Avatar'
 import { Icon } from '@/components/atoms/Icon'
 import { ConfirmDialog } from '@/components/molecules/ConfirmDialog'
-import { showToast } from '@/lib/toast'
 import { STATUS_LABEL, formatJoinDate } from '@/features/clients'
 import type { Client } from '@/features/clients'
 import {
@@ -11,37 +10,24 @@ import {
   CurrentProgramLabel,
   ProgramTrackerDashboard,
 } from '@/features/client-detail'
-import {
-  AddFromLibraryDrawer,
-  buildMealTemplate,
-  SaveTemplateModal,
-  useMealTemplatesStore,
-} from '@/features/meal-templates'
 import { useConversationQuery } from '../hooks/useConversations'
 import { ActivityFilterBar } from '../components/ActivityFilterBar'
 import { ActivityLogList } from '../components/ActivityLogList'
 import { useActivityFilters } from '../hooks/useActivityFilters'
 import { apiErrorMessage } from '@/lib/api/errors'
-import {
-  applyMealTemplateToDay,
-  applyMealTemplateToWeek,
-  extractWeekAsTemplateDays,
-  resolveMeal,
-} from './plan'
 import { usePlanQuery, useSavePlan } from './hooks/usePlan'
 import { addDays } from './schedule'
 import { getDay, getWorkoutRef } from './context'
 import type { PwConfirm, PwCtx, PwModal } from './context'
 import { PwContext } from './components/PwContext'
 import { WorkoutTab } from './components/WorkoutTab'
-import { DietTab } from './components/DietTab'
-import { MealPickerModal } from './components/modals/MealPickerModal'
+import { ClientDietPlanTab } from '@/features/programs/diet/components/ClientDietPlanTab'
+import { PROGRAM_DURATION_WEEKS } from '@/features/programs'
 import { WorkoutTemplatePickerModal } from './components/modals/WorkoutTemplatePickerModal'
 import { WorkoutEditorModal } from './components/modals/WorkoutEditorModal'
 import { WorkoutPreviewModal } from './components/modals/WorkoutPreviewModal'
 import { EditPlanModal } from './components/modals/EditPlanModal'
 import { PublishReportModal } from './components/modals/PublishReportModal'
-import { SaveWeekTemplateModal } from './components/modals/SaveWeekTemplateModal'
 import type { ClinicalProfile, Workspace } from './types'
 
 type PwTab = 'glance' | 'workout' | 'diet' | 'activity' | 'notes'
@@ -234,7 +220,23 @@ export function PlanWorkspaceOverlay({
                 </div>
               ) : null}
               {activeTab === 'workout' ? <WorkoutTab ctx={ctx} /> : null}
-              {activeTab === 'diet' ? <DietTab ctx={ctx} /> : null}
+              {activeTab === 'diet' ? (
+                <div className="pw-panel-scroll">
+                  {/* The diet plan is authored per programme week, and the
+                      programme runs six. The workout workspace still carries
+                      its own longer week list, so bound the diet tab to the
+                      programme rather than inheriting that count. */}
+                  <ClientDietPlanTab
+                    client={client}
+                    totalWeeks={PROGRAM_DURATION_WEEKS}
+                    activeWeek={Math.min(
+                      Math.max(activeWeek, 1),
+                      PROGRAM_DURATION_WEEKS,
+                    )}
+                    setActiveWeek={setActiveWeekOverride}
+                  />
+                </div>
+              ) : null}
               {activeTab === 'activity' ? (
                 <div className="pw-panel-scroll">
                   <section className="panel">
@@ -455,19 +457,6 @@ function PwModals({
 }) {
   if (!modal) return null
   switch (modal.kind) {
-    case 'mealPicker':
-      return (
-        <MealPickerModal
-          ws={ws}
-          profile={profile}
-          weekNum={modal.weekNum}
-          dayNum={modal.dayNum}
-          entryUid={modal.entryUid}
-          enforceUpcoming={modal.enforceUpcoming}
-          refresh={refresh}
-          onClose={onClose}
-        />
-      )
     case 'workoutTemplatePicker':
       return (
         <WorkoutTemplatePickerModal
@@ -523,83 +512,6 @@ function PwModals({
           onClose={onClose}
         />
       )
-    case 'librarySaveWeek':
-      return (
-        <SaveWeekTemplateModal
-          ws={ws}
-          weekNum={modal.weekNum}
-          onClose={onClose}
-        />
-      )
-    case 'librarySaveDay': {
-      const { weekNum, dayNum } = modal
-      return (
-        <SaveTemplateModal
-          dayCount={1}
-          onClose={onClose}
-          onSave={(name) => {
-            const days = extractWeekAsTemplateDays(
-              ws,
-              weekNum,
-              new Set([dayNum]),
-            )
-            if (!days.length) {
-              onClose()
-              return
-            }
-            const template = buildMealTemplate(name, 'Sarah Nolan', days, 'day')
-            useMealTemplatesStore
-              .getState()
-              .setTemplates((prev) => [template, ...prev])
-            showToast('✅ Meal template saved successfully.')
-            onClose()
-          }}
-        />
-      )
-    }
-    case 'libraryImportWeek': {
-      const weekNum = modal.weekNum
-      const week = ws.dietWeeks.find((w) => w.weekNum === weekNum)
-      const hasConflict = week
-        ? week.days.some((d) => d.meals.length > 0)
-        : false
-      return (
-        <AddFromLibraryDrawer
-          onClose={onClose}
-          templateType="week"
-          hasConflict={hasConflict}
-          resolveMealName={(mealId) =>
-            resolveMeal(ws, mealId)?.name ?? 'Unknown meal'
-          }
-          onUse={(template) => {
-            applyMealTemplateToWeek(ws, weekNum, template)
-            refresh()
-            showToast(`Applied "${template.name}" to Week ${weekNum}`)
-          }}
-        />
-      )
-    }
-    case 'libraryImportDay': {
-      const { weekNum, dayNum } = modal
-      const week = ws.dietWeeks.find((w) => w.weekNum === weekNum)
-      const day = week?.days.find((d) => d.dayNum === dayNum)
-      const hasConflict = day ? day.meals.length > 0 : false
-      return (
-        <AddFromLibraryDrawer
-          onClose={onClose}
-          templateType="day"
-          hasConflict={hasConflict}
-          resolveMealName={(mealId) =>
-            resolveMeal(ws, mealId)?.name ?? 'Unknown meal'
-          }
-          onUse={(template) => {
-            applyMealTemplateToDay(ws, weekNum, dayNum, template)
-            refresh()
-            showToast(`Applied "${template.name}"`)
-          }}
-        />
-      )
-    }
     default:
       return null
   }

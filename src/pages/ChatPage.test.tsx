@@ -80,9 +80,11 @@ afterEach(() => {
 describe('ChatPage — conversation list', () => {
   it('renders a card per conversation once loaded', async () => {
     const { container } = renderWithProviders(<ChatPage />)
+    // One card per seeded conversation — derived, so resizing the cohort
+    // doesn't turn this into a stale magic number.
     await waitFor(() =>
-      expect(container.querySelectorAll('.convo-card').length).toBeGreaterThan(
-        10,
+      expect(container.querySelectorAll('.convo-card').length).toBe(
+        CONVERSATIONS.length,
       ),
     )
   })

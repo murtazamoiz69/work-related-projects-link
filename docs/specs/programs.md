@@ -13,11 +13,11 @@ Authenticated.
 - Topbar: title, **autosave "Saved" pill**, **Edit** button, **availability toggle** (Active/Disabled).
 - **Program Overview** (name, description, goal, difficulty, duration, enrolled count, nutrition targets, version).
 - **Tabs**: Workout Plan / Diet Plan.
-- **Week rail** + **day cards** (workout days: sessions & exercises; diet days: meals by slot).
+- **Week rail** + **day cards** (workout). The Diet Plan tab is a week rail + a calorie-band picker + one rich-text sheet — see **Diet plan** below.
 - Modals: **Edit Program**, **Exercise Picker**, **Meal Picker**, **Workout Editor**, **Workout Template Picker**; **Enable/Disable confirm**.
 
 ## Components
-`ProgramOverview`, `WorkoutPlanTab`, `DietPlanTab`, `EditProgramModal`, `ExercisePickerModal`, `MealPickerModal`, `WorkoutEditorModal`, `WorkoutTemplatePickerModal`, `ToggleSwitch`, `ConfirmDialog`, `Topbar`, week utils, `atoms`.
+`ProgramOverview`, `WorkoutPlanTab`, `DietPlanTab`, `DuplicateSheetModal`, `RichTextEditor`, `EditProgramModal`, `ExercisePickerModal`, `WorkoutEditorModal`, `WorkoutTemplatePickerModal`, `ToggleSwitch`, `ConfirmDialog`, `Topbar`, week utils, `atoms`.
 
 ## User Actions
 - **Edit** program details (modal).
@@ -117,3 +117,54 @@ Authenticated to view/edit.
 - Editing a workout/exercise/meal persists and flashes "Saved"; a failed save notifies and retains the edit.
 - "No program configured" appears only when no program exists.
 - Editor modals validate numeric fields and trap focus.
+
+---
+
+## Diet plan
+
+The programme is **Diwali Glow** — a six-week fat-loss programme, so the diet
+runs on a calorie deficit and the plan is organised by **daily intake target**
+rather than by dish.
+
+### Calorie bands
+A user is placed in one of **1200 / 1400 / 1600 / 1800 / 2000 kcal** at
+onboarding, from their BMR and estimated burn. The band decides which master
+sheet they follow. It is shown as a chip under their name in the Users roster
+and is changed from their **Manage Plan → Diet Plan** tab as their burn changes.
+
+### Master sheets (global)
+One sheet per **week × band** (6 × 5 = 30). A sheet is not a menu of finished
+dishes: it maps the day out slot by slot — waking up, pre-breakfast,
+pre-workout, breakfast, mid-morning, lunch, evening snack, dinner, before bed —
+and each slot carries a **must-have** plus **portion-based choices** that hit
+the same macro target, so a protein requirement can be met by 150 g chicken *or*
+200 g rajma *or* 150 g paneer. Portions scale with the band; the structure does
+not.
+
+The body is **rich text** (HTML, edited with TipTap) because that is what the AI
+engine reads and because a plan needs headings, swap lists, emphasis on
+non-negotiables, and links out to recipes. It **autosaves**.
+
+**Duplicate** copies the open week's sheet onto any other weeks of the **same
+band**, chosen with checkboxes. Same-band only: a 1200 kcal sheet's portions
+mean nothing on an 1800 kcal week.
+
+### Per-user plans
+A user's plan is the master sheet for their week and band, narrowed by three
+onboarding answers:
+
+| Filter | Values | Effect |
+| --- | --- | --- |
+| Life stage | male / female / lactating | Notes only (lactating raises the target and floors it at 1800). |
+| Medical conditions | Diabetes, PCOS, Thyroid, Hypertension, Uric Acid | Each adds a note and removes specific options (e.g. Thyroid limits soy). |
+| Dietary preference | Non-veg / Veg / Vegan / Eggitarian | Removes whole ingredient groups from the choice lines. |
+
+The engine **only ever narrows or annotates the master sheet — it never
+introduces food the master plan doesn't contain** (asserted in
+`dietPlan.api.test.ts`). The applied filters are shown as chips above the
+editor so the tailoring is legible rather than magic.
+
+The nutritionist can edit a user's copy directly; it is then flagged **Edited
+for this user** and stops tracking the master. Changing a user's band
+re-derives every week from the new band's sheets and drops those edits — an
+edit written against 1400 kcal portions doesn't hold at 1800.

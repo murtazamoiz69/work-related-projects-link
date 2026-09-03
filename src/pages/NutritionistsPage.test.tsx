@@ -35,6 +35,10 @@ vi.mock('@/lib/toast', () => ({
   useToast: () => ({ message: '', visible: false }),
 }))
 import { showToast } from '@/lib/toast'
+import { NUTRITIONISTS_DATA } from '@/features/nutritionists/data'
+
+// Team size is data — derive it rather than hardcoding.
+const TEAM = NUTRITIONISTS_DATA.length
 
 const PROFILE = {
   name: 'Alex Rivera',
@@ -74,8 +78,10 @@ describe('NutritionistsPage — rendering', () => {
 
   it('renders the roster and a correct count', async () => {
     renderPage()
-    expect(await screen.findByText(/of 10 nutritionists/)).toBeInTheDocument()
-    expect(screen.getAllByRole('row')).toHaveLength(11) // 10 + header
+    expect(
+      await screen.findByText(new RegExp(`of ${TEAM} nutritionists`)),
+    ).toBeInTheDocument()
+    expect(screen.getAllByRole('row')).toHaveLength(TEAM + 1) // + header
   })
 
   it('renders the empty state for a query that matches nothing', async () => {
@@ -92,7 +98,9 @@ describe('NutritionistsPage — rendering', () => {
     expect(await screen.findByRole('alert')).toBeInTheDocument()
     server.resetHandlers()
     await user.click(screen.getByRole('button', { name: /try again/i }))
-    expect(await screen.findByText(/of 10 nutritionists/)).toBeInTheDocument()
+    expect(
+      await screen.findByText(new RegExp(`of ${TEAM} nutritionists`)),
+    ).toBeInTheDocument()
   })
 })
 
@@ -111,7 +119,7 @@ describe('NutritionistsPage — access', () => {
 describe('NutritionistsPage — interactions', () => {
   it('debounces the search box into a single navigate', async () => {
     const { user } = renderPage()
-    await screen.findByText(/of 10 nutritionists/)
+    await screen.findByText(new RegExp(`of ${TEAM} nutritionists`))
 
     await user.type(screen.getByPlaceholderText(/search nutritionists/i), 'ben')
     await waitFor(() => expect(navigateSpy).toHaveBeenCalledTimes(1))
@@ -123,7 +131,7 @@ describe('NutritionistsPage — interactions', () => {
 
   it('applies the status filter', async () => {
     const { user } = renderPage()
-    await screen.findByText(/of 10/)
+    await screen.findByText(new RegExp(`of ${TEAM}`))
 
     await user.selectOptions(
       screen.getByLabelText('Filter by status'),
@@ -143,7 +151,7 @@ describe('NutritionistsPage — interactions', () => {
 
   it('opens the Add nutritionist modal', async () => {
     const { user } = renderPage()
-    await screen.findByText(/of 10/)
+    await screen.findByText(new RegExp(`of ${TEAM}`))
 
     await user.click(screen.getByRole('button', { name: /add nutritionist/i }))
     expect(
@@ -153,7 +161,7 @@ describe('NutritionistsPage — interactions', () => {
 
   it('opens the Edit modal from a row, prefilled', async () => {
     const { user } = renderPage()
-    await screen.findByText(/of 10/)
+    await screen.findByText(new RegExp(`of ${TEAM}`))
 
     await user.click(screen.getAllByRole('button', { name: /^Edit / })[0])
     expect(
@@ -163,7 +171,7 @@ describe('NutritionistsPage — interactions', () => {
 
   it('opens the members modal from a row', async () => {
     const { user } = renderPage()
-    await screen.findByText(/of 10/)
+    await screen.findByText(new RegExp(`of ${TEAM}`))
 
     await user.click(screen.getAllByRole('button', { name: /members$/ })[0])
     expect(
@@ -173,7 +181,7 @@ describe('NutritionistsPage — interactions', () => {
 
   it('row Call action fires a toast', async () => {
     const { user } = renderPage()
-    await screen.findByText(/of 10/)
+    await screen.findByText(new RegExp(`of ${TEAM}`))
 
     const callBtn = screen.getAllByRole('button', { name: /^Call / })[0]
     const nm = (callBtn.getAttribute('aria-label') ?? '').replace(/^Call /, '')
@@ -202,7 +210,7 @@ describe('NutritionistsPage — interactions', () => {
       }),
     )
     const { user } = renderPage()
-    await screen.findByText(/of 10/)
+    await screen.findByText(new RegExp(`of ${TEAM}`))
 
     await user.click(
       screen.getAllByRole('checkbox', { name: /^(Disable|Enable) / })[0],
@@ -267,13 +275,13 @@ describe('NutritionistsPage — edge cases', () => {
 describe('NutritionistsPage — accessibility', () => {
   it('exposes a labelled status filter', async () => {
     renderPage()
-    await screen.findByText(/of 10/)
+    await screen.findByText(new RegExp(`of ${TEAM}`))
     expect(screen.getByLabelText('Filter by status')).toBeInTheDocument()
   })
 
   it('gives each row action a unique accessible name', async () => {
     renderPage()
-    await screen.findByText(/of 10/)
+    await screen.findByText(new RegExp(`of ${TEAM}`))
     const firstRow = screen.getAllByRole('row')[1]
     const utils = within(firstRow)
     expect(utils.getByRole('button', { name: /^Call / })).toBeInTheDocument()
@@ -283,7 +291,7 @@ describe('NutritionistsPage — accessibility', () => {
 
   it('confirmation dialog focuses Cancel and closes on Escape', async () => {
     const { user } = renderPage()
-    await screen.findByText(/of 10/)
+    await screen.findByText(new RegExp(`of ${TEAM}`))
 
     await user.click(
       screen.getAllByRole('checkbox', { name: /^(Disable|Enable) / })[0],

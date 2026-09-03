@@ -19,11 +19,10 @@ switches over by pointing `VITE_API_URL` at the real server and disabling mocks
 | [auth.md](./auth.md) | Login / session | `/auth/*` |
 | [users.md](./users.md) | Users (Clients) roster | `/clients` |
 | [nutritionists.md](./nutritionists.md) | Nutritionists | `/nutritionists` |
-| [programs.md](./programs.md) | Program (single global) + reference libraries | `/program`, `/libraries` |
+| [programs.md](./programs.md) | Program (single global) + reference libraries + diet plans | `/program`, `/program/diet-plan`, `/libraries` |
 | [dashboard.md](./dashboard.md) | Dashboard | `/dashboard/*` |
 | [chat.md](./chat.md) | Chat conversations | `/conversations` |
 | [plan-workspace.md](./plan-workspace.md) | Plan Workspace | `/clients/:id/plan` |
-| [meal-templates.md](./meal-templates.md) | Meal template library (proposed) | `/meal-templates` |
 
 ---
 

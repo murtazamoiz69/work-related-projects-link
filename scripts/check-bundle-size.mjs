@@ -9,17 +9,22 @@ import { join } from 'node:path'
 
 const ASSETS_DIR = 'dist/assets'
 
-// Generous headroom over today's sizes (entry ~158 KB gz, total ~419 KB gz);
+// Generous headroom over today's sizes (entry ~157 KB gz, total ~536 KB gz);
 // tighten as the app is optimised.
 //
 // `totalKb` counts every chunk, eager or lazy, so it can't tell "the app got
-// heavier" from "a rarely-used feature was correctly split out". The bulk-user
-// importer's spreadsheet parser (xlsx, ~140 KB gz) is the latter: it loads only
-// when someone picks a file, and it alone accounts for a third of the total.
-// Entry size is the number that reflects what every visitor actually pays.
+// heavier" from "a rarely-used feature was correctly split out". Two vendor
+// chunks are the latter and together are ~half the total:
+//
+//   xlsx (~140 KB)          loads only when a file is picked for bulk import
+//   RichTextEditor (~123 KB) loads only when a diet plan tab is opened
+//
+// A normal visit downloads neither. **Entry size is the number that reflects
+// what every visitor actually pays** — keep that one tight; treat the total as
+// a coarse ceiling on how much optional weight the app is carrying overall.
 const BUDGET = {
   entryKb: 200, // the largest single chunk (the app entry)
-  totalKb: 480, // all JS chunks combined, including on-demand ones
+  totalKb: 620, // all JS chunks combined, including on-demand ones
 }
 
 const gzKb = (buf) => gzipSync(buf).length / 1024

@@ -34,7 +34,11 @@ export const PROGRAM_DIFFICULTIES: ProgramDifficulty[] = [
   'Intermediate',
   'Advanced',
 ]
-export const PROGRAM_DURATIONS = [4, 8, 12]
+export const PROGRAM_DURATIONS = [4, 6, 8, 12]
+
+/** Diwali Glow runs six weeks. The diet plan is authored per week per calorie
+ *  band, so this is also how many sheets each band has. */
+export const PROGRAM_DURATION_WEEKS = 6
 const COACH_NAMES = ['Sarah Nolan', 'James Okoro, RD', 'Priya Anand']
 const WEEKDAY_LABELS = [
   'Monday',
@@ -877,51 +881,27 @@ export function dietDayTotals(day: DietDay): MealTotals {
 }
 
 // ===================== Programs =====================
-const PROGRAM_NAME_POOL: Record<ProgramGoal, string[]> = {
-  'Fat Loss': [
-    '12-Week Fat Loss Reset',
-    'Lean & Strong Fat Loss',
-    'Metabolic Fat Burn Program',
-  ],
-  'Muscle Gain': [
-    'Progressive Muscle Builder',
-    'Hypertrophy Foundations',
-    'Mass Gain Blueprint',
-  ],
-  Bulk: ['Clean Bulk Program', 'Strength & Size Bulk', 'Off-Season Bulk Plan'],
-  PCOS: [
-    'PCOS Balance & Strength',
-    'PCOS-Friendly Reset',
-    'Hormone Balance Program',
-  ],
-  Diabetes: [
-    'Diabetes-Friendly Fitness',
-    'Blood Sugar Balance Plan',
-    'Metabolic Health Program',
-  ],
-  'General Fitness': [
-    'General Wellness Starter',
-    'Total Body Fitness',
-    'Everyday Strength & Mobility',
-  ],
-}
 
 // Builds the single global program. There is only ever one — per-user
 // assignment/progress now lives entirely in the Users section, so this no
 // longer generates a members roster.
 export function buildProgram(index: number): TrainingProgram {
   const seed = (index + 1) * 23.7 + 11
-  const goal = pick(PROGRAM_GOALS, seed * 1.1)
+  const goal: ProgramGoal = 'Fat Loss'
   const difficulty = pick(PROGRAM_DIFFICULTIES, seed * 2.3)
-  const durationWeeks = pick(PROGRAM_DURATIONS, seed * 3.7)
+  const durationWeeks = PROGRAM_DURATION_WEEKS
   const coach = pick(COACH_NAMES, seed * 4.1)
   const createdDate = daysAgo(Math.floor(30 + seededRandom(seed * 6.3) * 300))
   const updatedDate = daysAgo(Math.floor(seededRandom(seed * 7.1) * 20))
 
   return {
     id: `prog-${index + 1}`,
-    name: pick(PROGRAM_NAME_POOL[goal], seed * 16.1),
-    description: `A ${durationWeeks}-week ${difficulty.toLowerCase()} program combining structured training and nutrition guidance for ${goal.toLowerCase()} goals.`,
+    name: 'Diwali Glow',
+    description:
+      'Six weeks to your brightest Diwali yet. A structured fat-loss ' +
+      'programme that pairs progressive training with a portion-based diet ' +
+      'plan built around your own calorie target — so you arrive at the ' +
+      'festival lighter, stronger, and genuinely glowing.',
     goal,
     difficulty,
     durationWeeks,

@@ -61,6 +61,13 @@ beforeEach(() => {
 })
 afterEach(() => server.resetHandlers())
 
+// The cohort size is data, not a constant of the UI — derive every count from
+// the fixtures so resizing the roster doesn't require editing assertions.
+const TOTAL = CLIENT_FIXTURES.length
+const PAGE_SIZE = 12
+const LAST_PAGE = Math.ceil(TOTAL / PAGE_SIZE)
+const FIRST_PAGE_ROWS = Math.min(TOTAL, PAGE_SIZE)
+
 describe('ClientsPage — rendering', () => {
   it('shows a skeleton while the roster loads', () => {
     const { container } = renderPage()
@@ -69,10 +76,12 @@ describe('ClientsPage — rendering', () => {
 
   it('renders the roster and a correct count on success', async () => {
     renderPage()
-    expect(await screen.findByText(/of 48 users/)).toBeInTheDocument()
-    // 48 fixtures, page size 12 → 12 data rows on page 1 (+1 header row).
+    expect(
+      await screen.findByText(new RegExp(`of ${TOTAL} users`)),
+    ).toBeInTheDocument()
+    // One row per user on page 1, plus the header row.
     const rows = screen.getAllByRole('row')
-    expect(rows).toHaveLength(13)
+    expect(rows).toHaveLength(FIRST_PAGE_ROWS + 1)
   })
 
   it('renders the empty state for a query that matches nothing', async () => {
@@ -95,14 +104,16 @@ describe('ClientsPage — rendering', () => {
     // Recover: restore the real handler, then retry.
     server.resetHandlers()
     await user.click(screen.getByRole('button', { name: /try again/i }))
-    expect(await screen.findByText(/of 48 users/)).toBeInTheDocument()
+    expect(
+      await screen.findByText(new RegExp(`of ${TOTAL} users`)),
+    ).toBeInTheDocument()
   })
 })
 
 describe('ClientsPage — interactions', () => {
   it('debounces the search box into a single navigate', async () => {
     const { user } = renderPage()
-    await screen.findByText(/of 48 users/)
+    await screen.findByText(new RegExp(`of ${TOTAL} users`))
 
     await user.type(screen.getByPlaceholderText(/search users/i), 'priya')
     await waitFor(() => expect(navigateSpy).toHaveBeenCalledTimes(1))
@@ -115,7 +126,7 @@ describe('ClientsPage — interactions', () => {
 
   it('applies the status filter and resets the page', async () => {
     const { user } = renderPage({ page: 2 })
-    await screen.findByText(/of 48/)
+    await screen.findByText(new RegExp(`of ${TOTAL}`))
 
     await user.selectOptions(
       screen.getByLabelText('Filter by status'),
@@ -129,7 +140,7 @@ describe('ClientsPage — interactions', () => {
 
   it('applies the expiry filter', async () => {
     const { user } = renderPage()
-    await screen.findByText(/of 48/)
+    await screen.findByText(new RegExp(`of ${TOTAL}`))
 
     await user.selectOptions(
       screen.getByLabelText('Filter by plan expiry'),
@@ -139,8 +150,21 @@ describe('ClientsPage — interactions', () => {
   })
 
   it('paginates: prev disabled on page 1, next navigates', async () => {
+    // Served with a total larger than the cohort, so this exercises paging
+    // regardless of how many users the seed roster happens to hold.
+    const total = PAGE_SIZE * 3
+    server.use(
+      http.get(CLIENTS, () =>
+        HttpResponse.json({
+          items: CLIENT_FIXTURES.slice(0, PAGE_SIZE),
+          total,
+          page: 1,
+          pageSize: PAGE_SIZE,
+        }),
+      ),
+    )
     const { user } = renderPage()
-    await screen.findByText(/of 48/)
+    await screen.findByText(new RegExp(`of ${total}`))
 
     expect(screen.getByLabelText('Previous page')).toBeDisabled()
     const next = screen.getByLabelText('Next page')
@@ -149,10 +173,12 @@ describe('ClientsPage — interactions', () => {
     expect(lastSearch()).toMatchObject({ to: '/clients', search: { page: 2 } })
   })
 
-  it('renders the last page correctly (37–48 of 48)', async () => {
-    // 48 / 12 = 4 pages; page 4 is the last.
-    renderPage({ page: 4 })
-    expect(await screen.findByText(/37.48 of 48/)).toBeInTheDocument()
+  it('renders the last page correctly', async () => {
+    renderPage({ page: LAST_PAGE })
+    const from = (LAST_PAGE - 1) * PAGE_SIZE + 1
+    expect(
+      await screen.findByText(new RegExp(`${from}.${TOTAL} of ${TOTAL}`)),
+    ).toBeInTheDocument()
     expect(screen.getByLabelText('Next page')).toBeDisabled()
   })
 
@@ -168,7 +194,7 @@ describe('ClientsPage — interactions', () => {
 
   it('row Call action fires a toast', async () => {
     const { user } = renderPage()
-    await screen.findByText(/of 48/)
+    await screen.findByText(new RegExp(`of ${TOTAL}`))
 
     const callBtn = screen.getAllByRole('button', { name: /^Call / })[0]
     const name = (callBtn.getAttribute('aria-label') ?? '').replace(
@@ -181,7 +207,7 @@ describe('ClientsPage — interactions', () => {
 
   it('row Manage navigates to the plan workspace', async () => {
     const { user } = renderPage()
-    await screen.findByText(/of 48/)
+    await screen.findByText(new RegExp(`of ${TOTAL}`))
 
     await user.click(screen.getAllByRole('button', { name: /^Manage / })[0])
     const call = (navigateSpy.mock.calls.at(-1)?.[0] ?? {}) as {
@@ -194,7 +220,7 @@ describe('ClientsPage — interactions', () => {
 
   it('row Chat navigates without opening the workspace', async () => {
     const { user } = renderPage()
-    await screen.findByText(/of 48/)
+    await screen.findByText(new RegExp(`of ${TOTAL}`))
 
     await user.click(
       screen.getAllByRole('button', { name: /^Open chat with / })[0],
@@ -219,7 +245,7 @@ describe('ClientsPage — interactions', () => {
       }),
     )
     const { user } = renderPage()
-    await screen.findByText(/of 48/)
+    await screen.findByText(new RegExp(`of ${TOTAL}`))
 
     await user.click(screen.getAllByRole('checkbox', { name: /access$/ })[0])
     // Confirmation dialog appears; nothing sent yet.
@@ -241,7 +267,7 @@ describe('ClientsPage — interactions', () => {
       }),
     )
     const { user } = renderPage()
-    await screen.findByText(/of 48/)
+    await screen.findByText(new RegExp(`of ${TOTAL}`))
 
     await user.click(screen.getAllByRole('checkbox', { name: /access$/ })[0])
     await screen.findByRole('button', { name: /^(Disable|Enable) user$/ })
@@ -255,7 +281,7 @@ describe('ClientsPage — interactions', () => {
 
   it('opens the Extend modal from a row', async () => {
     const { user } = renderPage()
-    await screen.findByText(/of 48/)
+    await screen.findByText(new RegExp(`of ${TOTAL}`))
 
     await user.click(screen.getAllByRole('button', { name: /^Extend / })[0])
     expect(
@@ -331,7 +357,7 @@ describe('ClientsPage — edge cases', () => {
     server.use(
       http.get(CLIENTS, () =>
         HttpResponse.json({
-          items: CLIENT_FIXTURES.slice(0, 12),
+          items: CLIENT_FIXTURES.slice(0, PAGE_SIZE),
           total: 1000,
           page: 1,
           pageSize: 12,
@@ -350,8 +376,8 @@ describe('ClientsPage — edge cases', () => {
       http.get(CLIENTS, async () => {
         await delay(150)
         return HttpResponse.json({
-          items: CLIENT_FIXTURES.slice(0, 12),
-          total: 48,
+          items: CLIENT_FIXTURES.slice(0, PAGE_SIZE),
+          total: TOTAL,
           page: 1,
           pageSize: 12,
         })
@@ -359,21 +385,23 @@ describe('ClientsPage — edge cases', () => {
     )
     const { container } = renderPage()
     expect(container.querySelector('.skel')).toBeTruthy()
-    expect(await screen.findByText(/of 48/)).toBeInTheDocument()
+    expect(
+      await screen.findByText(new RegExp(`of ${TOTAL}`)),
+    ).toBeInTheDocument()
   })
 })
 
 describe('ClientsPage — accessibility', () => {
   it('exposes labelled filter controls', async () => {
     renderPage()
-    await screen.findByText(/of 48/)
+    await screen.findByText(new RegExp(`of ${TOTAL}`))
     expect(screen.getByLabelText('Filter by status')).toBeInTheDocument()
     expect(screen.getByLabelText('Filter by plan expiry')).toBeInTheDocument()
   })
 
   it('gives each row action a unique accessible name', async () => {
     renderPage()
-    await screen.findByText(/of 48/)
+    await screen.findByText(new RegExp(`of ${TOTAL}`))
     const firstRow = screen.getAllByRole('row')[1]
     const utils = within(firstRow)
     expect(utils.getByRole('button', { name: /^Manage / })).toBeInTheDocument()
@@ -384,7 +412,7 @@ describe('ClientsPage — accessibility', () => {
 
   it('confirmation dialog focuses Cancel and closes on Escape', async () => {
     const { user } = renderPage()
-    await screen.findByText(/of 48/)
+    await screen.findByText(new RegExp(`of ${TOTAL}`))
 
     await user.click(screen.getAllByRole('checkbox', { name: /access$/ })[0])
     const cancel = await screen.findByRole('button', { name: 'Cancel' })

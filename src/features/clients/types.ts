@@ -1,3 +1,8 @@
+// Type-only import: the diet model belongs to the programs feature, and
+// importing it as a type leaves no runtime edge from clients -> programs (which
+// would close a cycle, since programs/data.ts reads CLIENTS_DATA).
+import type { DietProfile } from '@/features/programs/diet/dietPlan.types'
+
 export type ClientStatus = 'active' | 'attention' | 'paused' | 'new'
 
 export type Client = {
@@ -37,4 +42,8 @@ export type Client = {
     initials: string
     color: string
   } | null
+  /** The onboarding answers that place this user in a calorie band and narrow
+   *  the master diet sheet down to their own copy. Captured at onboarding;
+   *  the band is adjustable later from Manage Plan as their burn changes. */
+  dietProfile?: DietProfile
 }

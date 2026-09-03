@@ -1,5 +1,5 @@
 // Behavior tests for the Plan Workspace edit modals — the pick-and-commit
-// (MealPickerModal) and edit-and-commit (WorkoutEditorModal) patterns that
+// the edit-and-commit (WorkoutEditorModal) pattern that
 // drive every in-place plan edit. Both are prop-driven, so they run against a
 // real Workspace built from the same server-side logic the mock backend uses.
 // `refresh` (autosave) is a spy; the modals mutate the passed `ws` in place.
@@ -10,7 +10,6 @@ import { CLIENTS_DATA } from '@/features/clients'
 import { deriveClinicalProfile } from '../../clinical'
 import { getWorkspace } from '../../plan'
 import type { Workspace } from '../../types'
-import { MealPickerModal } from './MealPickerModal'
 import { WorkoutEditorModal } from './WorkoutEditorModal'
 
 vi.mock('@/lib/toast', () => ({
@@ -24,11 +23,7 @@ function makeWorkspace(): Workspace {
 }
 const profile = () => deriveClinicalProfile(CLIENTS_DATA[0])
 
-// First diet week/day, and the first day that actually holds a workout.
-function firstDietDay(ws: Workspace) {
-  const week = ws.dietWeeks[0]
-  return { weekNum: week.weekNum, dayNum: week.days[0].dayNum }
-}
+// The first day that actually holds a workout.
 function firstWorkoutDay(ws: Workspace) {
   for (const w of ws.workoutWeeks) {
     const d = w.days.find((day) => day.workout)
@@ -41,65 +36,6 @@ let ws: Workspace
 beforeEach(() => {
   ws = makeWorkspace()
   vi.clearAllMocks()
-})
-
-describe('MealPickerModal (add a meal)', () => {
-  const render = (
-    over: Partial<Parameters<typeof MealPickerModal>[0]> = {},
-  ) => {
-    const { weekNum, dayNum } = firstDietDay(ws)
-    const refresh = vi.fn()
-    const onClose = vi.fn()
-    const utils = renderWithProviders(
-      <MealPickerModal
-        ws={ws}
-        profile={profile()}
-        weekNum={weekNum}
-        dayNum={dayNum}
-        entryUid={null}
-        enforceUpcoming={false}
-        refresh={refresh}
-        onClose={onClose}
-        {...over}
-      />,
-    )
-    return { refresh, onClose, weekNum, dayNum, ...utils }
-  }
-
-  it('opens in add mode with the recipe list', () => {
-    render()
-    expect(screen.getByRole('heading', { name: /Add a meal/ })).toBeVisible()
-    expect(screen.getByRole('button', { name: /^Add to/ })).toBeDisabled()
-    // Recipe rows are present.
-    expect(
-      screen.getAllByRole('button', { name: /kcal/ }).length,
-    ).toBeGreaterThan(0)
-  })
-
-  it('enables Add once a recipe is picked, and commits it', async () => {
-    const { refresh, onClose, weekNum, dayNum, user } = render()
-    const before = ws.dietWeeks
-      .find((w) => w.weekNum === weekNum)
-      ?.days.find((d) => d.dayNum === dayNum)?.meals.length
-    await user.click(screen.getAllByRole('button', { name: /kcal/ })[0])
-
-    const addBtn = screen.getByRole('button', { name: /^Add to/ })
-    expect(addBtn).toBeEnabled()
-    await user.click(addBtn)
-
-    expect(refresh).toHaveBeenCalledTimes(1)
-    expect(onClose).toHaveBeenCalledTimes(1)
-    const after = ws.dietWeeks
-      .find((w) => w.weekNum === weekNum)
-      ?.days.find((d) => d.dayNum === dayNum)?.meals.length
-    expect(after).toBe((before ?? 0) + 1)
-  })
-
-  it('filters the recipe list by search', async () => {
-    const { user } = render()
-    await user.type(screen.getByPlaceholderText(/search recipes/i), 'zzz-none')
-    expect(screen.getByText('No recipes match')).toBeInTheDocument()
-  })
 })
 
 describe('WorkoutEditorModal', () => {

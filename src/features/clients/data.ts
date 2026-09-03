@@ -1,7 +1,8 @@
 // Client roster — ported verbatim from V2 clients.js. 15 hand-authored named
 // clients + deterministically generated ones, so the same person reads
 // consistently everywhere in the prototype.
-import { daysAgo, pick, seededRandom } from '@/lib/seed'
+import { daysAgo } from '@/lib/seed'
+import type { DietProfile } from '@/features/programs/diet/dietPlan.types'
 import type { Client, ClientStatus } from './types'
 
 export const STATUS_LABEL: Record<ClientStatus, string> = {
@@ -273,7 +274,7 @@ const NAMED_CLIENTS: NamedClient[] = [
     gender: 'Female',
     email: 'meera.krishnan@email.com',
     program: 'PCOS Management',
-    status: 'active',
+    status: 'paused',
     accessEnabled: true,
     expiryDate: daysAgo(-100),
     adherence: 72,
@@ -302,90 +303,6 @@ const NAMED_CLIENTS: NamedClient[] = [
   },
 ]
 
-const FIRST_NAMES = [
-  'Olivia',
-  'Liam',
-  'Ava',
-  'Noah',
-  'Emma',
-  'Ethan',
-  'Sophia',
-  'Mason',
-  'Isabella',
-  'Lucas',
-  'Mia',
-  'Benjamin',
-  'Amara',
-  'Kenji',
-  'Fatima',
-  'Hiro',
-  'Zainab',
-  'Mateo',
-  'Layla',
-  'Arjun',
-  'Chloe',
-  'Diego',
-  'Priyanka',
-  'Samuel',
-  'Yuki',
-  'Aaliyah',
-  'Nikhil',
-  'Elif',
-  'Tariq',
-  'Camila',
-  'Andres',
-  'Ngozi',
-  'Wei',
-  'Sana',
-  'Omar',
-  'Ines',
-  'Kwame',
-  'Rin',
-  'Anaya',
-  'Felix',
-]
-const LAST_NAMES = [
-  'Johnson',
-  'Smith',
-  'Williams',
-  'Brown',
-  'Garcia',
-  'Miller',
-  'Davis',
-  'Rodriguez',
-  'Martinez',
-  'Wilson',
-  'Anderson',
-  'Thomas',
-  'Taylor',
-  'Moore',
-  'Jackson',
-  'White',
-  'Harris',
-  'Clark',
-  'Lewis',
-  'Young',
-  'Walker',
-  'Hall',
-  'Allen',
-  'King',
-  'Wright',
-  'Scott',
-  'Green',
-  'Baker',
-  'Adams',
-  'Nelson',
-  'Carter',
-  'Mitchell',
-  'Perez',
-  'Roberts',
-  'Turner',
-  'Phillips',
-  'Campbell',
-  'Parker',
-  'Evans',
-  'Edwards',
-]
 export const COLOR_POOL = [
   '#C44F3F',
   '#3B6FA6',
@@ -403,96 +320,102 @@ export const COLOR_POOL = [
   '#BE4F70',
   '#55789D',
 ]
-const DIETS = [
-  'Eats everything',
-  'Vegetarian',
-  'Vegan',
-  'Pescatarian',
-  'High protein',
-  'Low carb',
-  'Keto',
-  'Mediterranean',
-  'Halal',
-  'Gluten-free',
-]
-const GOAL_POOL = [
-  'Lose fat',
-  'Build muscle',
-  'Improve health',
-  'More energy',
-  'Better sleep',
-  'Build discipline',
-]
 /** The assignable program names, in `PROGRAM_PLAN` order. Also what the mock
  *  backend offers as the "Add User" plan dropdown (`GET /clients/programs`). */
 export const PROGRAMS = Object.keys(PROGRAM_PLAN)
 
-function generateClients(count: number, startIndex: number): NamedClient[] {
-  const out: NamedClient[] = []
-  for (let i = 0; i < count; i++) {
-    const seed = (startIndex + i) * 13.37 + 1
-    const first = pick(FIRST_NAMES, seed * 1.1)
-    const last = pick(LAST_NAMES, seed * 2.3 + 1)
-    const program = pick(PROGRAMS, seed * 6.7 + 5)
-    const statusRoll = seededRandom(seed * 7.9 + 6)
-    const status: ClientStatus =
-      statusRoll < 0.6
-        ? 'active'
-        : statusRoll < 0.8
-          ? 'attention'
-          : statusRoll < 0.92
-            ? 'paused'
-            : 'new'
-    const isNew = status === 'new'
+// Diwali Glow runs with a focused cohort of ten. These ten are the entire
+// roster of the app — Users, Chat, the Dashboard and every nutritionist
+// caseload all derive from this array, so there is no one anywhere who isn't
+// on the programme. The picks are deliberate rather than the first ten: between
+// them they cover every state the UI has to render — disabled access (Tom,
+// Carlos), a plan expiring tomorrow (Nadia), an expired one (Grace), a brand-new
+// user with no adherence history yet (Sofia), a paused one (Meera), both
+// genders, and programmes that exercise the diet plan's medical filters
+// (Prenatal, PCOS, Cardiac Health).
+const COHORT_IDS = [
+  'c-1',
+  'c-2',
+  'c-3',
+  'c-4',
+  'c-6',
+  'c-9',
+  'c-11',
+  'c-12',
+  'c-14',
+  'c-15',
+]
 
-    const goal1 = pick(GOAL_POOL, seed * 12.1 + 11)
-    const goal2 = pick(GOAL_POOL, seed * 12.9 + 12)
-    const goals =
-      goal2 !== goal1 && seededRandom(seed * 12.5 + 11.5) > 0.5
-        ? [goal1, goal2]
-        : [goal1]
-
-    // Demo dataset: only the first two generated entries read as urgent
-    // (one expired, one expiring soon) — combined with the two urgent
-    // named clients that's 4 total out of 48, so the roster reads as
-    // mostly healthy with a handful needing attention, not the other way
-    // around. Everyone else gets a comfortable, far-out renewal date.
-    const expiryOffset =
-      i === 0
-        ? -5
-        : i === 1
-          ? 3
-          : 30 + Math.floor(seededRandom(seed * 14.7 + 13) * 270)
-
-    out.push({
-      id: `c-${startIndex + i + 1}`,
-      name: `${first} ${last}`,
-      initials: (first[0] + last[0]).toUpperCase(),
-      color: pick(COLOR_POOL, seed * 3.7 + 2),
-      age: 20 + Math.floor(seededRandom(seed * 4.1 + 3) * 45),
-      gender: seededRandom(seed * 5.3 + 4) > 0.5 ? 'Female' : 'Male',
-      email: `${first.toLowerCase()}.${last.toLowerCase()}@email.com`,
-      program,
-      status,
-      accessEnabled: seededRandom(seed * 15.3 + 14) > 0.12,
-      expiryDate: daysAgo(-expiryOffset),
-      adherence: isNew
-        ? null
-        : Math.round(35 + seededRandom(seed * 8.3 + 7) * 60),
-      checkInDays: isNew ? null : Math.floor(seededRandom(seed * 9.1 + 8) * 10),
-      joinDate: isNew
-        ? daysAgo(Math.floor(seededRandom(seed * 10.3 + 9) * 5))
-        : daysAgo(Math.floor(20 + seededRandom(seed * 11.7 + 10) * 400)),
-      goals,
-      diet: pick(DIETS, seed * 13.9 + 12),
-    })
-  }
-  return out
+// Onboarding answers per user. In the real product these fall out of the
+// onboarding questionnaire — BMR and estimated burn decide the band, and the
+// three filter answers come straight from the form. Seeded here so the cohort
+// exercises every branch of the diet engine: both a lactating and a male
+// profile, each dietary preference, and the conditions that actually change a
+// plan (Elena is prenatal, Meera has PCOS, Carlos is cardiac).
+const DIET_PROFILES: Record<string, DietProfile> = {
+  'c-1': { band: 1400, lifeStage: 'female', conditions: [], preference: 'Veg' },
+  'c-2': {
+    band: 1800,
+    lifeStage: 'male',
+    conditions: ['Diabetes'],
+    preference: 'Non-veg',
+  },
+  'c-3': {
+    band: 2000,
+    lifeStage: 'lactating',
+    conditions: [],
+    preference: 'Eggitarian',
+  },
+  'c-4': {
+    band: 2000,
+    lifeStage: 'male',
+    conditions: [],
+    preference: 'Non-veg',
+  },
+  'c-6': {
+    band: 1600,
+    lifeStage: 'male',
+    conditions: ['Hypertension'],
+    preference: 'Veg',
+  },
+  'c-9': {
+    band: 1600,
+    lifeStage: 'female',
+    conditions: [],
+    preference: 'Non-veg',
+  },
+  'c-11': {
+    band: 1400,
+    lifeStage: 'female',
+    conditions: [],
+    preference: 'Vegan',
+  },
+  'c-12': {
+    band: 1200,
+    lifeStage: 'female',
+    conditions: [],
+    preference: 'Veg',
+  },
+  'c-14': {
+    band: 1400,
+    lifeStage: 'female',
+    conditions: ['PCOS', 'Thyroid'],
+    preference: 'Eggitarian',
+  },
+  'c-15': {
+    band: 1800,
+    lifeStage: 'male',
+    conditions: ['Hypertension', 'Uric Acid'],
+    preference: 'Non-veg',
+  },
 }
 
-export const CLIENTS_DATA: Client[] = NAMED_CLIENTS.concat(
-  generateClients(33, NAMED_CLIENTS.length),
-).map((c) => ({
+export const CLIENTS_DATA: Client[] = COHORT_IDS.map((id) => {
+  const row = NAMED_CLIENTS.find((c) => c.id === id)
+  if (!row) throw new Error(`Cohort id ${id} is not in NAMED_CLIENTS`)
+  return row
+}).map((c) => ({
+  dietProfile: DIET_PROFILES[c.id],
   ...c,
   plan: PROGRAM_PLAN[c.program],
   // The chat thread is keyed by the client id today; exposed as its own field

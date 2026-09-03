@@ -10,6 +10,7 @@
 // list refetch. `CLIENT_FIXTURES` stays the immutable *seed* — tests assert
 // against it, so it must not grow. Reset between tests with resetClientStore().
 import { getInitials } from '@/lib/utils'
+import type { CalorieBand } from '@/features/programs/diet/dietPlan.types'
 import type { ApiError } from '@/lib/api/types'
 import { CLIENTS_DATA, COLOR_POOL, PROGRAMS, PROGRAM_PLAN } from '../data'
 import type { Client } from '../types'
@@ -118,9 +119,31 @@ function buildClientDto(body: CreateClientBody): ClientDto {
     joinDate: new Date().toISOString(),
     goals: [],
     diet: '',
+    // "Add User" doesn't ask the onboarding questions, so a user starts on the
+    // middle band with no filters. The nutritionist moves them once the real
+    // onboarding answers land — which is exactly what Manage Plan is for.
+    dietProfile: {
+      band: 1600,
+      lifeStage: 'female',
+      conditions: [],
+      preference: 'Non-veg',
+    },
     // Filled in by the handler once a nutritionist has been picked for them.
     assignedNutritionist: null,
   }
+}
+
+/** Move a user to a different daily intake target. The rest of their diet
+ *  profile (life stage, conditions, preference) is unchanged — only the band
+ *  moves, which is the one thing a nutritionist adjusts as burn changes. */
+export function setClientDietBand(id: string, band: CalorieBand): ClientDto {
+  const current = store.find((c) => c.id === id)
+  if (!current) throw new Error(`Unknown client ${id}`)
+  const next: ClientDto = current.dietProfile
+    ? { ...current, dietProfile: { ...current.dietProfile, band } }
+    : current
+  store = store.map((c) => (c.id === id ? next : c))
+  return next
 }
 
 /** Record the caseload the handler assigned this user to. */

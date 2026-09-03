@@ -174,3 +174,91 @@ the catalog, never a bundled assumption.
   `mealId` in the program, plan, template, and activity payloads.
 - May be split into `GET /libraries/{exercises,meals,workout-templates}` if you
   prefer independent caching; the client currently fetches all three in one call.
+
+---
+
+# Diet plan
+
+The programme's diet is organised by **calorie band**, not by dish. See
+[specs/programs.md](../specs/programs.md) › Diet plan for the product rules.
+
+Bands: `1200 | 1400 | 1600 | 1800 | 2000` (kcal).
+
+## `GET /program/diet-plan?week=&band=`
+One master sheet.
+
+**Success `200`**
+```json
+{ "weekNum": 1, "band": 1600, "body": "<h2>…</h2>", "updatedAt": "2026-09-03T…Z" }
+```
+`body` is the rich-text document (HTML) the nutritionist authored.
+
+**Errors:** `422` `{ "message": "…", "fields": { "band": "Unknown calorie band." } }`; `404` unknown week; `401`; `500`.
+
+---
+
+## `PUT /program/diet-plan`
+Save a master sheet. Autosaved by the editor.
+
+**Body** `{ "weekNum": 1, "band": 1600, "body": "<h2>…</h2>" }`
+**Success `200`** — the saved sheet. **Errors:** `422` bad band; `401`; `500`.
+
+---
+
+## `POST /program/diet-plan/duplicate`
+Copy one week's sheet onto other weeks.
+
+**Body** `{ "fromWeek": 1, "band": 1600, "toWeeks": [2, 3, 5] }`
+
+ASSUMPTION: **same band only** — the band is taken from the source rather than
+accepted per target, because portions don't carry across bands. The source week
+and anything out of range are ignored rather than erroring.
+
+**Success `200`** `{ "band": 1600, "weeks": [2, 3, 5] }` — the weeks actually written.
+**Errors:** `422` empty `toWeeks` or bad band; `401`; `500`.
+
+---
+
+## `GET /clients/:id/diet-plan?week=`
+The user's own copy: the master sheet for their band, narrowed by their
+onboarding answers.
+
+**Success `200`**
+```json
+{
+  "clientId": "c-14", "weekNum": 1,
+  "profile": { "band": 1400, "lifeStage": "female", "conditions": ["PCOS"], "preference": "Eggitarian" },
+  "body": "<h2>…</h2>",
+  "edited": false,
+  "appliedFilters": ["Eggitarian — 2 ingredient group(s) removed from the choices."],
+  "updatedAt": "2026-09-03T…Z"
+}
+```
+| Field | Notes |
+| --- | --- |
+| edited | `true` once a nutritionist has hand-adjusted this copy; it then stops tracking the master sheet. |
+| appliedFilters | What the engine did, shown to the nutritionist so the tailoring is legible. |
+
+The engine only ever **removes or annotates** content already on the master
+sheet — it never introduces food the master plan doesn't have.
+
+**Errors:** `404` `{ "message": "This user has no diet profile yet." }`; `401`; `500`.
+
+---
+
+## `PUT /clients/:id/diet-plan?week=`
+The nutritionist's own edit for one user and week. **Body** `{ "body": "<h2>…</h2>" }`
+**Success `200`** — the updated plan with `edited: true`. **Errors:** as above.
+
+---
+
+## `PATCH /clients/:id/diet-band`
+Move a user to a different daily intake target.
+
+**Body** `{ "band": 1800 }`
+**Success `200`** — the updated `Client` (its `dietProfile.band` drives the
+roster chip). Every week of their plan is re-derived from the new band's master
+sheets, and **hand-edited weeks are dropped** — an edit written against 1400 kcal
+portions doesn't hold at 1800.
+
+**Errors:** `422` bad band; `404` unknown user; `401`; `500`.

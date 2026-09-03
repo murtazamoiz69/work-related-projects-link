@@ -40,13 +40,6 @@ export function getDietDay(
 
 // The full-screen workspace's modal overlays (rendered above the shell).
 export type PwModal =
-  | {
-      kind: 'mealPicker'
-      weekNum: number
-      dayNum: number
-      entryUid: string | null
-      enforceUpcoming: boolean
-    }
   | { kind: 'workoutTemplatePicker'; weekNum: number; dayNum: number }
   | {
       kind: 'workoutEditor'
@@ -62,13 +55,6 @@ export type PwModal =
     }
   | { kind: 'editPlan' }
   | { kind: 'publish' }
-  // Hover-triggered Diet Plan library actions — Import shows the picker
-  // drawer scoped to a week or single day; Save shows the day-checklist
-  // save modal (week) or the plain name-prompt (day).
-  | { kind: 'libraryImportWeek'; weekNum: number }
-  | { kind: 'libraryImportDay'; weekNum: number; dayNum: number }
-  | { kind: 'librarySaveWeek'; weekNum: number }
-  | { kind: 'librarySaveDay'; weekNum: number; dayNum: number }
 
 /** A pending confirmation. The plan is live to the user, so anything that
  *  removes or restructures their plan goes through this first. */

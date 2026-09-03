@@ -13,7 +13,6 @@ import {
   newMealEntry,
 } from '@/features/programs'
 import type { Meal, MealEntry } from '@/features/programs'
-import type { MealTemplate, TemplateDietDay } from '@/features/meal-templates'
 import {
   computeTargets,
   equipmentAllowed,
@@ -506,77 +505,6 @@ export function generateEmptyWeek(
     days: buildDietWeekFor(profile, profile._seed + weekNum * 517),
   })
   return weekNum
-}
-
-// ===================== Meal template library =====================
-// Extracts the given week's diet days (filtered to `includeDayNums`) into
-// the generic per-weekday shape a MealTemplate stores. Used by both the
-// week-save modal (checklist of all 7 days) and the day-save action (a
-// single-dayNum set), so a template's day count always matches exactly
-// what the nutritionist chose to include.
-export function extractWeekAsTemplateDays(
-  ws: Workspace,
-  weekNum: number,
-  includeDayNums: Set<number>,
-): TemplateDietDay[] {
-  const week = ws.dietWeeks.find((w) => w.weekNum === weekNum)
-  if (!week) return []
-  return week.days
-    .filter((d) => includeDayNums.has(d.dayNum))
-    .map((d) => ({
-      dayNum: d.dayNum,
-      label: d.label,
-      meals: d.meals.map((m) => ({ ...m })),
-    }))
-}
-
-// Applies a Week template's 7 days onto the matching weekdays of one week,
-// replacing Monday–Sunday. Regenerates fresh meal uids so the applied
-// entries never collide with any other day/client.
-export function applyMealTemplateToWeek(
-  ws: Workspace,
-  weekNum: number,
-  template: MealTemplate,
-): void {
-  const week = ws.dietWeeks.find((w) => w.weekNum === weekNum)
-  if (!week) return
-  let daysChanged = 0
-  template.days.forEach((td) => {
-    const day = week.days.find((d) => d.dayNum === td.dayNum)
-    if (!day) return
-    day.meals = td.meals.map((m) => newMealEntry(m.mealId, m.slot, m.time))
-    daysChanged++
-  })
-  if (daysChanged) {
-    pushVersion(
-      ws,
-      'Applied meal template',
-      'Sarah Nolan',
-      `"${template.name}" applied to Week ${weekNum} (Monday–Sunday)`,
-    )
-  }
-}
-
-// Applies a Day template onto a single chosen weekday of the target week —
-// a Day template's own dayNum is just wherever it happened to be saved from,
-// so it's ignored here in favor of the day the nutritionist actually picked.
-export function applyMealTemplateToDay(
-  ws: Workspace,
-  weekNum: number,
-  targetDayNum: number,
-  template: MealTemplate,
-): void {
-  const week = ws.dietWeeks.find((w) => w.weekNum === weekNum)
-  const day = week?.days.find((d) => d.dayNum === targetDayNum)
-  const source = template.days[0]
-  if (!day || !source) return
-  day.meals = source.meals.map((m) => newMealEntry(m.mealId, m.slot, m.time))
-  pushVersion(
-    ws,
-    'Applied meal template',
-    'Sarah Nolan',
-    `"${template.name}" applied to Wk${weekNum} ${day.label}`,
-  )
 }
 
 export { DEFAULT_MEAL_TIMES }

@@ -83,6 +83,16 @@ export function ClientTableRow({
           <span className="ct-client-id">
             <span className="ct-name">{client.name}</span>
             <span className="ct-sub">{client.email}</span>
+            {/* Which master diet sheet this user follows. Set at onboarding
+                from their BMR and estimated burn; changed in Manage Plan. */}
+            {client.dietProfile ? (
+              <span
+                className="ct-band-chip"
+                title="Daily intake target — change it in Manage Plan"
+              >
+                {client.dietProfile.band} kcal
+              </span>
+            ) : null}
           </span>
         </div>
       </td>

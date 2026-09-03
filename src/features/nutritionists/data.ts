@@ -1,13 +1,14 @@
-// Nutritionist roster — every account can manage these. Named
-// distinctly from CLIENTS_DATA so no person reads as both a user and a
-// nutritionist. Every user is assigned to exactly one nutritionist here
-// (consecutive slices of CLIENTS_DATA, 48 total) so the "N members" count
-// and its pop-up list are always real, distinct people.
+// Nutritionist roster — every account can manage these. Named distinctly from
+// CLIENTS_DATA so no person reads as both a user and a nutritionist. Every user
+// is assigned to exactly one nutritionist here (consecutive slices of
+// CLIENTS_DATA) so the "N members" count and its pop-up list are always real,
+// distinct people. SEED_ROWS holds the people; ROSTER below picks which of them
+// are on the team and how big each caseload starts out.
 import { daysAgo } from '@/lib/seed'
 import { CLIENTS_DATA } from '@/features/clients'
 import type { Nutritionist } from './types'
 
-type SeedRow = Omit<Nutritionist, 'memberIds'> & { memberCount: number }
+type SeedRow = Omit<Nutritionist, 'memberIds'>
 
 const SEED_ROWS: SeedRow[] = [
   {
@@ -19,7 +20,6 @@ const SEED_ROWS: SeedRow[] = [
     qualification: 'Registered Dietitian',
     experienceYears: 12,
     joinDate: daysAgo(520),
-    memberCount: 8,
     accessEnabled: true,
   },
   {
@@ -31,7 +31,6 @@ const SEED_ROWS: SeedRow[] = [
     qualification: 'Registered Dietitian',
     experienceYears: 9,
     joinDate: daysAgo(410),
-    memberCount: 7,
     accessEnabled: true,
   },
   {
@@ -43,7 +42,6 @@ const SEED_ROWS: SeedRow[] = [
     qualification: 'Certified Nutrition Specialist',
     experienceYears: 7,
     joinDate: daysAgo(365),
-    memberCount: 6,
     accessEnabled: true,
   },
   {
@@ -55,7 +53,6 @@ const SEED_ROWS: SeedRow[] = [
     qualification: 'Clinical Nutritionist',
     experienceYears: 11,
     joinDate: daysAgo(300),
-    memberCount: 5,
     accessEnabled: true,
   },
   {
@@ -67,7 +64,6 @@ const SEED_ROWS: SeedRow[] = [
     qualification: 'Sports Nutritionist',
     experienceYears: 6,
     joinDate: daysAgo(260),
-    memberCount: 5,
     accessEnabled: true,
   },
   {
@@ -79,7 +75,6 @@ const SEED_ROWS: SeedRow[] = [
     qualification: 'Prenatal Nutrition Specialist',
     experienceYears: 8,
     joinDate: daysAgo(210),
-    memberCount: 4,
     accessEnabled: false,
   },
   {
@@ -91,7 +86,6 @@ const SEED_ROWS: SeedRow[] = [
     qualification: 'Diabetes Educator',
     experienceYears: 5,
     joinDate: daysAgo(175),
-    memberCount: 4,
     accessEnabled: true,
   },
   {
@@ -103,7 +97,6 @@ const SEED_ROWS: SeedRow[] = [
     qualification: 'Weight Management Specialist',
     experienceYears: 10,
     joinDate: daysAgo(140),
-    memberCount: 4,
     accessEnabled: true,
   },
   {
@@ -115,7 +108,6 @@ const SEED_ROWS: SeedRow[] = [
     qualification: 'Sports Performance Nutritionist',
     experienceYears: 4,
     joinDate: daysAgo(95),
-    memberCount: 3,
     accessEnabled: true,
   },
   {
@@ -127,17 +119,33 @@ const SEED_ROWS: SeedRow[] = [
     qualification: "Women's Health Nutritionist",
     experienceYears: 3,
     joinDate: daysAgo(60),
-    memberCount: 2,
     accessEnabled: false,
   },
 ]
 
+// The team is sized to the cohort: ten users across four practising
+// nutritionists, plus one whose access is switched off. The counts below add up
+// to exactly CLIENTS_DATA.length, so every user has a nutritionist and no
+// nutritionist is carrying an empty caseload. Naomi keeps zero — a disabled
+// nutritionist can't take a caseload, which is also what
+// `assignLeastLoaded` enforces when new users are added.
+const ROSTER: { id: string; memberCount: number }[] = [
+  { id: 'nut-1', memberCount: 3 },
+  { id: 'nut-2', memberCount: 3 },
+  { id: 'nut-3', memberCount: 2 },
+  { id: 'nut-7', memberCount: 2 },
+  { id: 'nut-6', memberCount: 0 },
+]
+
 let cursor = 0
-export const NUTRITIONISTS_DATA: Nutritionist[] = SEED_ROWS.map((row) => {
-  const { memberCount, ...rest } = row
-  const memberIds = CLIENTS_DATA.slice(cursor, cursor + memberCount).map(
-    (c) => c.id,
-  )
-  cursor += memberCount
-  return { ...rest, memberIds }
-})
+export const NUTRITIONISTS_DATA: Nutritionist[] = ROSTER.map(
+  ({ id, memberCount }) => {
+    const seedRow = SEED_ROWS.find((r) => r.id === id)
+    if (!seedRow) throw new Error(`Roster id ${id} is not in SEED_ROWS`)
+    const memberIds = CLIENTS_DATA.slice(cursor, cursor + memberCount).map(
+      (c) => c.id,
+    )
+    cursor += memberCount
+    return { ...seedRow, memberIds }
+  },
+)

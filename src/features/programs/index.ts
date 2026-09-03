@@ -3,6 +3,7 @@ export {
   PROGRAM_GOALS,
   PROGRAM_DIFFICULTIES,
   PROGRAM_DURATIONS,
+  PROGRAM_DURATION_WEEKS,
   MEAL_SLOTS,
   makeSlot,
   buildWorkout,
@@ -18,11 +19,7 @@ export {
   buildEmptyDietWeeks,
   type WorkoutTemplate,
 } from './data'
-export {
-  saveTrainingPrograms,
-  seedTrainingPrograms,
-  TRAINING_PROGRAMS,
-} from './store'
+export { seedTrainingPrograms, TRAINING_PROGRAMS } from './store'
 // Reference libraries — API-populated cache (source of truth is `GET /libraries`,
 // not a bundled array). Same names as before; the values are now the live cache.
 export {
