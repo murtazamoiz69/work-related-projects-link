@@ -77,4 +77,29 @@ export type ClientDietPlan = {
   /** What the engine did to the master sheet to produce this — shown to the
    *  nutritionist so the tailoring is legible rather than magic. */
   appliedFilters: string[]
+  /** Whether a nutritionist has signed this plan off. Carried on the plan and
+   *  not read off the client record: the surfaces that show a plan don't all
+   *  hold a fresh client, and a sign-off that doesn't visibly land is worse
+   *  than no sign-off at all. */
+  review: PlanReviewStatus
+  reviewedAt: Date | null
+}
+
+/** Whether a nutritionist has actually looked at the plan the engine produced
+ *  for a user. A newly onboarded user's plan is filtered automatically, and
+ *  until someone has read it, it is a machine's first guess — so it sits in
+ *  review rather than going out. Signing it off is a deliberate click. */
+export const PLAN_REVIEW_STATUSES = ['in-review', 'reviewed'] as const
+
+export type PlanReviewStatus = (typeof PLAN_REVIEW_STATUSES)[number]
+
+export function isPlanReviewStatus(value: unknown): value is PlanReviewStatus {
+  return PLAN_REVIEW_STATUSES.some((s) => s === value)
+}
+
+/** Roster label for each state. Short on purpose — it renders as a chip beside
+ *  the user's name. */
+export const PLAN_REVIEW_LABEL: Record<PlanReviewStatus, string> = {
+  'in-review': 'In review',
+  reviewed: 'Reviewed',
 }

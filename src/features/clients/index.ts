@@ -32,6 +32,7 @@ export type {
   ClientsSearch,
   ClientStatusFilter,
   ClientExpiryFilter,
+  ClientReviewFilter,
   ClientDto,
   ClientsSummaryDto,
   PaginatedClientsDto,

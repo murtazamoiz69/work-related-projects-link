@@ -10,7 +10,10 @@
 // list refetch. `CLIENT_FIXTURES` stays the immutable *seed* — tests assert
 // against it, so it must not grow. Reset between tests with resetClientStore().
 import { getInitials } from '@/lib/utils'
-import type { CalorieBand } from '@/features/programs/diet/dietPlan.types'
+import type {
+  CalorieBand,
+  PlanReviewStatus,
+} from '@/features/programs/diet/dietPlan.types'
 import type { ApiError } from '@/lib/api/types'
 import { CLIENTS_DATA, COLOR_POOL, PROGRAMS, PROGRAM_PLAN } from '../data'
 import type { Client } from '../types'
@@ -35,6 +38,7 @@ export function toClientDto(c: Client): ClientDto {
     ...c,
     expiryDate: c.expiryDate.toISOString(),
     joinDate: c.joinDate.toISOString(),
+    dietReviewedAt: c.dietReviewedAt?.toISOString() ?? null,
     // Who a user is assigned to lives in the nutritionists mock (it owns
     // `memberIds`); the clients handlers join it on before responding.
     assignedNutritionist: c.assignedNutritionist ?? null,
@@ -128,9 +132,31 @@ function buildClientDto(body: CreateClientBody): ClientDto {
       conditions: [],
       preference: 'Non-veg',
     },
+    // Nobody has read this user's plan yet — they were created seconds ago and
+    // the plan they'll get is whatever the engine filters. It stays in review
+    // until a nutritionist opens Manage Plan and signs it off.
+    dietReview: 'in-review',
+    dietReviewedAt: null,
     // Filled in by the handler once a nutritionist has been picked for them.
     assignedNutritionist: null,
   }
+}
+
+/** Sign a user's diet plan off, or send it back into review. The plan itself is
+ *  untouched — this records only whether a person has read it. */
+export function setClientDietReview(
+  id: string,
+  status: PlanReviewStatus,
+): ClientDto {
+  const current = store.find((c) => c.id === id)
+  if (!current) throw new Error(`Unknown client ${id}`)
+  const next: ClientDto = {
+    ...current,
+    dietReview: status,
+    dietReviewedAt: status === 'reviewed' ? new Date().toISOString() : null,
+  }
+  store = store.map((c) => (c.id === id ? next : c))
+  return next
 }
 
 /** Move a user to a different daily intake target. The rest of their diet
@@ -139,8 +165,15 @@ function buildClientDto(body: CreateClientBody): ClientDto {
 export function setClientDietBand(id: string, band: CalorieBand): ClientDto {
   const current = store.find((c) => c.id === id)
   if (!current) throw new Error(`Unknown client ${id}`)
+  // A band change swaps the master sheet underneath them, so whatever was
+  // signed off is no longer what this user is on. Back into review it goes.
   const next: ClientDto = current.dietProfile
-    ? { ...current, dietProfile: { ...current.dietProfile, band } }
+    ? {
+        ...current,
+        dietProfile: { ...current.dietProfile, band },
+        dietReview: 'in-review',
+        dietReviewedAt: null,
+      }
     : current
   store = store.map((c) => (c.id === id ? next : c))
   return next
@@ -240,7 +273,7 @@ function haystack(c: ClientDto): string {
  *  fixtures — the same semantics the current ClientsPage computes client-side,
  *  moved to the (mock) server boundary. */
 export function filterClientFixtures(params: ListClientsParams): ClientDto[] {
-  const { search, status = 'all', expiry = 'all' } = params
+  const { search, status = 'all', expiry = 'all', review = 'all' } = params
   const q = search?.trim().toLowerCase() ?? ''
 
   const filtered = store.filter((c) => {
@@ -252,6 +285,7 @@ export function filterClientFixtures(params: ListClientsParams): ClientDto[] {
       if (expiry === 'expired' && d >= 0) return false
       if (expiry === 'active' && d <= 14) return false
     }
+    if (review !== 'all' && c.dietReview !== review) return false
     if (q && !haystack(c).includes(q)) return false
     return true
   })

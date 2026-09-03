@@ -12,7 +12,7 @@ Authenticated.
 ## UI Sections
 - Topbar (title + subtitle + **Add User** button).
 - **Summary cards** (counts by status/expiry).
-- **Toolbar**: search box + status filter + plan-expiry filter.
+- **Toolbar**: search box + status filter + plan-expiry filter + plan-review filter.
 - **Roster table**: User / Status / Assigned to / Plan expiry / Progress / Actions.
 - **Pagination** (page info + prev/next).
 - Modals: **Add User** (chooser → individual form *or* bulk upload),
@@ -25,7 +25,13 @@ Authenticated.
 - **Add User** → chooser modal → **Add individually** (form) or **Bulk upload**
   (Excel/CSV → per-row preview → import only the valid rows).
 - **Search** by name / email (and program/diet/goals — current haystack).
-- **Filter** by status (all / active / disabled) and by expiry (all / expiring-soon / expired / active).
+- **Filter** by status (all / active / disabled), by expiry (all / expiring-soon / expired / active), and by diet-plan review (all / in-review / reviewed).
+
+Under each user's name sit two chips: their **meal category** (`1600 kcal`) and
+their **plan review** state (`In review` / `Reviewed`). The review chip is the
+warm one — "in review" is a to-do, so it's the state that should catch the eye;
+"reviewed" is the quiet resting state of most of the roster. See
+[specs/programs.md](./programs.md) › Diet plan › Review sign-off.
 - **Sort** — implicit: soonest-expiring first (could become a user-controlled sort).
 - **Paginate** (12/page).
 - **View / Open chat** → `/chat?c=…`.
@@ -37,20 +43,20 @@ Authenticated.
 
 ## Data Requirements
 **Server Data**
-- Clients list: `id, name, initials, color, age, gender, email, program, plan, status, accessEnabled, expiryDate, adherence, checkInDays, joinDate, goals[], diet, assignedNutritionist`.
+- Clients list: `id, name, initials, color, age, gender, email, program, plan, status, accessEnabled, expiryDate, adherence, checkInDays, joinDate, goals[], diet, assignedNutritionist, dietProfile, dietReview, dietReviewedAt`.
 - Summary counts (total / active / disabled / expiring / expired).
 
 **Client State**
 - Modal targets (`toggleTarget`, `extendTarget`).
 
 **URL State** (currently local `useState` — should move to search params)
-- `search`, `status`, `expiry`, `page`.
+- `search`, `status`, `expiry`, `review`, `page`.
 
 ## API Requirements
 > All `PROPOSED`. Today: in-memory `CLIENTS_DATA` + a Zustand store.
 
 1. `GET` `/clients` `PROPOSED`
-   - Query: `search`, `status` (`all|active|disabled`), `expiry` (`all|expiring-soon|expired|active`), `page`, `pageSize`, `sort` (default `expiry:asc`).
+   - Query: `search`, `status` (`all|active|disabled`), `expiry` (`all|expiring-soon|expired|active`), `review` (`all|in-review|reviewed`), `page`, `pageSize`, `sort` (default `expiry:asc`).
    - Response: `{ items: Client[], total: number, page: number, pageSize: number }`.
 2. `GET` `/clients/summary` `PROPOSED`
    - Response: `{ total, active, disabled, expiringSoon, expired }`.
@@ -146,7 +152,9 @@ Authenticated — every nutritionist sees the whole roster. (If per-nutritionist
 ```
 
 ## Acceptance Criteria
-- Search + both filters narrow the list; count label and pagination update; page resets to 1 on filter change.
+- Search + all three filters narrow the list; count label and pagination update; page resets to 1 on filter change.
+- Every row shows a meal-category chip and a plan-review chip; the review filter
+  returns exactly the users in that state.
 - Rows are ordered soonest-expiring first by default.
 - Disabling a user opens a confirm; on confirm the row shows disabled and a toast appears; data/progress are preserved.
 - Extending a program updates the expiry, re-sorts the row, and shows a toast.

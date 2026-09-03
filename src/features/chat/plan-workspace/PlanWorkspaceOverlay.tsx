@@ -1,7 +1,6 @@
 import { useEffect, useReducer, useState, type ReactNode } from 'react'
 import { Avatar } from '@/components/atoms/Avatar'
 import { Icon } from '@/components/atoms/Icon'
-import { ConfirmDialog } from '@/components/molecules/ConfirmDialog'
 import { STATUS_LABEL, formatJoinDate } from '@/features/clients'
 import type { Client } from '@/features/clients'
 import {
@@ -17,17 +16,10 @@ import { useActivityFilters } from '../hooks/useActivityFilters'
 import { apiErrorMessage } from '@/lib/api/errors'
 import { usePlanQuery, useSavePlan } from './hooks/usePlan'
 import { addDays } from './schedule'
-import { getDay, getWorkoutRef } from './context'
-import type { PwConfirm, PwCtx, PwModal } from './context'
 import { PwContext } from './components/PwContext'
-import { WorkoutTab } from './components/WorkoutTab'
 import { ClientDietPlanTab } from '@/features/programs/diet/components/ClientDietPlanTab'
+import { ClientWorkoutPlanTab } from '@/features/programs/workout/components/ClientWorkoutPlanTab'
 import { PROGRAM_DURATION_WEEKS } from '@/features/programs'
-import { WorkoutTemplatePickerModal } from './components/modals/WorkoutTemplatePickerModal'
-import { WorkoutEditorModal } from './components/modals/WorkoutEditorModal'
-import { WorkoutPreviewModal } from './components/modals/WorkoutPreviewModal'
-import { EditPlanModal } from './components/modals/EditPlanModal'
-import { PublishReportModal } from './components/modals/PublishReportModal'
 import type { ClinicalProfile, Workspace } from './types'
 
 type PwTab = 'glance' | 'workout' | 'diet' | 'activity' | 'notes'
@@ -63,8 +55,6 @@ export function PlanWorkspaceOverlay({
   const [openSections, setOpenSections] = useState<Set<string>>(
     () => new Set(['profile', 'medical']),
   )
-  const [modal, setModal] = useState<PwModal | null>(null)
-  const [confirm, setConfirm] = useState<PwConfirm | null>(null)
   const [, bump] = useReducer((x: number) => x + 1, 0)
 
   useEffect(() => {
@@ -141,18 +131,8 @@ export function PlanWorkspaceOverlay({
     ? `${activityFilters.filtered.length} of ${activityFilters.total} ${activityFilters.total === 1 ? 'entry' : 'entries'}`
     : `${activityFilters.total} ${activityFilters.total === 1 ? 'entry' : 'entries'} logged for ${activityFirstName}, newest first`
 
-  const ctx: PwCtx = {
-    profile,
-    ws,
-    activeWeek,
-    setActiveWeek: setActiveWeekOverride,
-    currentWeek,
-    refresh,
-    openModal: setModal,
-    confirm: setConfirm,
-  }
-
-  const closeModal = () => setModal(null)
+  // The week the plan tabs are on, clamped to the programme's six.
+  const programWeek = Math.min(Math.max(activeWeek, 1), PROGRAM_DURATION_WEEKS)
 
   return (
     <div className="pw-overlay" id="planWorkspaceOverlay">
@@ -200,10 +180,10 @@ export function PlanWorkspaceOverlay({
                   {t.label}
                 </button>
               ))}
-              {activeTab === 'workout' ? (
+              {activeTab === 'workout' || activeTab === 'diet' ? (
                 <span className="pw-plan-duration">
                   <Icon name="calendar-range" />
-                  {ws.workoutWeeks.length} weeks · ~{ws.workoutWeeks.length * 7}{' '}
+                  {PROGRAM_DURATION_WEEKS} weeks · {PROGRAM_DURATION_WEEKS * 7}{' '}
                   days
                 </span>
               ) : null}
@@ -219,20 +199,26 @@ export function PlanWorkspaceOverlay({
                   />
                 </div>
               ) : null}
-              {activeTab === 'workout' ? <WorkoutTab ctx={ctx} /> : null}
+              {/* Both plans are authored per programme week, and the
+                  programme runs six. The workspace's own `workoutWeeks` array
+                  is longer, so bound these to the programme rather than
+                  inheriting that count. */}
+              {activeTab === 'workout' ? (
+                <div className="pw-panel-scroll">
+                  <ClientWorkoutPlanTab
+                    client={client}
+                    totalWeeks={PROGRAM_DURATION_WEEKS}
+                    activeWeek={programWeek}
+                    setActiveWeek={setActiveWeekOverride}
+                  />
+                </div>
+              ) : null}
               {activeTab === 'diet' ? (
                 <div className="pw-panel-scroll">
-                  {/* The diet plan is authored per programme week, and the
-                      programme runs six. The workout workspace still carries
-                      its own longer week list, so bound the diet tab to the
-                      programme rather than inheriting that count. */}
                   <ClientDietPlanTab
                     client={client}
                     totalWeeks={PROGRAM_DURATION_WEEKS}
-                    activeWeek={Math.min(
-                      Math.max(activeWeek, 1),
-                      PROGRAM_DURATION_WEEKS,
-                    )}
+                    activeWeek={programWeek}
                     setActiveWeek={setActiveWeekOverride}
                   />
                 </div>
@@ -311,30 +297,6 @@ export function PlanWorkspaceOverlay({
           </section>
         </div>
       </div>
-
-      <PwModals
-        ws={ws}
-        profile={profile}
-        modal={modal}
-        refresh={refresh}
-        confirm={setConfirm}
-        onClose={closeModal}
-      />
-
-      {/* One dialog instance for the whole workspace — every destructive or
-          structural edit routes through ctx.confirm rather than each tab
-          owning its own dialog state. */}
-      {confirm ? (
-        <ConfirmDialog
-          title={confirm.title}
-          message={confirm.message}
-          note={`${profile.name} sees this plan live, so the change applies as soon as you confirm.`}
-          confirmText={confirm.confirmText}
-          danger={confirm.danger}
-          onConfirm={confirm.onConfirm}
-          onClose={() => setConfirm(null)}
-        />
-      ) : null}
     </div>
   )
 }
@@ -438,81 +400,4 @@ function PwTopbar({
       </div>
     </header>
   )
-}
-
-function PwModals({
-  ws,
-  profile,
-  modal,
-  refresh,
-  confirm,
-  onClose,
-}: {
-  ws: Workspace
-  profile: ClinicalProfile
-  modal: PwModal | null
-  refresh: () => void
-  confirm: (c: PwConfirm) => void
-  onClose: () => void
-}) {
-  if (!modal) return null
-  switch (modal.kind) {
-    case 'workoutTemplatePicker':
-      return (
-        <WorkoutTemplatePickerModal
-          ws={ws}
-          profile={profile}
-          weekNum={modal.weekNum}
-          dayNum={modal.dayNum}
-          refresh={refresh}
-          onClose={onClose}
-        />
-      )
-    case 'workoutEditor':
-      return (
-        <WorkoutEditorModal
-          ws={ws}
-          profile={profile}
-          weekNum={modal.weekNum}
-          dayNum={modal.dayNum}
-          wid={modal.wid}
-          refresh={refresh}
-          onClose={onClose}
-        />
-      )
-    case 'workoutPreview': {
-      const wk = getWorkoutRef(ws, modal.weekNum, modal.dayNum, modal.wid)
-      const day = getDay(ws, modal.weekNum, modal.dayNum)
-      if (!wk || !day) return null
-      return (
-        <WorkoutPreviewModal
-          profile={profile}
-          workout={wk}
-          title={`${wk.name} · ${day.label}, Week ${modal.weekNum}`}
-          onClose={onClose}
-        />
-      )
-    }
-    case 'editPlan':
-      return (
-        <EditPlanModal
-          ws={ws}
-          profile={profile}
-          refresh={refresh}
-          confirm={confirm}
-          onClose={onClose}
-        />
-      )
-    case 'publish':
-      return (
-        <PublishReportModal
-          ws={ws}
-          profile={profile}
-          refresh={refresh}
-          onClose={onClose}
-        />
-      )
-    default:
-      return null
-  }
 }

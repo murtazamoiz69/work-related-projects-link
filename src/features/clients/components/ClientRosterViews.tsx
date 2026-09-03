@@ -1,6 +1,7 @@
 import { Avatar } from '@/components/atoms/Avatar'
 import { Icon } from '@/components/atoms/Icon'
 import { ToggleSwitch } from '@/components/atoms/ToggleSwitch'
+import { PLAN_REVIEW_LABEL } from '@/features/programs/diet/dietPlan.types'
 import type { Client } from '../types'
 import {
   adherenceTier,
@@ -9,6 +10,26 @@ import {
   expiryUrgency,
   formatFullDate,
 } from '../utils'
+
+/** Whether a nutritionist has read this user's filtered plan yet. In review is
+ *  the state that matters — it's a to-do, so it carries the warm colour and
+ *  Reviewed is the quiet one. */
+function ReviewChip({ client }: { client: Client }) {
+  const reviewed = client.dietReview === 'reviewed'
+  return (
+    <span
+      className={`ct-review-chip${reviewed ? ' is-reviewed' : ''}`}
+      title={
+        reviewed
+          ? `Diet plan signed off${client.dietReviewedAt ? ` on ${formatFullDate(client.dietReviewedAt)}` : ''}`
+          : 'Filtered diet plan is waiting to be reviewed in Manage Plan'
+      }
+    >
+      <Icon name={reviewed ? 'check' : 'clock'} />
+      {PLAN_REVIEW_LABEL[client.dietReview]}
+    </span>
+  )
+}
 
 function ProgressCell({ client }: { client: Client }) {
   if (client.adherence === null)
@@ -83,16 +104,19 @@ export function ClientTableRow({
           <span className="ct-client-id">
             <span className="ct-name">{client.name}</span>
             <span className="ct-sub">{client.email}</span>
-            {/* Which master diet sheet this user follows. Set at onboarding
-                from their BMR and estimated burn; changed in Manage Plan. */}
-            {client.dietProfile ? (
-              <span
-                className="ct-band-chip"
-                title="Daily intake target — change it in Manage Plan"
-              >
-                {client.dietProfile.band} kcal
-              </span>
-            ) : null}
+            <span className="ct-chip-row">
+              {/* Which master diet sheet this user follows. Set at onboarding
+                  from their BMR and estimated burn; changed in Manage Plan. */}
+              {client.dietProfile ? (
+                <span
+                  className="ct-band-chip"
+                  title="Meal category — change it in Manage Plan"
+                >
+                  {client.dietProfile.band} kcal
+                </span>
+              ) : null}
+              <ReviewChip client={client} />
+            </span>
           </span>
         </div>
       </td>

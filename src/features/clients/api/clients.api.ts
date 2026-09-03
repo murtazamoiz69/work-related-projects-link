@@ -34,6 +34,7 @@ export function toClient(dto: ClientDto): Client {
     ...dto,
     expiryDate: new Date(dto.expiryDate),
     joinDate: new Date(dto.joinDate),
+    dietReviewedAt: dto.dietReviewedAt ? new Date(dto.dietReviewedAt) : null,
   }
 }
 

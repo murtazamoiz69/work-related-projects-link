@@ -17,6 +17,7 @@ import type {
   SaveClientPlanBody,
   SaveMasterSheetBody,
   UpdateClientBandBody,
+  UpdateClientReviewBody,
 } from './dietPlan.api.types'
 
 function toSheet(dto: DietPlanSheetDto): DietPlanSheet {
@@ -24,7 +25,11 @@ function toSheet(dto: DietPlanSheetDto): DietPlanSheet {
 }
 
 function toClientPlan(dto: ClientDietPlanDto): ClientDietPlan {
-  return { ...dto, updatedAt: new Date(dto.updatedAt) }
+  return {
+    ...dto,
+    updatedAt: new Date(dto.updatedAt),
+    reviewedAt: dto.reviewedAt ? new Date(dto.reviewedAt) : null,
+  }
 }
 
 /** `GET /program/diet-plan?week=&band=` — one master sheet. */
@@ -82,12 +87,22 @@ export async function saveClientDietPlan(
   return toClientPlan(dto)
 }
 
-/** `PATCH /clients/:id/diet-band` — move a user to a different daily target. */
+/** `PATCH /clients/:id/diet-band` — move a user to a different meal category. */
 export async function updateClientBand(
   clientId: string,
   body: UpdateClientBandBody,
 ): Promise<Client> {
   const dto = await patch<ClientDto>(`/clients/${clientId}/diet-band`, body)
+  return toClient(dto)
+}
+
+/** `PATCH /clients/:id/diet-review` — sign this user's filtered plan off, or
+ *  send it back into review. Touches only the sign-off, never the plan. */
+export async function updateClientReview(
+  clientId: string,
+  body: UpdateClientReviewBody,
+): Promise<Client> {
+  const dto = await patch<ClientDto>(`/clients/${clientId}/diet-review`, body)
   return toClient(dto)
 }
 

@@ -7,6 +7,7 @@ import {
   saveClientDietPlan,
   saveMasterSheet,
   updateClientBand,
+  updateClientReview,
 } from './dietPlan.api'
 import { resetDietPlanStore } from './dietPlan.mock'
 import { CALORIE_BANDS } from './dietPlan.types'
@@ -195,6 +196,71 @@ describe('diet plan api', () => {
       await expect(
         updateClientBand('c-14', {
           band: 1500 as (typeof CALORIE_BANDS)[number],
+        }),
+      ).rejects.toMatchObject({ kind: 'validation', status: 422 })
+    })
+
+    it('sends the user back into review — the signed-off plan has changed', async () => {
+      const signedOff = await updateClientReview('c-14', {
+        status: 'reviewed',
+      })
+      expect(signedOff.dietReview).toBe('reviewed')
+
+      const moved = await updateClientBand('c-14', { band: 1800 })
+      expect(moved.dietReview).toBe('in-review')
+      expect(moved.dietReviewedAt).toBeNull()
+    })
+  })
+
+  describe('review sign-off', () => {
+    it('marks a plan reviewed and stamps when', async () => {
+      const updated = await updateClientReview('c-11', { status: 'reviewed' })
+      expect(updated.dietReview).toBe('reviewed')
+      expect(updated.dietReviewedAt).toBeInstanceOf(Date)
+    })
+
+    it('reopens a reviewed plan', async () => {
+      await updateClientReview('c-11', { status: 'reviewed' })
+      const reopened = await updateClientReview('c-11', {
+        status: 'in-review',
+      })
+      expect(reopened.dietReview).toBe('in-review')
+      expect(reopened.dietReviewedAt).toBeNull()
+    })
+
+    it('leaves the plan itself alone — it records only that someone read it', async () => {
+      const before = await getClientDietPlan('c-11', 1)
+      await updateClientReview('c-11', { status: 'reviewed' })
+      const after = await getClientDietPlan('c-11', 1)
+      expect(after.body).toBe(before.body)
+      expect(after.edited).toBe(before.edited)
+    })
+
+    it('reports the sign-off on the plan itself, edited or not', async () => {
+      // The plan carries it so a surface holding a stale client still shows
+      // the truth — the bug this replaced was exactly that.
+      expect((await getClientDietPlan('c-11', 1)).review).toBe('in-review')
+
+      await saveClientDietPlan('c-11', 1, { body: '<p>Hand written.</p>' })
+      await updateClientReview('c-11', { status: 'reviewed' })
+
+      // Including on a week that has a stored, hand-edited copy.
+      const edited = await getClientDietPlan('c-11', 1)
+      expect(edited.edited).toBe(true)
+      expect(edited.review).toBe('reviewed')
+      expect(edited.reviewedAt).toBeInstanceOf(Date)
+    })
+
+    it('404s for a user who does not exist', async () => {
+      await expect(
+        updateClientReview('nobody', { status: 'reviewed' }),
+      ).rejects.toMatchObject({ status: 404 })
+    })
+
+    it('rejects an unknown review state', async () => {
+      await expect(
+        updateClientReview('c-11', {
+          status: 'maybe' as 'reviewed',
         }),
       ).rejects.toMatchObject({ kind: 'validation', status: 422 })
     })

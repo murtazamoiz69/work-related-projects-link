@@ -9,7 +9,7 @@ import {
   useMasterSheetQuery,
   useSaveMasterSheet,
 } from '../useDietPlan'
-import { DuplicateSheetModal } from './DuplicateSheetModal'
+import { DuplicateWeeksModal } from '../../components/DuplicateWeeksModal'
 
 const AUTOSAVE_MS = 900
 
@@ -104,10 +104,10 @@ export function DietPlanTab({
 
           <div className="diet-sheet-actions">
             <label className="diet-band-picker">
-              <span className="diet-band-label">Daily target</span>
+              <span className="diet-band-label">Meal Category</span>
               <select
                 className="select-range"
-                aria-label="Calorie band"
+                aria-label="Meal category"
                 value={band}
                 onChange={(e) => setBand(Number(e.target.value) as CalorieBand)}
               >
@@ -186,9 +186,16 @@ export function DietPlanTab({
       </section>
 
       {duplicateOpen ? (
-        <DuplicateSheetModal
+        <DuplicateWeeksModal
+          title="Duplicate this plan"
+          intro={
+            <>
+              Copy the <strong>Week {activeWeek}</strong> plan for the{' '}
+              <strong>{band} kcal</strong> meal category into the weeks you
+              pick. Anything already saved in those weeks is replaced.
+            </>
+          }
           fromWeek={activeWeek}
-          band={band}
           totalWeeks={totalWeeks}
           pending={duplicate.isPending}
           onClose={() => setDuplicateOpen(false)}

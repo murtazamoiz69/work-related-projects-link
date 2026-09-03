@@ -55,7 +55,7 @@ export const clientsRoute = createRoute({
   getParentRoute: () => authedRoute,
   path: '/clients',
   validateSearch: (search: Record<string, unknown>): ClientsSearch => {
-    const { status, expiry } = search
+    const { status, expiry, review } = search
     const page = Number(search.page)
     return {
       q: typeof search.q === 'string' && search.q ? search.q : undefined,
@@ -66,6 +66,8 @@ export const clientsRoute = createRoute({
         expiry === 'active'
           ? expiry
           : undefined,
+      review:
+        review === 'in-review' || review === 'reviewed' ? review : undefined,
       page: Number.isFinite(page) && page > 1 ? page : undefined,
     }
   },

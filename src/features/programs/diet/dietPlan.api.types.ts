@@ -7,6 +7,7 @@ import type {
   MedicalCondition,
   DietaryPreference,
   LifeStage,
+  PlanReviewStatus,
 } from './dietPlan.types'
 
 /** A user's onboarding answers as they travel on the wire. */
@@ -33,6 +34,9 @@ export type ClientDietPlanDto = {
   edited: boolean
   appliedFilters: string[]
   updatedAt: string
+  /** Sign-off state, stamped onto every read from the client record. */
+  review: PlanReviewStatus
+  reviewedAt: string | null
 }
 
 // ---- Requests ----
@@ -64,6 +68,10 @@ export type SaveClientPlanBody = {
 
 export type UpdateClientBandBody = {
   band: CalorieBand
+}
+
+export type UpdateClientReviewBody = {
+  status: PlanReviewStatus
 }
 
 export type { CalorieBand, DietProfile }

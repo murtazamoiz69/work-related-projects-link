@@ -72,7 +72,7 @@ describe('DietPlanTab autosave', () => {
     writes.length = 0
 
     await user.selectOptions(
-      screen.getByLabelText('Calorie band'),
+      screen.getByLabelText('Meal category'),
       screen.getByRole('option', { name: '1200 kcal' }),
     )
     await screen.findByLabelText(/1200 kcal/, undefined, EDITOR)

@@ -15,8 +15,9 @@ import {
   saveClientDietPlan,
   saveMasterSheet,
   updateClientBand,
+  updateClientReview,
 } from './dietPlan.api'
-import type { CalorieBand } from './dietPlan.types'
+import type { CalorieBand, PlanReviewStatus } from './dietPlan.types'
 
 export const dietPlanKeys = {
   all: ['diet-plan'] as const,
@@ -122,7 +123,30 @@ export function useUpdateClientBand(clientId: string) {
         queryKey: dietPlanKeys.clientAll(clientId),
       })
       showToast(
-        `${client.name} moved to the ${client.dietProfile?.band} kcal plan`,
+        `${client.name} moved to the ${client.dietProfile?.band} kcal plan — back in review`,
+      )
+    },
+    onError: (error) => showToast(apiErrorMessage(error)),
+  })
+}
+
+/** Sign a user's filtered plan off, or send it back into review. The roster
+ *  shows the resulting tag, so the whole clients cache is invalidated. */
+export function useUpdateClientReview(clientId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (status: PlanReviewStatus) =>
+      updateClientReview(clientId, { status }),
+    onSuccess: (client) => {
+      // The roster chip and the plan itself both report the sign-off.
+      queryClient.invalidateQueries({ queryKey: ['clients'] })
+      queryClient.invalidateQueries({
+        queryKey: dietPlanKeys.clientAll(clientId),
+      })
+      showToast(
+        client.dietReview === 'reviewed'
+          ? `${client.name.split(' ')[0]}'s plan is reviewed and ready`
+          : `${client.name.split(' ')[0]}'s plan is back in review`,
       )
     },
     onError: (error) => showToast(apiErrorMessage(error)),

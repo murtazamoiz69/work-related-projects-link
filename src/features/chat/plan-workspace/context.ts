@@ -38,23 +38,10 @@ export function getDietDay(
   return w ? (w.days.find((d) => d.dayNum === dayNum) ?? null) : null
 }
 
-// The full-screen workspace's modal overlays (rendered above the shell).
-export type PwModal =
-  | { kind: 'workoutTemplatePicker'; weekNum: number; dayNum: number }
-  | {
-      kind: 'workoutEditor'
-      weekNum: number
-      dayNum: number
-      wid: string | null
-    }
-  | {
-      kind: 'workoutPreview'
-      weekNum: number
-      dayNum: number
-      wid: string | null
-    }
-  | { kind: 'editPlan' }
-  | { kind: 'publish' }
+// The full-screen workspace's modal overlays (rendered above the shell). The
+// workout picker/editor/preview kinds went with the structured workout builder
+// — the plan is authored in a rich-text editor in the tab itself now.
+export type PwModal = { kind: 'editPlan' } | { kind: 'publish' }
 
 /** A pending confirmation. The plan is live to the user, so anything that
  *  removes or restructures their plan goes through this first. */

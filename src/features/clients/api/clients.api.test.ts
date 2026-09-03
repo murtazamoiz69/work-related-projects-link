@@ -47,6 +47,21 @@ describe('clients.api', () => {
       expect(items.every((c) => !c.accessEnabled)).toBe(true)
     })
 
+    it('filters by diet-plan review state', async () => {
+      const waiting = await listClients({ review: 'in-review', pageSize: 100 })
+      const done = await listClients({ review: 'reviewed', pageSize: 100 })
+      // Both states are seeded — the roster is a queue, and an empty one would
+      // make the filter untestable and the Users page misleading.
+      expect(waiting.items.length).toBeGreaterThan(0)
+      expect(done.items.length).toBeGreaterThan(0)
+      expect(waiting.items.every((c) => c.dietReview === 'in-review')).toBe(
+        true,
+      )
+      expect(done.items.every((c) => c.dietReview === 'reviewed')).toBe(true)
+      const all = await listClients({ pageSize: 100 })
+      expect(waiting.total + done.total).toBe(all.total)
+    })
+
     it('filters by search haystack', async () => {
       const { items } = await listClients({ search: 'priya', pageSize: 100 })
       expect(items.every((c) => /priya/i.test(c.name))).toBe(true)

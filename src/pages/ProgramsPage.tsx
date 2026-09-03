@@ -11,7 +11,7 @@ import {
 } from '@/features/programs'
 import { ProgramOverview } from '@/features/programs/components/detail/ProgramOverview'
 import { EditProgramModal } from '@/features/programs/components/detail/EditProgramModal'
-import { WorkoutPlanTab } from '@/features/programs/components/detail/WorkoutPlanTab'
+import { WorkoutPlanTab } from '@/features/programs/workout/components/WorkoutPlanTab'
 import { DietPlanTab } from '@/features/programs/diet/components/DietPlanTab'
 
 type ContentTab = 'workout' | 'diet'
@@ -178,10 +178,9 @@ export function ProgramsPage() {
         <div>
           {tab === 'workout' ? (
             <WorkoutPlanTab
-              program={program}
+              totalWeeks={program.durationWeeks}
               activeWeek={activeWeek}
               setActiveWeek={setActiveWeek}
-              flashSaved={flashSaved}
             />
           ) : (
             <DietPlanTab

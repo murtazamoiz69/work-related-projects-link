@@ -1,22 +1,24 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Icon } from '@/components/atoms/Icon'
 import { Modal } from '@/components/molecules/Modal'
-import type { CalorieBand } from '../dietPlan.types'
 
-/** "Duplicate" — copy this week's sheet onto other weeks of the same calorie
- *  band. Same-band only by design: the portions on a 1200 kcal sheet don't
- *  mean anything on an 1800 kcal week, so the band is fixed to the source and
- *  shown rather than offered. */
-export function DuplicateSheetModal({
+/** "Duplicate" — copy one week onto other weeks of the programme. Shared by the
+ *  diet sheet and the workout plan: both are authored a week at a time and both
+ *  are carried forward the same way, so the picker is one component and the
+ *  caller supplies the sentence describing what is being copied. */
+export function DuplicateWeeksModal({
+  title,
+  intro,
   fromWeek,
-  band,
   totalWeeks,
   pending,
   onClose,
   onConfirm,
 }: {
+  title: string
+  /** What gets copied, in the caller's own words. */
+  intro: ReactNode
   fromWeek: number
-  band: CalorieBand
   totalWeeks: number
   pending: boolean
   onClose: () => void
@@ -36,7 +38,7 @@ export function DuplicateSheetModal({
 
   return (
     <Modal
-      title="Duplicate this plan"
+      title={title}
       onClose={onClose}
       footer={
         <>
@@ -55,11 +57,7 @@ export function DuplicateSheetModal({
         </>
       }
     >
-      <p className="dup-sheet-intro">
-        Copy the <strong>Week {fromWeek}</strong> plan for the{' '}
-        <strong>{band} kcal</strong> band into the weeks you pick. Anything
-        already saved in those weeks is replaced.
-      </p>
+      <p className="dup-sheet-intro">{intro}</p>
 
       <div className="dup-sheet-head">
         <span className="dup-sheet-count">

@@ -4,18 +4,24 @@
 // mapper is the single boundary that turns a `ClientDto` (ISO strings) into a
 // domain `Client` (Date objects).
 import type { ClientStatus } from '../types'
-import type { DietProfile } from '@/features/programs/diet/dietPlan.types'
+import type {
+  DietProfile,
+  PlanReviewStatus,
+} from '@/features/programs/diet/dietPlan.types'
 import type { Paginated } from '@/lib/api/types'
 
 // ---- Request types ----
 
 export type ClientStatusFilter = 'all' | 'active' | 'disabled'
 export type ClientExpiryFilter = 'all' | 'expiring-soon' | 'expired' | 'active'
+/** Diet-plan sign-off state, as a roster filter. */
+export type ClientReviewFilter = 'all' | 'in-review' | 'reviewed'
 
 export type ListClientsParams = {
   search?: string
   status?: ClientStatusFilter
   expiry?: ClientExpiryFilter
+  review?: ClientReviewFilter
   page?: number
   pageSize?: number
   /** e.g. `'expiry:asc'` (default). */
@@ -28,6 +34,7 @@ export type ClientsSearch = {
   q?: string
   status?: ClientStatusFilter
   expiry?: ClientExpiryFilter
+  review?: ClientReviewFilter
   page?: number
 }
 
@@ -97,6 +104,9 @@ export type ClientDto = {
   /** Onboarding answers that drive the diet plan: the calorie band the user was
    *  placed in, plus the filters the engine narrows the master sheet with. */
   dietProfile?: DietProfile
+  /** Diet-plan sign-off. `dietReviewedAt` is ISO, and null while in review. */
+  dietReview: PlanReviewStatus
+  dietReviewedAt: string | null
   /** The nutritionist who owns this user's caseload. Embedded rather than
    *  referenced by id so the roster can render the column without a second
    *  request. `null` only if no nutritionist could take them (all disabled). */

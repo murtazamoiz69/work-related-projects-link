@@ -1,12 +1,13 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { EditorContent, useEditor, type Editor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import { Icon } from '@/components/atoms/Icon'
 
-// The diet sheet is authored here. HTML is the storage format on purpose: it is
-// what the AI engine reads when it tailors a user's copy, and it carries the
-// things a portion-based plan needs — headings per slot, lists of swap options,
-// emphasis on must-haves, and links out to recipes.
+// The diet sheet and the workout plan are authored here. HTML is the storage
+// format on purpose: it is what the AI engine reads when it tailors a user's
+// copy, and it carries the things these plans need — headings per slot or
+// section, lists of swap options, emphasis on must-haves, and links out to
+// recipes and exercise demo videos.
 
 type ToolbarButton = {
   icon: string
@@ -118,6 +119,12 @@ export function RichTextEditor({
     onSeededRef.current?.(editor.getHTML())
   }, [editor, value])
 
+  // The link editor: a URL field that folds out of the toolbar. A browser
+  // prompt() would be less code and is what most editors reach for, but it is
+  // blocked in some embeddings and can't be styled or reached consistently.
+  const [linkOpen, setLinkOpen] = useState(false)
+  const [linkUrl, setLinkUrl] = useState('')
+
   // Held in a ref so a caller passing an inline function doesn't re-run the
   // seeding effect (and re-report a baseline) on every render.
   const onSeededRef = useRef(onSeeded)
@@ -130,6 +137,41 @@ export function RichTextEditor({
   }, [editor, editable])
 
   if (!editor) return <div className="rte" aria-busy="true" />
+
+  const openLinkEditor = () => {
+    setLinkUrl(String(editor.getAttributes('link').href ?? ''))
+    setLinkOpen(true)
+  }
+
+  const applyLink = () => {
+    const url = linkUrl.trim()
+    if (!url) {
+      editor.chain().focus().extendMarkRange('link').unsetLink().run()
+      setLinkOpen(false)
+      return
+    }
+    // With nothing selected there is no text to turn into a link, so insert the
+    // URL as its own linked text rather than silently doing nothing.
+    if (editor.state.selection.empty) {
+      editor
+        .chain()
+        .focus()
+        .insertContent({
+          type: 'text',
+          text: url,
+          marks: [{ type: 'link', attrs: { href: url } }],
+        })
+        .run()
+    } else {
+      editor
+        .chain()
+        .focus()
+        .extendMarkRange('link')
+        .setLink({ href: url })
+        .run()
+    }
+    setLinkOpen(false)
+  }
 
   return (
     <div className={`rte${editable ? '' : ' is-readonly'}`}>
@@ -151,6 +193,17 @@ export function RichTextEditor({
           <span className="rte-toolbar-sep" />
           <button
             type="button"
+            className={`rte-tool${editor.isActive('link') ? ' is-active' : ''}`}
+            title="Link"
+            aria-label="Link"
+            aria-pressed={editor.isActive('link')}
+            onClick={openLinkEditor}
+          >
+            <Icon name="link" size={15} />
+          </button>
+          <span className="rte-toolbar-sep" />
+          <button
+            type="button"
             className="rte-tool"
             title="Undo"
             aria-label="Undo"
@@ -168,6 +221,37 @@ export function RichTextEditor({
             onClick={() => editor.chain().focus().redo().run()}
           >
             <Icon name="redo" size={15} />
+          </button>
+        </div>
+      ) : null}
+      {editable && linkOpen ? (
+        <div className="rte-link-row">
+          <label className="rte-link-field">
+            <span>Link</span>
+            <input
+              type="url"
+              value={linkUrl}
+              autoFocus
+              placeholder="https://…"
+              onChange={(e) => setLinkUrl(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  applyLink()
+                }
+                if (e.key === 'Escape') setLinkOpen(false)
+              }}
+            />
+          </label>
+          <button type="button" className="btn-primary" onClick={applyLink}>
+            {linkUrl.trim() ? 'Apply' : 'Remove link'}
+          </button>
+          <button
+            type="button"
+            className="link-btn"
+            onClick={() => setLinkOpen(false)}
+          >
+            Cancel
           </button>
         </div>
       ) : null}

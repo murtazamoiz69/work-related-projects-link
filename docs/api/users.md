@@ -26,6 +26,7 @@ Filtered, sorted, paginated roster.
 | search | string | — | Matches name, email, program, diet, and goals (case-insensitive substring). |
 | status | `all` \| `active` \| `disabled` | `all` | `active` = access enabled; `disabled` = access disabled. |
 | expiry | `all` \| `expiring-soon` \| `expired` \| `active` | `all` | Tiers by days-until-expiry: `expired` < 0; `expiring-soon` 0–14; `active` > 14. |
+| review | `all` \| `in-review` \| `reviewed` | `all` | Diet-plan sign-off state — who is still waiting on a nutritionist. |
 | page | integer (1-based) | 1 | |
 | pageSize | integer | 12 | |
 | sort | string | `expiry:asc` | Default orders soonest-expiring first. |
@@ -72,6 +73,8 @@ Filtered, sorted, paginated roster.
 | status | `"active"` \| `"attention"` \| `"paused"` \| `"new"` | Engagement status (distinct from access). |
 | accessEnabled | boolean | Program access on/off (the toggle). |
 | expiryDate | ISO date | Drives the expiry column + tiering. |
+| dietReview | `in-review` \| `reviewed` | Whether a nutritionist has signed off this user's filtered diet plan. Every new user starts `in-review`. Set by `PATCH /clients/:id/diet-review`; reset to `in-review` by `PATCH /clients/:id/diet-band`. |
+| dietReviewedAt | ISO date \| `null` | When it was signed off; `null` while in review. |
 | adherence | number \| **null** | 0–100; `null` for brand-new users with no data. |
 | checkInDays | number \| **null** | Days since last check-in; `null` when unknown/paused. |
 | joinDate | ISO date | |
@@ -100,6 +103,7 @@ bulk importer's plan-name resolution. Reference data; cached for the session.
 ## `POST /clients`
 Add one user. The five fields below are everything the UI collects; the backend
 fills in the rest (`status: "new"`, `accessEnabled: true`, `adherence`/
+`dietReview` `in-review` (nobody has read the plan they're about to be given),
 `checkInDays` `null`, `plan` derived from `program`, `expiryDate` = now +
 `weeks`, and a `conversationId` for the thread it opens).
 

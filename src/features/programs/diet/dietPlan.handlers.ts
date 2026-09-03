@@ -2,7 +2,12 @@
 // sheets and the per-user copies. Registered via src/mocks/handlers.ts.
 import { http, HttpResponse } from 'msw'
 import { env } from '@/lib/api/env'
-import { isCalorieBand, type CalorieBand } from './dietPlan.types'
+import {
+  isCalorieBand,
+  isPlanReviewStatus,
+  type CalorieBand,
+  type PlanReviewStatus,
+} from './dietPlan.types'
 import {
   clearClientPlans,
   duplicateMasterSheet,
@@ -16,6 +21,7 @@ import type {
   SaveClientPlanBody,
   SaveMasterSheetBody,
   UpdateClientBandBody,
+  UpdateClientReviewBody,
 } from './dietPlan.api.types'
 
 const base = env.apiUrl
@@ -35,6 +41,14 @@ const badBand = () =>
 async function profileFor(clientId: string) {
   const { findClientDto } = await import('@/features/clients/api/clients.mock')
   return findClientDto(clientId)
+}
+
+/** The sign-off, lifted off the client record onto the plan response. */
+function signOff(dto: {
+  dietReview: PlanReviewStatus
+  dietReviewedAt: string | null
+}) {
+  return { review: dto.dietReview, reviewedAt: dto.dietReviewedAt }
 }
 
 export const dietPlanHandlers = [
@@ -91,7 +105,9 @@ export const dietPlanHandlers = [
       )
     }
     const weekNum = Number(new URL(request.url).searchParams.get('week')) || 1
-    return HttpResponse.json(getClientPlan(clientId, weekNum, dto.dietProfile))
+    return HttpResponse.json(
+      getClientPlan(clientId, weekNum, dto.dietProfile, signOff(dto)),
+    )
   }),
 
   // PUT /clients/:id/diet-plan?week= — the nutritionist's own edit.
@@ -107,7 +123,13 @@ export const dietPlanHandlers = [
     const weekNum = Number(new URL(request.url).searchParams.get('week')) || 1
     const body = (await request.json()) as SaveClientPlanBody
     return HttpResponse.json(
-      saveClientPlan(clientId, weekNum, dto.dietProfile, body.body ?? ''),
+      saveClientPlan(
+        clientId,
+        weekNum,
+        dto.dietProfile,
+        body.body ?? '',
+        signOff(dto),
+      ),
     )
   }),
 
@@ -125,7 +147,31 @@ export const dietPlanHandlers = [
     const updated = setClientDietBand(clientId, body.band as CalorieBand)
     // Their hand-edited weeks were written against the old band's portions, so
     // they can't carry over — drop them and re-derive from the new master.
+    // setClientDietBand also drops the sign-off: what was reviewed is not what
+    // this user is on any more.
     clearClientPlans(clientId)
     return HttpResponse.json(updated)
+  }),
+
+  // PATCH /clients/:id/diet-review — sign the filtered plan off, or reopen it.
+  http.patch(`${base}/clients/:id/diet-review`, async ({ params, request }) => {
+    const clientId = String(params.id)
+    const body = (await request.json()) as UpdateClientReviewBody
+    if (!isPlanReviewStatus(body.status)) {
+      return HttpResponse.json(
+        {
+          message: 'The review state could not be saved.',
+          fields: { status: 'Unknown review state.' },
+        },
+        { status: 422 },
+      )
+    }
+
+    const { findClientDto, setClientDietReview } =
+      await import('@/features/clients/api/clients.mock')
+    if (!findClientDto(clientId)) {
+      return HttpResponse.json({ message: 'User not found.' }, { status: 404 })
+    }
+    return HttpResponse.json(setClientDietReview(clientId, body.status))
   }),
 ]

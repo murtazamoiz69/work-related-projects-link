@@ -2,12 +2,13 @@ import { useEffect, useRef, useState } from 'react'
 import { Icon } from '@/components/atoms/Icon'
 import { LazyRichTextEditor } from '@/components/molecules/LazyRichTextEditor'
 import { apiErrorMessage } from '@/lib/api/errors'
-import type { Client } from '@/features/clients'
+import { formatFullDate, type Client } from '@/features/clients'
 import { CALORIE_BANDS, type CalorieBand } from '../dietPlan.types'
 import {
   useClientDietPlanQuery,
   useSaveClientDietPlan,
   useUpdateClientBand,
+  useUpdateClientReview,
 } from '../useDietPlan'
 
 const AUTOSAVE_MS = 900
@@ -31,6 +32,13 @@ export function ClientDietPlanTab({
   const planQuery = useClientDietPlanQuery(client.id, activeWeek)
   const savePlan = useSaveClientDietPlan(client.id)
   const updateBand = useUpdateClientBand(client.id)
+  const updateReview = useUpdateClientReview(client.id)
+
+  // The meal category is a staged edit, not a live one: moving a user between
+  // categories swaps the master sheet under all six of their weeks and drops
+  // anything hand-written for them, which is too much to happen on the way
+  // past a dropdown. The select holds a pending value until Save changes.
+  const [pendingBand, setPendingBand] = useState<CalorieBand | null>(null)
 
   const [draft, setDraft] = useState('')
   const [baseline, setBaseline] = useState<string | null>(null)
@@ -71,6 +79,13 @@ export function ClientDietPlanTab({
   useEffect(() => () => clearTimeout(savedTimer.current), [])
 
   const profile = plan?.profile ?? client.dietProfile
+  const currentBand = profile?.band ?? 1600
+  const selectedBand = pendingBand ?? currentBand
+  const bandChanged = selectedBand !== currentBand
+  // Read off the plan, not the client: this workspace is opened with whatever
+  // client object the surface that opened it happened to hold, and that one
+  // doesn't refetch when the sign-off changes.
+  const reviewed = plan?.review === 'reviewed'
 
   return (
     <>
@@ -99,14 +114,14 @@ export function ClientDietPlanTab({
 
           <div className="diet-sheet-actions">
             <label className="diet-band-picker">
-              <span className="diet-band-label">Daily target</span>
+              <span className="diet-band-label">Meal Category</span>
               <select
                 className="select-range"
-                aria-label="Calorie band"
-                value={profile?.band ?? 1600}
+                aria-label="Meal category"
+                value={selectedBand}
                 disabled={updateBand.isPending}
                 onChange={(e) =>
-                  updateBand.mutate(Number(e.target.value) as CalorieBand)
+                  setPendingBand(Number(e.target.value) as CalorieBand)
                 }
               >
                 {CALORIE_BANDS.map((b) => (
@@ -117,6 +132,21 @@ export function ClientDietPlanTab({
               </select>
             </label>
 
+            {bandChanged ? (
+              <button
+                className="btn-primary diet-band-save"
+                disabled={updateBand.isPending}
+                onClick={() =>
+                  updateBand.mutate(selectedBand, {
+                    onSuccess: () => setPendingBand(null),
+                  })
+                }
+              >
+                <Icon name="check" />
+                {updateBand.isPending ? 'Saving…' : 'Save changes'}
+              </button>
+            ) : null}
+
             <span
               className={`settings-saved-indicator${saved ? ' show' : ''}`}
               aria-live="polite"
@@ -126,6 +156,26 @@ export function ClientDietPlanTab({
             </span>
           </div>
         </div>
+
+        {bandChanged ? (
+          <p className="diet-band-pending-note" role="status">
+            <Icon name="alert-triangle" />
+            Moving {client.name.split(' ')[0]} to the {selectedBand} kcal
+            category re-derives all {totalWeeks} weeks from that master sheet
+            and drops anything edited for them here. Nothing changes until you
+            save.
+          </p>
+        ) : null}
+
+        <ReviewBar
+          firstName={client.name.split(' ')[0]}
+          reviewed={reviewed}
+          reviewedAt={plan?.reviewedAt ?? null}
+          pending={updateReview.isPending}
+          onToggle={() =>
+            updateReview.mutate(reviewed ? 'in-review' : 'reviewed')
+          }
+        />
 
         {profile ? (
           <div className="diet-filter-row">
@@ -201,5 +251,46 @@ export function ClientDietPlanTab({
         )}
       </section>
     </>
+  )
+}
+
+/** The sign-off gate. A user's plan is filtered by the engine the moment they
+ *  onboard, so "there is a plan" and "someone has read the plan" are different
+ *  facts — this is the second one. Until it's ticked the plan sits in review
+ *  and the Users roster says so, which is how a nutritionist finds the people
+ *  still waiting on them. */
+function ReviewBar({
+  firstName,
+  reviewed,
+  reviewedAt,
+  pending,
+  onToggle,
+}: {
+  firstName: string
+  reviewed: boolean
+  reviewedAt: Date | null
+  pending: boolean
+  onToggle: () => void
+}) {
+  return (
+    <div className={`diet-review-bar${reviewed ? ' is-reviewed' : ''}`}>
+      <Icon name={reviewed ? 'check-circle-2' : 'clock'} />
+      <div className="diet-review-copy">
+        <strong>{reviewed ? 'Reviewed' : 'Review in progress'}</strong>
+        <p>
+          {reviewed
+            ? `Signed off${reviewedAt ? ` on ${formatFullDate(reviewedAt)}` : ''} — ${firstName} can see this plan.`
+            : `The engine filtered this plan from the master sheet. ${firstName} won't see it until you've read it through and marked it reviewed.`}
+        </p>
+      </div>
+      <button
+        className={reviewed ? 'btn-secondary' : 'btn-primary'}
+        disabled={pending}
+        onClick={onToggle}
+      >
+        {reviewed ? null : <Icon name="check" />}
+        {reviewed ? 'Reopen review' : 'Reviewed'}
+      </button>
+    </div>
   )
 }

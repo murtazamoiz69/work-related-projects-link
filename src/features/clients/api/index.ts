@@ -25,6 +25,7 @@ export type {
   BulkCreateClientsDto,
   ClientStatusFilter,
   ClientExpiryFilter,
+  ClientReviewFilter,
 } from './clients.types'
 export {
   CLIENT_FIXTURES,

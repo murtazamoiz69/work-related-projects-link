@@ -12,20 +12,26 @@ Authenticated.
 ## UI Sections
 - Topbar: title, **autosave "Saved" pill**, **Edit** button, **availability toggle** (Active/Disabled).
 - **Program Overview** (name, description, goal, difficulty, duration, enrolled count, nutrition targets, version).
-- **Tabs**: Workout Plan / Diet Plan.
-- **Week rail** + **day cards** (workout). The Diet Plan tab is a week rail + a calorie-band picker + one rich-text sheet — see **Diet plan** below.
-- Modals: **Edit Program**, **Exercise Picker**, **Meal Picker**, **Workout Editor**, **Workout Template Picker**; **Enable/Disable confirm**.
+- **Tabs**: Workout Plan / Diet Plan. Both are a **week rail** over a
+  rich-text plan — see **Workout plan** and **Diet plan** below. The Workout
+  tab is seven expanding day rows; the Diet tab is a meal-category picker over
+  one sheet.
+- Modals: **Edit Program**, **Duplicate weeks**; **Enable/Disable confirm**.
 
 ## Components
-`ProgramOverview`, `WorkoutPlanTab`, `DietPlanTab`, `DuplicateSheetModal`, `RichTextEditor`, `EditProgramModal`, `ExercisePickerModal`, `WorkoutEditorModal`, `WorkoutTemplatePickerModal`, `ToggleSwitch`, `ConfirmDialog`, `Topbar`, week utils, `atoms`.
+`ProgramOverview`, `WorkoutPlanTab`, `WorkoutDayRow`, `DietPlanTab`,
+`DuplicateWeeksModal`, `RichTextEditor`, `EditProgramModal`, `ToggleSwitch`,
+`ConfirmDialog`, `Topbar`.
 
 ## User Actions
 - **Edit** program details (modal).
 - **Toggle availability** (Active/Disabled) — gated by confirm.
 - **Switch** tab (Workout / Diet) and **week**.
-- **Add / edit / remove** workouts and their exercise slots; **preview** a workout; apply a **workout template**.
-- **Add / edit / remove** meals per day/slot; apply from library.
-- **Autosave** — edits stamp `updatedDate`, persist, and flash the "Saved" pill.
+- **Author** a day's session — name it, set its type, write the exercises and
+  their video links — and **swap** two days of a week.
+- **Author** the diet sheet for a meal category.
+- **Duplicate** a week onto other weeks (both tabs).
+- **Autosave** — edits persist on a debounce and flash a "Saved" pill.
 
 ## Data Requirements
 **Server Data**
@@ -60,7 +66,9 @@ Authenticated.
 | durationWeeks | number | ✅ | > 0 |
 | nutritionTargets | numbers (cal/protein/carbs/fat/water) | ✅ | ≥ 0 |
 
-**Workout Editor** — per exercise slot: `sets` (int>0), `reps` (string/range), `weight`, `rest`, `tempo`, `rpe` (0–10), `notes`. Session: name, muscle, minutes, difficulty, calories, warmup/cooldown.
+**Workout day** — `label` (free text, may be empty), `type`
+(`workout|cardio|rest`), `body` (rich text). All three save together on one
+debounce.
 - **Submit/Autosave:** persist + flash "Saved"; no explicit save button for inline edits.
 - **Success:** "Saved" pill; toast for availability toggle.
 - **Error:** modal-inline error; failed autosave surfaces a toast and does not silently drop the edit.
@@ -70,7 +78,8 @@ Overview skeleton; week/day card skeletons; library pickers loading list.
 
 ## Empty States
 - "No program configured yet" (no program).
-- A week with no workouts / a day with no meals → prompt to add.
+- A week nobody has authored (weeks 2-6 ship blank in both tabs) → a note
+  pointing at Duplicate. An unauthored day reads "Not set".
 
 ## Error States
 Fetch failure → page error + retry. Autosave failure → toast (edit retained locally). Availability toggle failure → revert toggle + toast.
@@ -111,12 +120,55 @@ Authenticated to view/edit.
 ```
 
 ## Acceptance Criteria
-- The program's overview, workout weeks, and diet weeks render from the fetched program.
+- The program's overview renders from the fetched program; the workout and diet
+  plans render from their own endpoints.
 - Toggling availability opens a confirm; on confirm the status flips, a toast shows, and it persists.
 - Switching tab/week shows the corresponding content without a full reload.
-- Editing a workout/exercise/meal persists and flashes "Saved"; a failed save notifies and retains the edit.
+- Editing a day or a sheet persists and flashes "Saved"; a failed save notifies and retains the edit.
+- **Opening** a day, switching week, or switching meal category writes nothing.
 - "No program configured" appears only when no program exists.
-- Editor modals validate numeric fields and trap focus.
+
+---
+
+## Workout plan
+
+Seven days a week, six weeks, one **rich-text session per day**. Deliberately
+the same shape as the diet sheet: a nutritionist moving between the two tabs
+shouldn't have to learn a second way of working.
+
+### The week
+A day row shows its **weekday** (Monday first — the programme runs on calendar
+weeks), a **type chip** (`Workout` / `Cardio` / `Rest`), and the coach's **name**
+for it ("Push Day", "Zone 2 Cardio"). Clicking the row expands it into the
+editor for that session, where the name, the type and the body are all editable
+and save together on one debounce.
+
+The body is rich text for the same reason the diet sheet is: a session is a
+warm-up, a main set, a finisher and a pile of coaching notes, and each exercise
+carries a **demo video link** beside it. Links are real anchors, so they survive
+the editor's round trip and stay clickable. The toolbar has a link control for
+adding more.
+
+**Swapping** two days is a picker on each row ("Swap with…"), not a drag. A week
+is seven rows any of which may be open with an editor inside it; dragging over
+that is fiddly and unreachable from a keyboard. The swap trades everything —
+name, type and session — and the weekdays themselves stay put.
+
+**Duplicate** copies all seven days of the open week onto any other weeks,
+chosen with checkboxes. Only **week 1** ships authored; weeks 2-6 start blank
+and are filled by hand or copied forward.
+
+### Per-user
+There is **no filtering here** — unlike the diet plan, a user's week starts as
+the programme's week verbatim and diverges only when a nutritionist edits it for
+them. Once it does, the week is flagged **Edited for this user**, stops tracking
+the programme, and a **Reset to programme** button undoes it.
+
+> **Legacy:** `TrainingProgram.workoutWeeks` / `.dietWeeks` are still on the
+> program payload but nothing renders them any more — both plans are served by
+> their own endpoints. The Plan Workspace's separate `ws.workoutWeeks` (a
+> different type) is still load-bearing for its version history and publish
+> checks.
 
 ---
 
@@ -126,11 +178,18 @@ The programme is **Diwali Glow** — a six-week fat-loss programme, so the diet
 runs on a calorie deficit and the plan is organised by **daily intake target**
 rather than by dish.
 
-### Calorie bands
+### Meal categories (calorie bands)
 A user is placed in one of **1200 / 1400 / 1600 / 1800 / 2000 kcal** at
-onboarding, from their BMR and estimated burn. The band decides which master
+onboarding, from their BMR and estimated burn. The category decides which master
 sheet they follow. It is shown as a chip under their name in the Users roster
 and is changed from their **Manage Plan → Diet Plan** tab as their burn changes.
+
+The control is labelled **Meal Category** everywhere it appears. On the
+**global** tab it switches which sheet you're authoring, so it takes effect
+immediately. On a **user's** tab it is a *staged* edit behind a **Save changes**
+button, with a warning of what the move costs — it re-derives all six weeks from
+a different master sheet and drops anything hand-written for that user, which is
+too much to happen on the way past a dropdown.
 
 ### Master sheets (global)
 One sheet per **week × band** (6 × 5 = 30). A sheet is not a menu of finished
@@ -165,6 +224,29 @@ introduces food the master plan doesn't contain** (asserted in
 editor so the tailoring is legible rather than magic.
 
 The nutritionist can edit a user's copy directly; it is then flagged **Edited
-for this user** and stops tracking the master. Changing a user's band
-re-derives every week from the new band's sheets and drops those edits — an
+for this user** and stops tracking the master. Changing a user's meal category
+re-derives every week from the new category's sheets and drops those edits — an
 edit written against 1400 kcal portions doesn't hold at 1800.
+
+### Review sign-off
+A user's plan is filtered by the engine the moment they onboard, so *"there is a
+plan"* and *"a person has read the plan"* are different facts. The second one is
+the **review state**:
+
+- **In review** — the default for every newly created user, and for anyone
+  seeded inside the onboarding window. The plan is not considered ready.
+- **Reviewed** — a nutritionist has opened Manage Plan → Diet Plan, read the
+  filtered plan and clicked **Reviewed**. Stamped with the date.
+
+The state shows as a **chip beside the user's name** in the Users roster and has
+its own roster **filter** (`All plans / In review / Reviewed`), which is how a
+nutritionist finds who is still waiting on them. **Reopen review** puts a plan
+back, and **changing a user's meal category** does so automatically — what was
+signed off is not what they're on any more.
+
+The sign-off is carried on the **plan** response, not read off the client
+record: the workspace is opened with whatever client object the calling surface
+happened to hold, and that one doesn't refetch when the sign-off changes.
+
+> Scope: this is the nutritionist side only. Nothing here gates what the
+> end-user app actually serves.
