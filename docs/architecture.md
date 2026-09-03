@@ -55,7 +55,7 @@ src/
 ## Routing
 
 - **TanStack Router**, manually assembled tree (not file-based): `rootRoute → _authed (guard) → children`, plus a public `/login`.
-- The `_authed` pathless layout route renders `AppLayout` and guards via `beforeLoad` reading the auth store. Role-gated routes (e.g. `/nutritionists`, Super Admin only) add their own `beforeLoad` redirect.
+- The `_authed` pathless layout route renders `AppLayout` and guards via `beforeLoad` reading the auth store. There is one role, so no route adds a further role check — `/nutritionists` is authed like any other page.
 - Navigate with `useNavigate()` / `<Link>`. **Never** `window.location`.
 - Search params are validated per route (`validateSearch`). Pages read them through the route's typed `useSearch()`.
 - Routes are lazy-loaded (`lazy()` + `Suspense`) for code-splitting.

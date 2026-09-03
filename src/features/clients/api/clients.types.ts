@@ -39,6 +39,36 @@ export type ExtendClientExpiryBody = {
   expiryDate: string
 }
 
+/** What "Add User" actually collects — the same five fields whether the row
+ *  came from the individual form or a spreadsheet cell. Everything else on a
+ *  `Client` is filled in by the backend at creation time. */
+export type CreateClientBody = {
+  name: string
+  email: string
+  phone: string
+  /** Must be one of `GET /clients/programs`. */
+  program: string
+  /** Program length; sets `expiryDate` to now + weeks. */
+  weeks: number
+}
+
+// ASSUMPTION: bulk import is one round trip per intent, and `dryRun` lets the
+// importer preview exactly what a real import would do (same server-side rules,
+// nothing persisted) — so the preview table and the committed result can never
+// disagree about which rows are valid.
+export type BulkCreateClientsBody = {
+  users: CreateClientBody[]
+  /** Validate only; persist nothing. `created` then lists what *would* be made. */
+  dryRun?: boolean
+}
+
+/** A row the backend refused, with the reasons to show against it. `row` is the
+ *  0-based index into the submitted `users` array. */
+export type SkippedClientRow = {
+  row: number
+  reasons: string[]
+}
+
 // ---- Response (wire / DTO) types ----
 
 /** A client exactly as the backend would send it — dates are ISO strings. */
@@ -61,6 +91,29 @@ export type ClientDto = {
   joinDate: string // ISO
   goals: string[]
   diet: string
+  /** Only present on users created through "Add User". */
+  phone?: string
+  /** The nutritionist who owns this user's caseload. Embedded rather than
+   *  referenced by id so the roster can render the column without a second
+   *  request. `null` only if no nutritionist could take them (all disabled). */
+  assignedNutritionist: AssignedNutritionist | null
+}
+
+/** Just enough of a nutritionist to render an avatar and a name. */
+export type AssignedNutritionist = {
+  id: string
+  name: string
+  initials: string
+  color: string
+}
+
+export type BulkCreateClientsDto = {
+  created: ClientDto[]
+  skipped: SkippedClientRow[]
+}
+
+export type ClientProgramsDto = {
+  programs: string[]
 }
 
 export type ClientsSummaryDto = {

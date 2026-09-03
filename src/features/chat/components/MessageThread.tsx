@@ -302,7 +302,16 @@ export function MessageThread({
             <span className="chat-header-name">{c.name}</span>
             <span className="chat-header-sub">
               <span className="chat-header-sub-text">
-                {c.age} · {c.gender} · {c.program}
+                {/* A user added through "Add User" has no profile yet — the
+                    backend sends `age: 0` to mean "not collected". Show only
+                    what's actually known rather than printing a placeholder. */}
+                {[
+                  c.age > 0 ? c.age : null,
+                  c.age > 0 ? c.gender : null,
+                  c.program,
+                ]
+                  .filter(Boolean)
+                  .join(' · ')}
               </span>
             </span>
           </div>

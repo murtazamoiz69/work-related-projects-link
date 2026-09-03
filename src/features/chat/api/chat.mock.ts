@@ -3,8 +3,9 @@
 // independent in-session store so chat mutations (send / star / handoff / note)
 // don't mutate the shared seed the not-yet-migrated Plan Workspace still reads.
 // Reset with resetChatStore() in tests.
-import { toClientDto } from '@/features/clients'
-import { CONVERSATIONS } from '../data'
+import { toClient, toClientDto } from '@/features/clients'
+import type { ClientDto } from '@/features/clients'
+import { CONVERSATIONS, buildConversation } from '../data'
 import type { Conversation, HandledBy } from '../types'
 import type {
   AddNoteBody,
@@ -104,6 +105,16 @@ export function conversationTabs(): ConversationTab[] {
 
 export function getConversationDto(id: string): ConversationDto | undefined {
   return store.get(id)
+}
+
+/** Open a thread for a user the clients mock just created, so their row's
+ *  "Open chat" / "Manage" actions resolve instead of 404-ing. Called by the
+ *  clients POST handlers — the real backend would do this server-side at
+ *  creation time and hand back the `conversationId` it minted. */
+export function createConversationForClient(client: ClientDto): void {
+  const conversation = buildConversation(toClient(client), store.size)
+  const dto = toConversationDto(conversation)
+  store.set(dto.id, dto)
 }
 
 export function addMessageDto(

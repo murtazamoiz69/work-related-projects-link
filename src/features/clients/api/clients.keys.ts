@@ -6,4 +6,5 @@ export const clientKeys = {
   all: ['clients'] as const,
   list: (params: ListClientsParams) => ['clients', 'list', params] as const,
   summary: () => ['clients', 'summary'] as const,
+  programs: () => ['clients', 'programs'] as const,
 }

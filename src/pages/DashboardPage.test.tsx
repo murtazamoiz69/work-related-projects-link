@@ -147,9 +147,15 @@ describe('DashboardPage — Catch Up (needs attention)', () => {
       ),
     )
     const { user } = renderWithProviders(<DashboardPage />)
-    const showAll = await screen.findByRole('button', {
-      name: /show all 10 users/i,
-    })
+    // The button only appears after BOTH panel queries land — the filter chips
+    // and then the rows for the selected chip, which are chained, not parallel.
+    // Two round trips can outrun findBy's 1s default when the suite is running
+    // files in parallel, so allow the same 4s the other lazy waits use.
+    const showAll = await screen.findByRole(
+      'button',
+      { name: /show all 10 users/i },
+      { timeout: 4000 },
+    )
     await user.click(showAll)
     expect(
       await screen.findByRole('button', { name: /show fewer users/i }),

@@ -7,7 +7,7 @@
 The nutritionist's live workspace with a user: watch/supervise the AI conversation, take it over to message directly, review the user's clinical profile / notes / activity, and manage their full workout + diet plan — without leaving the conversation.
 
 ## User Role
-Authenticated (Nutritionist + Super Admin).
+Authenticated.
 
 ## UI Sections
 - **Conversation list** (left): search, tabs (All / Needs Attention / New / Active / Pinned), conversation cards (avatar, name, preview, time, AI/needs-nutritionist tag, unread dot, star).
@@ -91,7 +91,7 @@ Errors (all): `401`, `403`, `404`, `409` (concurrent plan edit), `422`, `500`, n
 - `409` concurrent plan edit → prompt to reload the plan before overwriting.
 
 ## Permissions
-Authenticated. Take-over / publish are nutritionist actions. (Future: only the user's assigned nutritionist — or Super Admin — may manage their plan.)
+Authenticated. Take-over / publish are nutritionist actions. (Future: only the user's assigned nutritionist may manage their plan.)
 
 ## Performance Considerations
 - **Virtualize** long conversation lists and long message threads (future; fine at current sizes).

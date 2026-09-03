@@ -9,7 +9,6 @@ export type LoginBody = {
 export type AuthUser = {
   id: string
   name: string
-  role: string
   email: string
   initials: string
   color: string

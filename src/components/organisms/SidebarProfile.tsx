@@ -4,9 +4,10 @@ import { Icon } from '@/components/atoms/Icon'
 import { useAuthStore } from '@/store/useAuthStore'
 import { ProfileDropdown } from './ProfileDropdown'
 
-/** Rail: just the circular avatar. Hovered/expanded: avatar + name/role +
- *  chevron. Same trigger both times — `.sidebar:hover`/`:focus-within`
- *  reshapes it, this component doesn't track which state it's in. */
+/** Rail: just the circular avatar. Hovered/expanded: avatar + name + chevron.
+ *  Same trigger both times — `.sidebar:hover`/`:focus-within` reshapes it,
+ *  this component doesn't track which state it's in. Clicking opens the
+ *  profile menu. */
 export function SidebarProfile() {
   const activeProfile = useAuthStore((s) => s.activeProfile)
   const [open, setOpen] = useState(false)
@@ -33,11 +34,12 @@ export function SidebarProfile() {
         <Avatar
           initials={activeProfile.initials}
           color={activeProfile.color}
+          photo={activeProfile.photo}
+          alt={activeProfile.name}
           size="sm"
         />
         <span className="sidebar-profile-meta sidebar-label">
           <span className="sidebar-profile-name">{activeProfile.name}</span>
-          <span className="sidebar-profile-role">{activeProfile.role}</span>
         </span>
         <Icon
           name="chevron-down"

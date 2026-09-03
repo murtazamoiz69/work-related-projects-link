@@ -1,6 +1,5 @@
 import { lazy, Suspense, type ReactNode } from 'react'
-import { createRoute, redirect } from '@tanstack/react-router'
-import { useAuthStore } from '@/store/useAuthStore'
+import { createRoute } from '@tanstack/react-router'
 import type { ClientsSearch } from '@/features/clients/api/clients.types'
 import type { NutritionistsSearch } from '@/features/nutritionists/api/nutritionists.types'
 import { RouteFallback } from '@/components/molecules/RouteFallback'
@@ -124,8 +123,7 @@ export const settingsRoute = createRoute({
   ),
 })
 
-// Super Admin's one added page — gated the same way authedRoute gates on
-// isAuthenticated(): an outside-React store check in beforeLoad.
+// Open to every signed-in nutritionist — one role, no extra gate.
 export const nutritionistsRoute = createRoute({
   getParentRoute: () => authedRoute,
   path: '/nutritionists',
@@ -136,11 +134,6 @@ export const nutritionistsRoute = createRoute({
       q: typeof search.q === 'string' && search.q ? search.q : undefined,
       status: status === 'active' || status === 'disabled' ? status : undefined,
       page: Number.isFinite(page) && page > 1 ? page : undefined,
-    }
-  },
-  beforeLoad: () => {
-    if (useAuthStore.getState().activeProfile.role !== 'Super Admin') {
-      throw redirect({ to: '/' })
     }
   },
   component: () => {

@@ -1,4 +1,4 @@
-// Nutritionist roster — the Super Admin's one added capability. Named
+// Nutritionist roster — every account can manage these. Named
 // distinctly from CLIENTS_DATA so no person reads as both a user and a
 // nutritionist. Every user is assigned to exactly one nutritionist here
 // (consecutive slices of CLIENTS_DATA, 48 total) so the "N members" count

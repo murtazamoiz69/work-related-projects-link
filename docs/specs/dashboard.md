@@ -7,7 +7,7 @@
 Daily triage. Answers "who needs my attention right now, how is my caseload doing, and whose access is about to lapse" the moment the nutritionist signs in.
 
 ## User Role
-Authenticated (Nutritionist + Super Admin).
+Authenticated.
 
 ## UI Sections
 - Greeting topbar (name + date).

@@ -12,7 +12,6 @@ import type {
 export function userToProfile(user: AuthUser): Profile {
   return {
     name: user.name,
-    role: user.role,
     initials: user.initials,
     color: user.color,
     email: user.email,

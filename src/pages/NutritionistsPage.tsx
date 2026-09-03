@@ -5,7 +5,6 @@ import { Topbar } from '@/components/organisms/Topbar'
 import { ConfirmDialog } from '@/components/molecules/ConfirmDialog'
 import { apiErrorMessage } from '@/lib/api/errors'
 import { showToast } from '@/lib/toast'
-import { useAuthStore } from '@/store/useAuthStore'
 import {
   useNutritionistsQuery,
   useUpdateNutritionistAccess,
@@ -52,19 +51,11 @@ function SkeletonRows() {
   )
 }
 
-// Super Admin's one added page — same roster pattern as the Users section,
-// pointed at nutritionists. Data flows through the nutritionists api via query
-// hooks; no component touches HTTP.
+// Every nutritionist can manage the others — same roster pattern as the Users
+// section, pointed at nutritionists. Data flows through the nutritionists api
+// via query hooks; no component touches HTTP.
 export function NutritionistsPage({ search }: { search: NutritionistsSearch }) {
   const navigate = useNavigate()
-  const isSuperAdmin =
-    useAuthStore((s) => s.activeProfile.role) === 'Super Admin'
-
-  // The route's beforeLoad guard only runs on navigation, not on a live profile
-  // switch while already here — this catches that case too.
-  useEffect(() => {
-    if (!isSuperAdmin) navigate({ to: '/' })
-  }, [isSuperAdmin, navigate])
 
   const q = search.q ?? ''
   const status: NutritionistStatusFilter = search.status ?? 'all'
@@ -144,8 +135,6 @@ export function NutritionistsPage({ search }: { search: NutritionistsSearch }) {
     })
     setToggleTarget(null)
   }
-
-  if (!isSuperAdmin) return null
 
   return (
     <>

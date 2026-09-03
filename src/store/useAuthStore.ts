@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { getAccessToken, setAccessToken } from '@/lib/api/auth'
-import { SWITCH_PROFILES, type Profile } from '@/features/shell/data'
+import { DEFAULT_PROFILE, type Profile } from '@/features/shell/data'
 
 const PROFILE_KEY = 'activeProfile'
 
@@ -11,7 +11,7 @@ function readProfile(): Profile {
   } catch {
     /* sessionStorage unavailable — fall back to default */
   }
-  return SWITCH_PROFILES[0]
+  return DEFAULT_PROFILE
 }
 
 function persistProfile(profile: Profile): void {
@@ -28,7 +28,8 @@ type AuthState = {
   /** Sign in: persist the access token and the session profile. */
   login: (profile: Profile, token: string) => void
   logout: () => void
-  switchProfile: (profile: Profile) => void
+  /** Persist edits from Settings › Profile. */
+  updateProfile: (profile: Profile) => void
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -45,7 +46,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     setAccessToken(null)
     set({ isAuthenticated: false })
   },
-  switchProfile: (profile) => {
+  updateProfile: (profile) => {
     persistProfile(profile)
     set({ activeProfile: profile })
   },

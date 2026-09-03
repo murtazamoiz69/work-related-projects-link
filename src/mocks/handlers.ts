@@ -6,7 +6,6 @@ import { programsHandlers } from '@/features/programs/api/programs.handlers'
 import { librariesHandlers } from '@/features/programs/api/libraries.handlers'
 import { clientDetailHandlers } from '@/features/client-detail/api/detail.handlers'
 import { dashboardHandlers } from '@/features/dashboard/api/dashboard.handlers'
-import { settingsHandlers } from '@/features/settings/api/settings.handlers'
 import { authHandlers } from '@/features/auth/api/auth.handlers'
 import { chatHandlers } from '@/features/chat/api/chat.handlers'
 import { planHandlers } from '@/features/chat/plan-workspace/api/plan.handlers'
@@ -19,7 +18,6 @@ export const handlers = [
   ...librariesHandlers,
   ...clientDetailHandlers,
   ...dashboardHandlers,
-  ...settingsHandlers,
   ...chatHandlers,
   ...planHandlers,
 ]

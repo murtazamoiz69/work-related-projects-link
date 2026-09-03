@@ -25,4 +25,16 @@ export type Client = {
   joinDate: Date
   goals: string[]
   diet: string
+  /** Contact number — collected by "Add User" (individual or bulk import).
+   *  Absent on the original seed roster, so optional. */
+  phone?: string
+  /** The nutritionist whose caseload this user is on. Assigned by the backend
+   *  at creation (balanced across the team) and embedded in the roster
+   *  response, so the Users table can show it without a second request. */
+  assignedNutritionist?: {
+    id: string
+    name: string
+    initials: string
+    color: string
+  } | null
 }

@@ -7,7 +7,7 @@
 Manage the **single global program** available across the platform — its details, its week-by-week workout and diet content, and whether it is currently available to users. (There is no program list / create / delete; per-user assignment and progress live in Users/Chat.)
 
 ## User Role
-Authenticated (Nutritionist + Super Admin).
+Authenticated.
 
 ## UI Sections
 - Topbar: title, **autosave "Saved" pill**, **Edit** button, **availability toggle** (Active/Disabled).
@@ -76,7 +76,7 @@ Overview skeleton; week/day card skeletons; library pickers loading list.
 Fetch failure → page error + retry. Autosave failure → toast (edit retained locally). Availability toggle failure → revert toggle + toast.
 
 ## Permissions
-Authenticated to view/edit. (Future: editing the global program may be restricted to Super Admin / senior role; viewing open to nutritionists.)
+Authenticated to view/edit.
 
 ## Performance Considerations
 - Cache libraries (long staleTime).

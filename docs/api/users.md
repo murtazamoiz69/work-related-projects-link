@@ -9,6 +9,8 @@ Covers the **Users** page (labelled "Users" in the UI; the resource is
 - Summary cards (total / active / expiring-soon / expired).
 - Per-row actions: enable/disable program access (with confirm), extend the
   program to a new expiry, open the user's chat, open their plan.
+- **Add User** — a chooser modal offering "Add individually" (a five-field form)
+  or "Bulk upload" (an Excel/CSV import with a per-row preview).
 
 All filtering, sorting, and pagination are **server-side** and reflected in the
 URL, so a filtered view is shareable/reloadable.
@@ -76,8 +78,110 @@ Filtered, sorted, paginated roster.
 | goals | string[] | |
 | diet | string | |
 | conversationId | string | The user's chat conversation. The UI opens chat / "at a glance" by this id; the client must not resolve it from any other resource. |
+| phone | string \| absent | Contact number. Only present on users created through **Add User**. |
+| assignedNutritionist | object \| **null** | `{ id, name, initials, color }` — the nutritionist carrying this user. Embedded so the roster renders the column without a second request. `null` only if no nutritionist could take them. |
 
 **Errors:** `401`; `500`.
+
+---
+
+## `GET /clients/programs`
+The plan names **Add User** may assign — feeds the form's Plan dropdown and the
+bulk importer's plan-name resolution. Reference data; cached for the session.
+
+**Success `200`**
+```json
+{ "programs": ["Weight Loss", "Diabetes Management", "Muscle Gain"] }
+```
+**Errors:** `401`; `500`.
+
+---
+
+## `POST /clients`
+Add one user. The five fields below are everything the UI collects; the backend
+fills in the rest (`status: "new"`, `accessEnabled: true`, `adherence`/
+`checkInDays` `null`, `plan` derived from `program`, `expiryDate` = now +
+`weeks`, and a `conversationId` for the thread it opens).
+
+**Request body**
+```json
+{
+  "name": "Jordan Lee",
+  "email": "jordan.lee@email.com",
+  "phone": "+1 555 123 4567",
+  "program": "Weight Loss",
+  "weeks": 12
+}
+```
+| Field | Type | Rules |
+| --- | --- | --- |
+| name / email / phone | string | Required, non-blank. `email` must look like an address and be unused. |
+| program | string | Required; must be one of `GET /clients/programs`. |
+| weeks | integer | Required; ≥ 1. Sets `expiryDate`. |
+
+**Success `201`** — the created `Client`, including the `assignedNutritionist`
+the backend picked (see **Caseload assignment** below).
+
+**Errors**
+| Status | When | Body |
+| --- | --- | --- |
+| 422 | Missing/invalid field, unknown plan, or duplicate email | `{ "message": "The user could not be added.", "fields": { "email": "A user with this email already exists." } }` |
+| 401 / 403 / 500 | — | |
+
+`fields` keys are the request field names, so the form renders them inline.
+
+---
+
+## `POST /clients/bulk`
+Import many users from a parsed spreadsheet. Rows are validated **individually**
+— a bad row is reported, it does not fail the batch.
+
+**Request body**
+```json
+{ "users": [ { "name": "…", "email": "…", "phone": "…", "program": "…", "weeks": 8 } ], "dryRun": true }
+```
+| Field | Type | Notes |
+| --- | --- | --- |
+| users | array | Each entry is a `POST /clients` body. |
+| dryRun | boolean (default `false`) | Validate only — persist nothing. `created` then lists what *would* be created. The importer uses this to build its preview table so the preview and the commit can never disagree. |
+
+**Success `201`** (`200` for a dry run)
+```json
+{
+  "created": [ { "id": "c-new-1", "name": "Ada Byron" } ],
+  "skipped": [ { "row": 1, "reasons": ["Email already exists"] } ]
+}
+```
+| Field | Notes |
+| --- | --- |
+| created | Full `Client` objects, in submitted order. |
+| skipped | `row` is the **0-based index into the submitted `users` array**; `reasons` are display strings (`Missing name, phone`, `Invalid email format`, `Email already exists`, `Unrecognized plan "…"`, `Weeks must be a positive number`). |
+
+Duplicate emails are caught both against the existing roster and **within the
+same payload** (the first occurrence wins, later ones are skipped). Each created
+row is assigned in turn, so a batch spreads across the team rather than landing
+on one person (see **Caseload assignment**).
+
+**Errors:** `422` `{ "message": "No users were submitted." }`; `401`; `403`; `500`.
+
+---
+
+## Caseload assignment
+Every user belongs to exactly one nutritionist. The **backend** assigns them at
+creation — the client never picks, and there is no UI to choose.
+
+The rule is **fewest users first**: the new user goes to whichever nutritionist
+currently has the smallest caseload, ties broken by roster order. Balancing
+against the live count (rather than a rotating cursor) means an already-lopsided
+team is pulled back level as users are added, instead of preserving the
+imbalance. **Disabled nutritionists are skipped** — they can't take a caseload.
+
+For a bulk import each row is assigned **in sequence**, so every pick sees the
+previous one and the batch fans out across the team.
+
+The assignment is a real caseload change, not a label: it also appears in the
+nutritionist's `memberIds` / member count on
+[nutritionists.md](./nutritionists.md).
 
 ---
 

@@ -1,5 +1,5 @@
 export type { Client, ClientStatus } from './types'
-export { CLIENTS_DATA, STATUS_LABEL, PROGRAM_PLAN } from './data'
+export { CLIENTS_DATA, STATUS_LABEL, PROGRAM_PLAN, PROGRAMS } from './data'
 export {
   formatCheckIn,
   formatJoinDate,
@@ -18,9 +18,13 @@ export {
 export {
   listClients,
   getClientsSummary,
+  getClientPrograms,
+  createClient,
+  bulkCreateClients,
   updateClientAccess,
   extendClientExpiry,
   toClient,
+  type BulkCreateClientsResult,
 } from './api/clients.api'
 export { toClientDto } from './api/clients.mock'
 export type {
@@ -31,14 +35,21 @@ export type {
   ClientDto,
   ClientsSummaryDto,
   PaginatedClientsDto,
+  CreateClientBody,
+  BulkCreateClientsBody,
+  BulkCreateClientsDto,
+  SkippedClientRow,
 } from './api/clients.types'
 
 // Query / mutation hooks (the only surface pages should use for data)
 export {
   useClientsQuery,
   useClientsSummaryQuery,
+  useClientProgramsQuery,
 } from './hooks/useClientsQuery'
 export {
   useUpdateClientAccess,
   useExtendClientExpiry,
+  useCreateClient,
+  useBulkCreateClients,
 } from './hooks/useClientMutations'

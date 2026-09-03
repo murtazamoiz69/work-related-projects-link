@@ -45,7 +45,6 @@ Authenticate and issue an access token.
 | --- | --- | --- |
 | token | string | Sent as `Authorization: Bearer <token>` on every subsequent request. |
 | refreshToken | string | Not yet used by the client; include for forward-compat. |
-| user.role | string | Drives client authorization. Current roles: `"Nutritionist"`, `"Super Admin"`. **Must also be enforced server-side** on role-gated endpoints. |
 | user.initials / color | string | For the avatar chip; server may compute or store them. |
 
 **Errors**
@@ -56,7 +55,7 @@ Authenticate and issue an access token.
 | 429 | Rate limited | `{ "message": "Too many attempts. Try again shortly." }` |
 
 > Mock behaviour today: two demo accounts (`sarah@nourishwithsim.com` →
-> Nutritionist, `alex@nourishwithsim.com` → Super Admin); any non-empty password
+> `alex@nourishwithsim.com`); any non-empty password
 > is accepted; unknown emails → 401.
 
 ---
@@ -90,4 +89,4 @@ Request a password-reset link.
 ## Related / not in this doc
 - The **user profile edited in Settings → Profile** is currently client-only and
   not persisted. When productionised it should become `GET`/`PUT /me/profile`
-  and hydrate the session user. See [settings.md](./settings.md).
+  and hydrate the session user.

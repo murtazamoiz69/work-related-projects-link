@@ -4,7 +4,7 @@
 `/login` (public; redirects to `/` if already authenticated). Accepts `?redirect=<href>`.
 
 ## Purpose
-Authenticate a nutritionist / super-admin into the dashboard and route them to their intended destination.
+Authenticate a nutritionist into the dashboard and route them to their intended destination.
 
 ## User Role
 Public / unauthenticated. An already-authenticated user hitting `/login` is redirected to `/`.
@@ -42,7 +42,7 @@ Public / unauthenticated. An already-authenticated user hitting `/login` is redi
 
 1. **Login** — `POST` `/auth/login` `PROPOSED`
    - Body: `{ "email": string, "password": string, "rememberMe": boolean }`
-   - Response `200`: `{ "token": string, "refreshToken": string, "user": { "id": string, "name": string, "role": "Nutritionist" | "Super Admin", "email": string, "initials": string, "color": string } }`
+   - Response `200`: `{ "token": string, "refreshToken": string, "user": { "id": string, "name": string, "email": string, "initials": string, "color": string } }`
    - Errors: `401` invalid credentials; `422` validation; `429` rate limited; network/timeout.
 2. **Forgot password** — `POST` `/auth/forgot-password` `PROPOSED`
    - Body: `{ "email": string }`

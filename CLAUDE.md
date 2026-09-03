@@ -8,7 +8,7 @@ Read this fully before touching any file. It is intentionally short — the deta
 
 ## What this project is (read this before assuming anything)
 
-NWS ("Nourish with Sim") is a **nutritionist / super-admin dashboard**. It started as a **UI-only prototype** (ported from an older vanilla HTML/JS app) and is being progressively hardened into a production frontend.
+NWS ("Nourish with Sim") is a **nutritionist dashboard** (one role — every account is a nutritionist and can also manage the other nutritionists). It started as a **UI-only prototype** (ported from an older vanilla HTML/JS app) and is being progressively hardened into a production frontend.
 
 **Stack:** Vite · React 18 · TypeScript (strict) · Tailwind 4 · TanStack Router · Zustand · zod · lucide-react.
 

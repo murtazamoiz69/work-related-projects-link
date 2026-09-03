@@ -3,17 +3,26 @@
 export {
   listClients,
   getClientsSummary,
+  getClientPrograms,
+  createClient,
+  bulkCreateClients,
   updateClientAccess,
   extendClientExpiry,
   toClient,
+  type BulkCreateClientsResult,
 } from './clients.api'
 export type {
   ListClientsParams,
   UpdateClientAccessBody,
   ExtendClientExpiryBody,
+  CreateClientBody,
+  BulkCreateClientsBody,
+  SkippedClientRow,
   ClientDto,
   ClientsSummaryDto,
+  ClientProgramsDto,
   PaginatedClientsDto,
+  BulkCreateClientsDto,
   ClientStatusFilter,
   ClientExpiryFilter,
 } from './clients.types'
@@ -22,4 +31,5 @@ export {
   clientsScenarios,
   filterClientFixtures,
   summarizeClientFixtures,
+  resetClientStore,
 } from './clients.mock'

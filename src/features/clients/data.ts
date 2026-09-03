@@ -386,7 +386,7 @@ const LAST_NAMES = [
   'Evans',
   'Edwards',
 ]
-const COLOR_POOL = [
+export const COLOR_POOL = [
   '#C44F3F',
   '#3B6FA6',
   '#8A5FBF',
@@ -423,7 +423,9 @@ const GOAL_POOL = [
   'Better sleep',
   'Build discipline',
 ]
-const PROGRAMS = Object.keys(PROGRAM_PLAN)
+/** The assignable program names, in `PROGRAM_PLAN` order. Also what the mock
+ *  backend offers as the "Add User" plan dropdown (`GET /clients/programs`). */
+export const PROGRAMS = Object.keys(PROGRAM_PLAN)
 
 function generateClients(count: number, startIndex: number): NamedClient[] {
   const out: NamedClient[] = []

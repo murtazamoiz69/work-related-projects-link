@@ -82,6 +82,59 @@ export function updateNutritionist(
   return next
 }
 
+// ---------------------------------------------------------------------------
+// Caseload assignment. Every user belongs to exactly one nutritionist, and this
+// module owns that relationship because it owns `memberIds`. The clients
+// handlers reach these through a dynamic import — a static one would close the
+// loop nutritionists/data.ts -> @/features/clients -> clients.mock and leave
+// CLIENTS_DATA undefined while it's still initialising.
+// ---------------------------------------------------------------------------
+
+/** The nutritionist a user is assigned to, as the clients API embeds it. */
+export type AssignedNutritionistDto = {
+  id: string
+  name: string
+  initials: string
+  color: string
+}
+
+function toAssignment(n: NutritionistDto): AssignedNutritionistDto {
+  return { id: n.id, name: n.name, initials: n.initials, color: n.color }
+}
+
+/** Assignments for a page of users, keyed by client id. Built in one pass over
+ *  the roster rather than a lookup per user, so listing a page stays O(n). */
+export function assignmentsFor(
+  clientIds: string[],
+): Map<string, AssignedNutritionistDto> {
+  const wanted = new Set(clientIds)
+  const out = new Map<string, AssignedNutritionistDto>()
+  for (const n of store) {
+    for (const memberId of n.memberIds) {
+      if (wanted.has(memberId)) out.set(memberId, toAssignment(n))
+    }
+  }
+  return out
+}
+
+/** Round-robin by load: the next user goes to whoever currently has the fewest,
+ *  ties broken by roster order. Balancing against the live count rather than a
+ *  rotating cursor means it also pulls an already-lopsided roster back level as
+ *  users are added, instead of preserving the imbalance. Disabled nutritionists
+ *  are skipped — they can't take on a caseload. Returns null when nobody can. */
+export function assignLeastLoaded(
+  clientId: string,
+): AssignedNutritionistDto | null {
+  let target: NutritionistDto | null = null
+  for (const n of store) {
+    if (!n.accessEnabled) continue
+    if (!target || n.memberIds.length < target.memberIds.length) target = n
+  }
+  if (!target) return null
+  target.memberIds = [...target.memberIds, clientId]
+  return toAssignment(target)
+}
+
 export function membersFor(memberIds: string[]): NutritionistMemberDto[] {
   return memberIds
     .map((id) => CLIENTS_DATA.find((c) => c.id === id))

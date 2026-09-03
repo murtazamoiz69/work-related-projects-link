@@ -521,13 +521,6 @@ svg {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.sidebar-profile-role {
-  font-size: 11px;
-  color: var(--text-muted);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
 .sidebar-profile-chevron {
   color: var(--text-muted);
   flex-shrink: 0;
@@ -2450,7 +2443,7 @@ svg {
   }
 }
 
-/* ===================== NUTRITIONISTS PAGE (Super Admin) ===================== */
+/* ===================== NUTRITIONISTS PAGE ===================== */
 .nutritionist-members-card {
   width: 440px;
 }
@@ -7109,67 +7102,24 @@ body.chat-page .content.chat-content {
   background: var(--primary);
 }
 
-.switch-profile-list {
-  display: flex;
-  flex-direction: column;
-  padding: 6px;
-}
-.switch-profile-row {
+.profile-dropdown-item {
   display: flex;
   align-items: center;
   gap: 10px;
   width: 100%;
-  padding: 9px 10px;
+  padding: 10px 12px;
   border-radius: var(--r-sm);
-}
-.switch-profile-row:hover {
-  background: var(--surface-alt);
-}
-.switch-profile-body {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
-.switch-profile-name {
   font-size: 12.5px;
   font-weight: 600;
+  color: var(--text-primary);
 }
-.switch-profile-role {
-  font-size: 11px;
-  color: var(--text-muted);
+.profile-dropdown-item:hover {
+  background: var(--surface-alt);
 }
-.switch-profile-check {
+.profile-dropdown-item svg {
   width: 15px;
   height: 15px;
-  color: var(--primary-dark);
-  opacity: 0;
-}
-.switch-profile-row.is-active .switch-profile-check {
-  opacity: 1;
-}
-
-.help-modal-card {
-  width: 480px;
-  max-width: 92vw;
-}
-.help-faq-item {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding-bottom: 12px;
-  margin-bottom: 12px;
-  border-bottom: 1px solid var(--border-soft);
-}
-.help-faq-q {
-  font-size: 12.5px;
-  font-weight: 700;
-}
-.help-faq-a {
-  font-size: 12px;
-  color: var(--text-secondary);
-  line-height: 1.5;
+  color: var(--text-muted);
 }
 
 /* ===================== SETTINGS PAGE ===================== */
@@ -7252,25 +7202,20 @@ body.chat-page .content.chat-content {
   align-items: center;
   gap: 16px;
 }
-.settings-avatar-swatches {
+.settings-avatar-actions {
   display: flex;
-  gap: 8px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
 }
-.avatar-swatch {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  border: 2px solid transparent;
-  transition:
-    transform 0.15s ease,
-    border-color 0.15s ease;
+.settings-avatar-actions .btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
 }
-.avatar-swatch:hover {
-  transform: scale(1.1);
-}
-.avatar-swatch.is-selected {
-  border-color: var(--text-primary);
-  box-shadow: 0 0 0 2px var(--surface);
+.settings-avatar-actions .btn-secondary svg {
+  width: 14px;
+  height: 14px;
 }
 
 .settings-section-foot {
@@ -9631,3 +9576,243 @@ body.pw-open {
   }
 }
 
+
+
+
+/* ---------- Add User (choice modal, individual form, bulk upload) ---------- */
+.add-user-choice-intro {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+.add-user-choice-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.add-user-choice-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface-alt);
+  text-align: left;
+  transition:
+    border-color 0.12s ease,
+    background 0.12s ease;
+}
+.add-user-choice-card:hover {
+  border-color: var(--primary);
+  background: var(--primary-light);
+}
+.add-user-choice-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  color: var(--primary);
+}
+.add-user-choice-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+.add-user-choice-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.add-user-choice-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.add-user-choice-chev {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.modal-card.bulk-upload-card {
+  width: 720px;
+  max-width: 94vw;
+  max-height: 86vh;
+  display: flex;
+  flex-direction: column;
+}
+.bulk-upload-card .modal-body {
+  overflow-y: auto;
+  min-height: 0;
+}
+.bulk-upload-dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 40px 20px;
+  border: 1.5px dashed var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface-alt);
+  color: var(--text-muted);
+  cursor: pointer;
+  text-align: center;
+}
+.bulk-upload-dropzone:hover {
+  border-color: var(--primary);
+  color: var(--primary-dark);
+}
+.bulk-upload-dropzone svg {
+  width: 26px;
+  height: 26px;
+  margin-bottom: 4px;
+}
+.bulk-upload-dz-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.bulk-upload-dz-sub {
+  font-size: 11.5px;
+}
+.bulk-upload-columns-note {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+.bulk-upload-columns-note code {
+  font-size: 11px;
+  background: var(--surface-alt);
+  border: 1px solid var(--border-soft);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+.bulk-upload-template-link {
+  font-size: 11.5px;
+}
+.bulk-upload-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.bulk-upload-filename {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.bulk-upload-filename svg {
+  width: 14px;
+  height: 14px;
+  color: var(--text-muted);
+}
+.bulk-upload-counts {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.bulk-upload-count-ok,
+.bulk-upload-count-bad {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 999px;
+}
+.bulk-upload-count-ok svg,
+.bulk-upload-count-bad svg {
+  width: 12px;
+  height: 12px;
+}
+.bulk-upload-count-ok {
+  background: var(--green-light);
+  color: var(--green-text);
+}
+.bulk-upload-count-bad {
+  background: var(--amber-light);
+  color: var(--amber-text);
+}
+.bulk-upload-table-wrap {
+  overflow: auto;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r-sm);
+}
+.bulk-upload-table {
+  width: 100%;
+}
+.bulk-upload-table th:first-child,
+.bulk-upload-table td:first-child {
+  width: 30px;
+  padding-left: 12px;
+  padding-right: 0;
+}
+.bulk-row-icon.ok {
+  color: var(--green);
+}
+.bulk-row-icon.bad {
+  color: var(--red);
+}
+.bulk-row-invalid td {
+  background: var(--red-light);
+}
+.bulk-row-reason {
+  font-size: 11.5px;
+  color: var(--red-text);
+}
+
+
+/* ---------- Profile photo (replaces the initials in any .avatar) ---------- */
+.avatar-photo {
+  overflow: hidden;
+  /* The colored ground still shows through while the image decodes. */
+  padding: 0;
+}
+.avatar-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* ---------- Sidebar: log out ---------- */
+/* Same 48px squircle as any nav row, but destructive — it only takes on the
+   red accent on hover/focus so the resting rail stays calm. */
+.nav-item-danger:hover,
+.nav-item-danger:focus-visible {
+  background: var(--red-light);
+  color: var(--red-text);
+}
+.nav-item-danger:hover .nav-item-icon svg,
+.nav-item-danger:focus-visible .nav-item-icon svg {
+  color: var(--red);
+}
+
+/* ---------- Users roster: assigned nutritionist ---------- */
+.ct-assigned {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.ct-assigned-name {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ct-muted {
+  color: var(--text-muted);
+}

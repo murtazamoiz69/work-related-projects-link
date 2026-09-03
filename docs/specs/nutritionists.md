@@ -1,13 +1,13 @@
 # Page: Nutritionists
 
 ## Route
-`/nutritionists` — **Super Admin only** (route `beforeLoad` guard + an in-page effect that redirects to `/` if the role changes while viewing).
+`/nutritionists` — authed, like every other page. There is one role, and managing the other nutritionists is part of it.
 
 ## Purpose
-The Super Admin's roster of nutritionists: onboard them, edit their details, see how many users each oversees, and enable/disable their platform access.
+The roster of nutritionists: onboard them, edit their details, see how many users each oversees, and enable/disable their platform access. New users are assigned here automatically — the backend puts each one on the least-loaded nutritionist's caseload (see [users.md](./users.md)).
 
 ## User Role
-**Super Admin only.** Nutritionists are redirected to `/`.
+Authenticated. Every nutritionist can manage the others.
 
 ## UI Sections
 - Topbar: title + **Add nutritionist**.
@@ -79,7 +79,7 @@ Table skeleton; Members modal loading list.
 - **403** → redirect to `/` (matches the current guard behavior).
 
 ## Permissions
-**Super Admin only**, enforced both client-side (route guard + live role effect) **and** server-side (403). Nutritionist-assignment is out of scope here (owned by Users).
+Authenticated — no extra role check, client- or server-side. Assigning users to nutritionists is out of scope here: it happens automatically when a user is added (owned by Users).
 
 ## Performance Considerations
 - **Pagination** (`PAGE_SIZE = 12`) → server-side with the API.
@@ -109,7 +109,7 @@ Table skeleton; Members modal loading list.
 ```
 
 ## Acceptance Criteria
-- The page is reachable only as Super Admin; a Nutritionist (or a live switch to Nutritionist) is redirected to `/`.
+- The page is reachable by any signed-in nutritionist; a signed-out visitor goes to `/login` like on any other page.
 - Search + status filter narrow the roster; count label + pagination update; page resets on filter change.
 - Adding a nutritionist validates the form, prepends the new row, and closes the modal; a duplicate email is rejected with an inline error.
 - Editing updates the row in place.

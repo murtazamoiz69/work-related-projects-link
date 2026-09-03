@@ -48,14 +48,12 @@ function renderAt(path: string) {
   return { router, ...utils }
 }
 
-const SUPER_ADMIN = {
-  name: 'Alex Rivera',
-  role: 'Super Admin',
-  initials: 'AR',
-  color: '#7A5AA8',
-  email: 'alex@nourishwithsim.com',
+const NUTRITIONIST = {
+  name: 'Sarah Nolan',
+  initials: 'SN',
+  color: '#2F5D50',
+  email: 'sarah@nourishwithsim.com',
 }
-const NUTRITIONIST = { ...SUPER_ADMIN, name: 'Sarah', role: 'Nutritionist' }
 
 function signIn(profile = NUTRITIONIST) {
   useAuthStore.setState({ isAuthenticated: true, activeProfile: profile })
@@ -113,25 +111,25 @@ describe('login guard', () => {
   })
 })
 
-describe('super-admin guard on /nutritionists', () => {
-  it('redirects a plain nutritionist to home', async () => {
-    signIn(NUTRITIONIST)
-    const { router } = renderAt('/nutritionists')
-
-    expect(
-      await screen.findByText(/good morning/i, undefined, LAZY),
-    ).toBeInTheDocument()
-    expect(router.state.location.pathname).toBe('/')
-  })
-
-  it('admits a super admin to the roster', async () => {
-    signIn(SUPER_ADMIN)
+// One role: managing other nutritionists is part of every account, so
+// /nutritionists sits behind the plain authed guard and nothing else.
+describe('/nutritionists', () => {
+  it('admits any signed-in nutritionist to the roster', async () => {
+    signIn()
     const { router } = renderAt('/nutritionists')
 
     expect(
       await screen.findByText('Nutritionist Roster', undefined, LAZY),
     ).toBeInTheDocument()
     expect(router.state.location.pathname).toBe('/nutritionists')
+  })
+
+  it('sends a signed-out visitor to /login like any other authed route', async () => {
+    signOut()
+    const { router } = renderAt('/nutritionists')
+
+    expect(await screen.findByText('Welcome back')).toBeInTheDocument()
+    expect(router.state.location.pathname).toBe('/login')
   })
 })
 

@@ -18,10 +18,9 @@ switches over by pointing `VITE_API_URL` at the real server and disabling mocks
 | --- | --- | --- |
 | [auth.md](./auth.md) | Login / session | `/auth/*` |
 | [users.md](./users.md) | Users (Clients) roster | `/clients` |
-| [nutritionists.md](./nutritionists.md) | Nutritionists (Super-Admin) | `/nutritionists` |
+| [nutritionists.md](./nutritionists.md) | Nutritionists | `/nutritionists` |
 | [programs.md](./programs.md) | Program (single global) + reference libraries | `/program`, `/libraries` |
 | [dashboard.md](./dashboard.md) | Dashboard | `/dashboard/*` |
-| [settings.md](./settings.md) | Settings | `/me/*` |
 | [chat.md](./chat.md) | Chat conversations | `/conversations` |
 | [plan-workspace.md](./plan-workspace.md) | Plan Workspace | `/clients/:id/plan` |
 | [meal-templates.md](./meal-templates.md) | Meal template library (proposed) | `/meal-templates` |
@@ -110,8 +109,9 @@ relevant to it. Listed here so the backend scope is unambiguous:
   Dashboard Catch Up chips, and the **Chat tab counts** — `GET /conversations/tabs`)
   it is called out explicitly.
 - **Call / Email** row actions are UI stubs.
-- **Settings → Profile** (name/email/avatar) is not yet an endpoint (belongs with
-  auth; see [settings.md](./settings.md) and [auth.md](./auth.md)).
+- **Settings → Profile** (name / email / phone / bio / photo) is not yet an
+  endpoint — it edits the session profile in the auth store. Belongs with auth;
+  see [auth.md](./auth.md).
 
 > **Now served by an API (previously in this list):** the **reference catalogs**
 > (exercise/meal/workout-template libraries) are `GET /libraries`

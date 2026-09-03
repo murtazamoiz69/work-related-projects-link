@@ -10,14 +10,9 @@ Per-page specifications for every route in the app, produced **before** API inte
 
 ## Role model (current)
 
-Two switchable demo profiles drive authorization (`store/useAuthStore` + `features/shell/data.ts`):
+**There is one role.** Every account is a nutritionist with the same full access, including managing other nutritionists — so no screen is role-gated, there is no profile switcher, and `Profile` (`features/shell/data.ts`) carries no `role` field. The signed-in profile lives in `store/useAuthStore`.
 
-| Role | Sees |
-| --- | --- |
-| **Nutritionist** (Sarah Nolan) | Dashboard, Users, Chat, Programs, Settings |
-| **Super Admin** (Alex Rivera) | everything above **+ Nutritionists** |
-
-Auth today is a demo flag (any password). Real auth/roles arrive with the API layer; these specs describe the **target** permission per page.
+Auth today is a demo flag (any password). Real auth arrives with the API layer; these specs describe the **target** permission per page.
 
 ## Pages
 
@@ -28,9 +23,9 @@ Auth today is a demo flag (any password). Real auth/roles arrive with the API la
 | 3 | Users (Clients) | `/clients` | Authed | [users.md](./users.md) |
 | 4 | Chat + Plan Workspace | `/chat` | Authed | [chat.md](./chat.md) |
 | 5 | Programs | `/programs` | Authed | [programs.md](./programs.md) |
-| 6 | Settings | `/settings` | Authed | [settings.md](./settings.md) |
-| 7 | Nutritionists | `/nutritionists` | Super Admin | [nutritionists.md](./nutritionists.md) |
+| 6 | Profile Settings | `/settings` | Authed | — (profile form only; reached from the sidebar profile menu) |
+| 7 | Nutritionists | `/nutritionists` | Authed | [nutritionists.md](./nutritionists.md) |
 
 ## Suggested migration order (Phase 2)
 
-Users → Nutritionists → Programs → Dashboard → Settings → Chat/Plan Workspace (hardest, last). Login pairs with the auth work. Rationale: start with the simplest list+mutation surface to establish the service → MSW → query → hook pattern, finish with the most stateful screen.
+Users → Nutritionists → Programs → Dashboard → Chat/Plan Workspace (hardest, last). Login pairs with the auth work. Rationale: start with the simplest list+mutation surface to establish the service → MSW → query → hook pattern, finish with the most stateful screen.

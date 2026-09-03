@@ -370,7 +370,10 @@ function buildActivityLog(
   return items
 }
 
-function buildConversation(client: Client, index: number): Conversation {
+/** Exported so the chat mock backend can open a thread for a user created
+ *  through "Add User" — `client.status === 'new'` already drives the "just
+ *  signed up" opener below and the conversation list's "New" tab. */
+export function buildConversation(client: Client, index: number): Conversation {
   const seed = (index + 1) * 17.23 + 5
   const status = conversationStatus(client)
 

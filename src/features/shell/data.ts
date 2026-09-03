@@ -55,30 +55,27 @@ export const APP_NOTIFICATIONS: AppNotification[] = [
   },
 ]
 
+// There is one role in this product — every account is a nutritionist with the
+// same full access, so a `role` field would only ever hold one value and is
+// deliberately absent rather than carried around unused.
 export type Profile = {
   name: string
-  role: string
   initials: string
   color: string
   email?: string
   phone?: string
   bio?: string
+  /** Uploaded profile photo as a data URL. When set it replaces the
+   *  initials-on-color avatar everywhere the profile is shown. */
+  photo?: string
 }
 
-export const SWITCH_PROFILES: Profile[] = [
-  {
-    name: 'Sarah Nolan',
-    role: 'Nutritionist',
-    initials: 'SN',
-    color: '#2F5D50',
-  },
-  {
-    name: 'Alex Rivera',
-    role: 'Super Admin',
-    initials: 'AR',
-    color: '#7A5AA8',
-  },
-]
+export const DEFAULT_PROFILE: Profile = {
+  name: 'Sarah Nolan',
+  initials: 'SN',
+  color: '#2F5D50',
+  email: 'sarah@nourishwithsim.com',
+}
 
 export function minutesAgoLabel(mins: number): string {
   if (mins < 60) return `${mins}m ago`

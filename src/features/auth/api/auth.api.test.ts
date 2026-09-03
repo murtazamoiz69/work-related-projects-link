@@ -10,17 +10,17 @@ describe('auth.api', () => {
       rememberMe: true,
     })
     expect(res.token).toBeTruthy()
-    expect(res.user.role).toBe('Nutritionist')
+    expect(res.user.name).toBe('Sarah Nolan')
     expect(res.user.email).toBe('sarah@nourishwithsim.com')
   })
 
-  it('logs in the super-admin account', async () => {
+  it('logs in the second demo account', async () => {
     const res = await login({
       email: 'alex@nourishwithsim.com',
       password: 'x',
       rememberMe: false,
     })
-    expect(res.user.role).toBe('Super Admin')
+    expect(res.user.email).toBe('alex@nourishwithsim.com')
   })
 
   it('rejects an unknown email with 401', async () => {

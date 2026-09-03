@@ -44,6 +44,20 @@ function PlanExpiryCell({ client }: { client: Client }) {
   )
 }
 
+/** Which nutritionist carries this user. Assigned by the backend when the user
+ *  is added, balanced across the team — nothing here picks it. Em dash when no
+ *  one could take them, which only happens if every nutritionist is disabled. */
+function AssignedCell({ client }: { client: Client }) {
+  const assigned = client.assignedNutritionist
+  if (!assigned) return <span className="ct-muted">—</span>
+  return (
+    <div className="ct-assigned">
+      <Avatar initials={assigned.initials} color={assigned.color} size="xs" />
+      <span className="ct-assigned-name">{assigned.name}</span>
+    </div>
+  )
+}
+
 export function ClientTableRow({
   client,
   onOpenChat,
@@ -78,6 +92,9 @@ export function ClientTableRow({
         >
           {client.accessEnabled ? 'Active' : 'Disabled'}
         </span>
+      </td>
+      <td>
+        <AssignedCell client={client} />
       </td>
       <td>
         <PlanExpiryCell client={client} />

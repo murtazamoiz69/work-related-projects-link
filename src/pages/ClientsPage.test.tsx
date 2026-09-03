@@ -304,6 +304,13 @@ describe('ClientsPage — edge cases', () => {
       name: `Zoë 🚀 <script>alert(1)</script> ${'x'.repeat(120)}`,
       adherence: null,
       checkInDays: null,
+      // Assigned, so the only em dash on the row is the progress cell's.
+      assignedNutritionist: {
+        id: 'nut-1',
+        name: 'Dr. Priya Sharma',
+        initials: 'PS',
+        color: '#2F5D50',
+      },
     }
     server.use(
       http.get(CLIENTS, () =>

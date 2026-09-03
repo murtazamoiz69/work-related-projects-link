@@ -18,6 +18,9 @@ import {
 import { ClientTableRow } from '@/features/clients/components/ClientRosterViews'
 import { UserSummaryCards } from '@/features/clients/components/UserSummaryCards'
 import { ExtendProgramModal } from '@/features/clients/components/ExtendProgramModal'
+import { AddUserChoiceModal } from '@/features/clients/components/AddUserChoiceModal'
+import { ClientFormModal } from '@/features/clients/components/ClientFormModal'
+import { BulkUploadModal } from '@/features/clients/components/BulkUploadModal'
 
 const PAGE_SIZE = 12
 
@@ -31,6 +34,9 @@ function SkeletonRows() {
           </td>
           <td>
             <span className="skel skel-narrow" />
+          </td>
+          <td>
+            <span className="skel" />
           </td>
           <td>
             <span className="skel" />
@@ -59,6 +65,11 @@ export function ClientsPage({ search }: { search: ClientsSearch }) {
   const [searchInput, setSearchInput] = useState(q)
   const [toggleTarget, setToggleTarget] = useState<Client | null>(null)
   const [extendTarget, setExtendTarget] = useState<Client | null>(null)
+
+  // "Add User" is a two-step flow: the chooser, then whichever path was picked.
+  const [addStep, setAddStep] = useState<
+    'choice' | 'individual' | 'bulk' | null
+  >(null)
 
   // Keep the input in sync when the URL q changes from outside (back/forward,
   // Clear filters).
@@ -156,6 +167,12 @@ export function ClientsPage({ search }: { search: ClientsSearch }) {
       <Topbar
         title="Users"
         subtitle="Manage users, program access and status."
+        actions={
+          <button className="btn-primary" onClick={() => setAddStep('choice')}>
+            <Icon name="plus" />
+            Add User
+          </button>
+        }
       />
       <main className="content">
         <UserSummaryCards
@@ -252,16 +269,18 @@ export function ClientsPage({ search }: { search: ClientsSearch }) {
             >
               <table className="client-table user-table">
                 <colgroup>
-                  <col style={{ width: '19.5%' }} />
-                  <col style={{ width: '19.5%' }} />
-                  <col style={{ width: '19.5%' }} />
-                  <col style={{ width: '19.5%' }} />
+                  <col style={{ width: '21%' }} />
+                  <col style={{ width: '10%' }} />
+                  <col style={{ width: '19%' }} />
+                  <col style={{ width: '17%' }} />
+                  <col style={{ width: '15%' }} />
                   <col style={{ width: '230px' }} />
                 </colgroup>
                 <thead>
                   <tr>
                     <th>User</th>
                     <th>Status</th>
+                    <th>Assigned to</th>
                     <th>Plan expiry</th>
                     <th>Progress</th>
                     <th>Actions</th>
@@ -320,6 +339,22 @@ export function ClientsPage({ search }: { search: ClientsSearch }) {
           client={extendTarget}
           onClose={() => setExtendTarget(null)}
         />
+      ) : null}
+
+      {addStep === 'choice' ? (
+        <AddUserChoiceModal
+          onClose={() => setAddStep(null)}
+          onChooseIndividual={() => setAddStep('individual')}
+          onChooseBulk={() => setAddStep('bulk')}
+        />
+      ) : null}
+
+      {addStep === 'individual' ? (
+        <ClientFormModal onClose={() => setAddStep(null)} />
+      ) : null}
+
+      {addStep === 'bulk' ? (
+        <BulkUploadModal onClose={() => setAddStep(null)} />
       ) : null}
 
       {toggleTarget ? (

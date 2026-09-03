@@ -1,7 +1,7 @@
 // Behavior tests for the Nutritionists admin page (Super-Admin only). Covers
 // rendering states, interactions, the API state matrix, the role guard, an
 // edge-case dataset, and accessibility. Routing is faked via useNavigate; the
-// stateful mock is reset per test; the auth store is set to a Super Admin so
+// stateful mock is reset per test; the auth store is signed in so
 // the page renders.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { http, HttpResponse } from 'msw'
@@ -36,9 +36,8 @@ vi.mock('@/lib/toast', () => ({
 }))
 import { showToast } from '@/lib/toast'
 
-const SUPER_ADMIN = {
+const PROFILE = {
   name: 'Alex Rivera',
-  role: 'Super Admin',
   initials: 'AR',
   color: '#7A5AA8',
   email: 'alex@nourishwithsim.com',
@@ -63,7 +62,7 @@ beforeEach(() => {
   navigateSpy.mockClear()
   vi.mocked(showToast).mockClear()
   resetNutritionistStore()
-  useAuthStore.setState({ isAuthenticated: true, activeProfile: SUPER_ADMIN })
+  useAuthStore.setState({ isAuthenticated: true, activeProfile: PROFILE })
 })
 afterEach(() => server.resetHandlers())
 
@@ -97,16 +96,15 @@ describe('NutritionistsPage — rendering', () => {
   })
 })
 
-describe('NutritionistsPage — role guard', () => {
-  it('renders nothing and redirects when the user is not a Super Admin', () => {
-    useAuthStore.setState({
-      activeProfile: { ...SUPER_ADMIN, role: 'Nutritionist' },
-    })
+describe('NutritionistsPage — access', () => {
+  // One role: managing other nutritionists is part of every account, so the
+  // page renders for any signed-in user with no redirect.
+  it('renders the roster for any signed-in nutritionist', async () => {
     renderPage()
     expect(
-      screen.queryByRole('heading', { name: 'Nutritionist Roster' }),
-    ).not.toBeInTheDocument()
-    expect(navigateSpy).toHaveBeenCalledWith({ to: '/' })
+      await screen.findByRole('heading', { name: 'Nutritionist Roster' }),
+    ).toBeInTheDocument()
+    expect(navigateSpy).not.toHaveBeenCalledWith({ to: '/' })
   })
 })
 

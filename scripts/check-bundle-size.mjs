@@ -9,11 +9,17 @@ import { join } from 'node:path'
 
 const ASSETS_DIR = 'dist/assets'
 
-// Generous headroom over today's sizes (entry ~150 KB gz, total ~280 KB gz);
+// Generous headroom over today's sizes (entry ~158 KB gz, total ~419 KB gz);
 // tighten as the app is optimised.
+//
+// `totalKb` counts every chunk, eager or lazy, so it can't tell "the app got
+// heavier" from "a rarely-used feature was correctly split out". The bulk-user
+// importer's spreadsheet parser (xlsx, ~140 KB gz) is the latter: it loads only
+// when someone picks a file, and it alone accounts for a third of the total.
+// Entry size is the number that reflects what every visitor actually pays.
 const BUDGET = {
   entryKb: 200, // the largest single chunk (the app entry)
-  totalKb: 420, // all JS chunks combined
+  totalKb: 480, // all JS chunks combined, including on-demand ones
 }
 
 const gzKb = (buf) => gzipSync(buf).length / 1024

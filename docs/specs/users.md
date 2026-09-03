@@ -7,20 +7,23 @@
 The caseload roster. Lets the nutritionist find any user, see status / program access / plan expiry / progress at a glance, and act — message them, manage their plan, extend their program, or enable/disable access.
 
 ## User Role
-Authenticated (Nutritionist + Super Admin).
+Authenticated.
 
 ## UI Sections
-- Topbar (title + subtitle).
+- Topbar (title + subtitle + **Add User** button).
 - **Summary cards** (counts by status/expiry).
 - **Toolbar**: search box + status filter + plan-expiry filter.
-- **Roster table**: User / Status / Plan expiry / Progress / Actions.
+- **Roster table**: User / Status / Assigned to / Plan expiry / Progress / Actions.
 - **Pagination** (page info + prev/next).
-- Modals: **Extend Program**, **Enable/Disable confirm**.
+- Modals: **Add User** (chooser → individual form *or* bulk upload),
+  **Extend Program**, **Enable/Disable confirm**.
 
 ## Components
-`UserSummaryCards`, `ClientTableRow` (from `ClientRosterViews`), `ExtendProgramModal`, `ConfirmDialog`, `Topbar`, `Icon`, `Avatar`, `Badge`, `WeekDots`.
+`UserSummaryCards`, `ClientTableRow` (from `ClientRosterViews`), `ExtendProgramModal`, `AddUserChoiceModal`, `ClientFormModal`, `BulkUploadModal`, `ConfirmDialog`, `Topbar`, `Icon`, `Avatar`, `Badge`, `WeekDots`.
 
 ## User Actions
+- **Add User** → chooser modal → **Add individually** (form) or **Bulk upload**
+  (Excel/CSV → per-row preview → import only the valid rows).
 - **Search** by name / email (and program/diet/goals — current haystack).
 - **Filter** by status (all / active / disabled) and by expiry (all / expiring-soon / expired / active).
 - **Sort** — implicit: soonest-expiring first (could become a user-controlled sort).
@@ -34,7 +37,7 @@ Authenticated (Nutritionist + Super Admin).
 
 ## Data Requirements
 **Server Data**
-- Clients list: `id, name, initials, color, age, gender, email, program, plan, status, accessEnabled, expiryDate, adherence, checkInDays, joinDate, goals[], diet`.
+- Clients list: `id, name, initials, color, age, gender, email, program, plan, status, accessEnabled, expiryDate, adherence, checkInDays, joinDate, goals[], diet, assignedNutritionist`.
 - Summary counts (total / active / disabled / expiring / expired).
 
 **Client State**
@@ -55,6 +58,14 @@ Authenticated (Nutritionist + Super Admin).
    - Body: `{ "enabled": boolean }` → Response: updated `Client`.
 4. `PATCH` `/clients/:id/expiry` (extend) `PROPOSED`
    - Body: `{ "expiryDate": string /* ISO */ }` → Response: updated `Client`.
+5. `GET` `/clients/programs` `PROPOSED`
+   - Response: `{ programs: string[] }` — the plans Add User may assign.
+6. `POST` `/clients` `PROPOSED`
+   - Body: `{ name, email, phone, program, weeks }` → Response `201`: created `Client`.
+   - `422` carries `fields` keyed by request field (duplicate email included).
+7. `POST` `/clients/bulk` `PROPOSED`
+   - Body: `{ users: CreateClientBody[], dryRun?: boolean }` → Response: `{ created: Client[], skipped: { row, reasons[] }[] }`.
+   - `dryRun` validates without persisting — it is what the importer's preview table renders.
    - Errors (all): `401`, `403`, `404`, `422`, `500`, network. Mutations invalidate `['clients']` + `['clients','summary']`.
 
 ## Forms
@@ -70,6 +81,25 @@ Authenticated (Nutritionist + Super Admin).
 
 **Enable/Disable confirm** — not a form; a `ConfirmDialog` gating the access mutation (destructive styling when disabling).
 
+**Add User → Add individually** (`addClient.schema.ts`)
+
+| Field | Type | Req | Validation | Notes |
+| --- | --- | --- | --- | --- |
+| name | text | ✅ | non-blank | |
+| email | email | ✅ | valid address; **not already in use** (server-checked) | duplicate comes back as a field error |
+| phone | tel | ✅ | non-blank | |
+| program | select | ✅ | one of `GET /clients/programs` | |
+| weeks | number | ✅ | integer 1–104, default 12 | sets `expiryDate` |
+
+- **Submit:** `POST /clients`; **Success:** toast, close, roster + summary refetch. The backend assigns the user to the least-loaded nutritionist; the roster's **Assigned to** column shows who.
+- **Error:** `fields` map onto the inputs; anything unmapped toasts. Modal stays open.
+
+**Add User → Bulk upload** — not a form. Accepts `.xlsx` / `.xls` / `.csv`, parsed
+client-side (headers are alias-matched, so "Plan" / "Plan Name" / "Program" all
+resolve). The parsed rows go to `POST /clients/bulk` with `dryRun` to build the
+preview table (valid / needs-attention per row, with reasons), then again to
+commit. Only valid rows import; the rest are listed, never silently dropped.
+
 ## Loading States
 Roster table skeleton rows; summary-card skeletons. Keep the toolbar interactive during load.
 
@@ -82,7 +112,7 @@ Roster table skeleton rows; summary-card skeletons. Keep the toolbar interactive
 - Mutation failure → toast + revert optimistic change; dialog/modal stays actionable.
 
 ## Permissions
-Authenticated. (If per-nutritionist scoping is added later, the list is filtered server-side to the caller's assigned users; Super Admin sees all.)
+Authenticated — every nutritionist sees the whole roster. (If per-nutritionist scoping is added later, the list would be filtered server-side to the caller's own assigned users.)
 
 ## Performance Considerations
 - **Pagination** already present (client-side, `PAGE_SIZE = 12`); move to **server-side pagination** with the API.
@@ -123,3 +153,10 @@ Authenticated. (If per-nutritionist scoping is added later, the list is filtered
 - "Open chat" and "Manage" navigate with the correct `?c=` (and `?plan=1` for Manage).
 - No results shows the empty state with a working "Clear all filters".
 - A failed list load shows a retry; a failed mutation reverts and notifies.
+- "Add User" opens the chooser; "Add individually" creates one user who then
+  appears in the roster (status **New**, no progress data yet) with a toast.
+- A duplicate email is rejected inline on the email field, not as a toast.
+- Bulk upload previews every row with its verdict before importing, imports only
+  the valid ones, and reports how many were skipped.
+- Every added user shows a nutritionist in **Assigned to**, and a bulk import
+  spreads across the team rather than stacking onto one person.
