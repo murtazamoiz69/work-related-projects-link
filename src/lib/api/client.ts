@@ -112,3 +112,15 @@ export async function del<T>(url: string, config?: RequestConfig): Promise<T> {
   })
   return res.data
 }
+
+/** multipart/form-data POST for file uploads. `postForm` lets axios/the browser
+ *  set the Content-Type with its boundary (overriding the JSON default), which a
+ *  plain `post(body: FormData)` would not. */
+export async function upload<T>(
+  url: string,
+  form: FormData,
+  config?: RequestConfig,
+): Promise<T> {
+  const res = await instance.postForm<T>(url, form, toAxiosConfig(config))
+  return res.data
+}

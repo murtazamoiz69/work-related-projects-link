@@ -1,10 +1,11 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate } from '@tanstack/react-router'
 import { Avatar } from '@/components/atoms/Avatar'
 import { Icon } from '@/components/atoms/Icon'
 import { Topbar } from '@/components/organisms/Topbar'
+import { apiErrorMessage } from '@/lib/api/errors'
 import { showToast } from '@/lib/toast'
 import { getInitials } from '@/lib/utils'
 import { useAuthStore } from '@/store/useAuthStore'
@@ -12,12 +13,18 @@ import {
   profileSchema,
   type ProfileForm,
 } from '@/features/shell/schemas/profile.schema'
-import { readProfilePhoto } from '@/features/shell/profilePhoto'
+import {
+  useStaffProfileQuery,
+  useUpdateStaffProfile,
+  useUploadProfileImage,
+} from '@/features/settings'
 
 // =====================================================================
-// Settings — one section. Profile edits the active session profile (auth
-// store, shared with the app-shell chip); it stays there until the auth phase
-// owns /me/profile. Log Out is the only other entry.
+// Settings — one section. Profile is loaded from and saved to the backend
+// (GET/PUT /me/settings/profile); the photo is uploaded to /uploads and the
+// returned key is persisted with the profile. On save the app-shell chip (auth
+// store) is synced so the avatar/name update everywhere. Log Out is the only
+// other entry.
 // =====================================================================
 
 /** Brief "Saved" pill next to the save button. */
@@ -36,9 +43,14 @@ export function SettingsPage() {
   const updateProfile = useAuthStore((s) => s.updateProfile)
   const logout = useAuthStore((s) => s.logout)
 
-  // The photo isn't a form field — it's picked through a file dialog and held
-  // here until Save Changes commits it alongside the text fields.
-  const [photo, setPhoto] = useState(activeProfile.photo)
+  const profileQuery = useStaffProfileQuery()
+  const updateMut = useUpdateStaffProfile()
+  const uploadMut = useUploadProfileImage()
+
+  // The photo isn't a form field — it's picked through a file dialog, uploaded,
+  // and held here (url for preview, key for the save) until Save commits it.
+  const [photo, setPhoto] = useState<string | undefined>(undefined)
+  const [photoKey, setPhotoKey] = useState<string | null>(null)
   const [photoError, setPhotoError] = useState<string | null>(null)
   const photoInputRef = useRef<HTMLInputElement>(null)
 
@@ -49,16 +61,26 @@ export function SettingsPage() {
     register,
     handleSubmit,
     watch,
+    reset,
     formState: { errors },
   } = useForm<ProfileForm>({
     resolver: zodResolver(profileSchema),
-    defaultValues: {
-      name: activeProfile.name,
-      email: activeProfile.email ?? '',
-      phone: activeProfile.phone ?? '',
-      bio: activeProfile.bio ?? '',
-    },
+    defaultValues: { name: '', email: '', phone: '', bio: '' },
   })
+
+  // Seed the form + photo once the profile loads (and if it refetches).
+  const profile = profileQuery.data
+  useEffect(() => {
+    if (!profile) return
+    reset({
+      name: profile.name,
+      email: profile.email,
+      phone: profile.phone ?? '',
+      bio: profile.bio ?? '',
+    })
+    setPhoto(profile.profileImageUrl ?? undefined)
+    setPhotoKey(profile.profileImageKey ?? null)
+  }, [profile, reset])
 
   // Preview the avatar against what's typed right now, so the initials update
   // as the name does rather than only after saving.
@@ -67,29 +89,46 @@ export function SettingsPage() {
   const pickPhoto = async (file: File) => {
     setPhotoError(null)
     try {
-      setPhoto(await readProfilePhoto(file))
+      const uploaded = await uploadMut.mutateAsync(file)
+      setPhoto(uploaded.url)
+      setPhotoKey(uploaded.key)
     } catch (error) {
-      setPhotoError(
-        error instanceof Error ? error.message : 'Could not read that image.',
-      )
+      setPhotoError(apiErrorMessage(error))
     }
   }
 
   const onSubmit = (values: ProfileForm) => {
-    updateProfile({
-      ...activeProfile,
-      name: values.name,
-      email: values.email,
-      phone: values.phone,
-      bio: values.bio,
-      initials: getInitials(values.name, '??'),
-      photo,
-    })
-    setSaved(false)
-    requestAnimationFrame(() => setSaved(true))
-    clearTimeout(savedTimer.current)
-    savedTimer.current = setTimeout(() => setSaved(false), 1800)
-    showToast('Profile updated')
+    updateMut.mutate(
+      {
+        name: values.name,
+        email: values.email,
+        phone: values.phone.trim() || null,
+        bio: values.bio.trim() || null,
+        profileImageKey: photoKey,
+        profileImageUrl: photo ?? null,
+      },
+      {
+        onSuccess: (updated) => {
+          // Sync the app-shell chip (name / initials / avatar) from the server's
+          // canonical response.
+          updateProfile({
+            ...activeProfile,
+            name: updated.name,
+            email: updated.email,
+            phone: updated.phone ?? undefined,
+            bio: updated.bio ?? undefined,
+            initials: updated.initials,
+            color: updated.color,
+            photo: updated.profileImageUrl ?? undefined,
+          })
+          setSaved(false)
+          requestAnimationFrame(() => setSaved(true))
+          clearTimeout(savedTimer.current)
+          savedTimer.current = setTimeout(() => setSaved(false), 1800)
+          showToast('Profile updated')
+        },
+      },
+    )
   }
 
   const handleLogout = () => {
@@ -128,117 +167,148 @@ export function SettingsPage() {
                 </div>
               </div>
 
-              <div className="settings-avatar-row">
-                <Avatar
-                  initials={getInitials(typedName, '??')}
-                  color={activeProfile.color}
-                  photo={photo}
-                  alt={activeProfile.name}
-                  size="lg"
-                />
-                <div className="settings-avatar-actions">
-                  <button
-                    type="button"
-                    className="btn-secondary"
-                    onClick={() => photoInputRef.current?.click()}
-                  >
-                    <Icon name="upload" />
-                    {photo ? 'Change photo' : 'Upload photo'}
-                  </button>
-                  {photo ? (
-                    <button
-                      type="button"
-                      className="link-btn"
-                      onClick={() => {
-                        setPhoto(undefined)
-                        setPhotoError(null)
-                        if (photoInputRef.current)
-                          photoInputRef.current.value = ''
-                      }}
-                    >
-                      Remove
-                    </button>
-                  ) : null}
-                  <p className="settings-hint">JPG, PNG or WebP, up to 5 MB.</p>
-                  {photoError ? (
-                    <span className="settings-hint is-error" role="alert">
-                      {photoError}
-                    </span>
-                  ) : null}
-                  <input
-                    ref={photoInputRef}
-                    type="file"
-                    accept="image/png,image/jpeg,image/webp"
-                    hidden
-                    onChange={(e) => {
-                      const file = e.target.files?.[0]
-                      if (file) void pickPhoto(file)
-                    }}
-                  />
+              {profileQuery.isPending ? (
+                <div className="diet-sheet-loading" aria-busy="true">
+                  <span className="skel skel-wide" />
+                  <span className="skel" />
+                  <span className="skel" />
+                  <span className="skel skel-narrow" />
                 </div>
-              </div>
+              ) : profileQuery.isError ? (
+                <div className="clients-empty is-error" role="alert">
+                  <Icon name="alert-triangle" />
+                  <p>{apiErrorMessage(profileQuery.error)}</p>
+                  <button
+                    className="link-btn clients-empty-retry"
+                    onClick={() => profileQuery.refetch()}
+                  >
+                    Try again
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div className="settings-avatar-row">
+                    <Avatar
+                      initials={getInitials(typedName, '??')}
+                      color={activeProfile.color}
+                      photo={photo}
+                      alt={typedName || activeProfile.name}
+                      size="lg"
+                    />
+                    <div className="settings-avatar-actions">
+                      <button
+                        type="button"
+                        className="btn-secondary"
+                        disabled={uploadMut.isPending}
+                        onClick={() => photoInputRef.current?.click()}
+                      >
+                        <Icon name="upload" />
+                        {uploadMut.isPending
+                          ? 'Uploading…'
+                          : photo
+                            ? 'Change photo'
+                            : 'Upload photo'}
+                      </button>
+                      {photo ? (
+                        <button
+                          type="button"
+                          className="link-btn"
+                          onClick={() => {
+                            setPhoto(undefined)
+                            setPhotoKey(null)
+                            setPhotoError(null)
+                            if (photoInputRef.current)
+                              photoInputRef.current.value = ''
+                          }}
+                        >
+                          Remove
+                        </button>
+                      ) : null}
+                      <p className="settings-hint">
+                        JPG, PNG or WebP, up to 5 MB.
+                      </p>
+                      {photoError ? (
+                        <span className="settings-hint is-error" role="alert">
+                          {photoError}
+                        </span>
+                      ) : null}
+                      <input
+                        ref={photoInputRef}
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp"
+                        hidden
+                        onChange={(e) => {
+                          const file = e.target.files?.[0]
+                          if (file) void pickPhoto(file)
+                        }}
+                      />
+                    </div>
+                  </div>
 
-              <div className="modal-field-row">
-                <label className="modal-field">
-                  <span>Full Name</span>
-                  <input type="text" {...register('name')} />
-                  {errors.name ? (
-                    <span className="settings-hint is-error" role="alert">
-                      {errors.name.message}
-                    </span>
-                  ) : null}
-                </label>
-                <label className="modal-field">
-                  <span>Email</span>
-                  <input
-                    type="email"
-                    placeholder="sarah@nourishwithsim.com"
-                    {...register('email')}
-                  />
-                  {errors.email ? (
-                    <span className="settings-hint is-error" role="alert">
-                      {errors.email.message}
-                    </span>
-                  ) : null}
-                </label>
-              </div>
-              <label className="modal-field">
-                <span>Phone</span>
-                <input
-                  type="tel"
-                  placeholder="(555) 123-4567"
-                  {...register('phone')}
-                />
-                {errors.phone ? (
-                  <span className="settings-hint is-error" role="alert">
-                    {errors.phone.message}
-                  </span>
-                ) : null}
-              </label>
-              <label className="modal-field">
-                <span>Bio</span>
-                <textarea
-                  className="notes-input"
-                  rows={3}
-                  placeholder="A short bio your users might see…"
-                  {...register('bio')}
-                />
-                {errors.bio ? (
-                  <span className="settings-hint is-error" role="alert">
-                    {errors.bio.message}
-                  </span>
-                ) : null}
-              </label>
+                  <div className="modal-field-row">
+                    <label className="modal-field">
+                      <span>Full Name</span>
+                      <input type="text" {...register('name')} />
+                      {errors.name ? (
+                        <span className="settings-hint is-error" role="alert">
+                          {errors.name.message}
+                        </span>
+                      ) : null}
+                    </label>
+                    <label className="modal-field">
+                      <span>Email</span>
+                      <input
+                        type="email"
+                        placeholder="sarah@nourishwithsim.com"
+                        {...register('email')}
+                      />
+                      {errors.email ? (
+                        <span className="settings-hint is-error" role="alert">
+                          {errors.email.message}
+                        </span>
+                      ) : null}
+                    </label>
+                  </div>
+                  <label className="modal-field">
+                    <span>Phone</span>
+                    <input
+                      type="tel"
+                      placeholder="(555) 123-4567"
+                      {...register('phone')}
+                    />
+                    {errors.phone ? (
+                      <span className="settings-hint is-error" role="alert">
+                        {errors.phone.message}
+                      </span>
+                    ) : null}
+                  </label>
+                  <label className="modal-field">
+                    <span>Bio</span>
+                    <textarea
+                      className="notes-input"
+                      rows={3}
+                      placeholder="A short bio your users might see…"
+                      {...register('bio')}
+                    />
+                    {errors.bio ? (
+                      <span className="settings-hint is-error" role="alert">
+                        {errors.bio.message}
+                      </span>
+                    ) : null}
+                  </label>
 
-              <div className="settings-section-foot">
-                <SavedIndicator show={saved} />
-                <button
-                  className="btn-primary"
-                  onClick={handleSubmit(onSubmit)}
-                >
-                  Save Changes
-                </button>
-              </div>
+                  <div className="settings-section-foot">
+                    <SavedIndicator show={saved} />
+                    <button
+                      className="btn-primary"
+                      disabled={updateMut.isPending}
+                      onClick={handleSubmit(onSubmit)}
+                    >
+                      {updateMut.isPending ? 'Saving…' : 'Save Changes'}
+                    </button>
+                  </div>
+                </>
+              )}
             </section>
           </div>
         </div>
