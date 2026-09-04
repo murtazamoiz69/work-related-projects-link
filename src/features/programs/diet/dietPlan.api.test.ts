@@ -38,11 +38,13 @@ describe('diet plan api', () => {
       expect(high.body).toContain('2000 kcal')
     })
 
-    it('ships only week 1 authored — the rest start blank', async () => {
+    it('ships the first half of the weeks authored — the rest start blank', async () => {
       for (const band of CALORIE_BANDS) {
-        expect((await getMasterSheet(1, band)).body).not.toBe('')
+        for (const week of [1, 2, 3]) {
+          expect((await getMasterSheet(week, band)).body).not.toBe('')
+        }
       }
-      for (const week of [2, 3, 4, 5, 6]) {
+      for (const week of [4, 5, 6]) {
         expect((await getMasterSheet(week, 1600)).body).toBe('')
       }
     })
