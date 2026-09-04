@@ -235,8 +235,14 @@
   top: 0;
   z-index: 5;
   background: var(--surface);
-  padding-top: 2px;
-  padding-bottom: 10px;
+  /* Keep the horizontal day scroll (.prog-week-rail's overflow-x:auto), but that
+     forces overflow-y:auto, which collapsed the row and clipped the taller day
+     chips once the bar had a background. A min-height taller than a chip keeps
+     the chips inside the scroll viewport so they're never vertically clipped. */
+  min-height: 58px;
+  align-items: center;
+  padding-top: 8px;
+  padding-bottom: 8px;
   margin-bottom: 8px;
   border-bottom: 1px solid var(--border-soft);
 }
