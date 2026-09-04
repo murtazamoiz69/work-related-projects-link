@@ -56,3 +56,91 @@
   align-items: center;
   justify-content: center;
 }
+
+/* ---- Diet plan: calorie band as the top-tier tab row ---- */
+/* The band was a "Meal Category" dropdown tucked in the panel head; it is now
+   the top tier of the diet plan — band, then week, then the sheet — shown as
+   tabs (matching the Week chip language, .pw-week-chip). */
+.diet-band-rail {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.diet-band-rail-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.diet-band-tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  overflow-x: auto;
+}
+.diet-band-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: var(--r-sm);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-soft);
+  background: var(--surface);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.diet-band-tab small {
+  font-weight: 600;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.diet-band-tab:hover {
+  border-color: var(--border);
+  background: var(--surface-alt);
+}
+/* Selected band — solid fill, same active treatment as the Week chip. */
+.diet-band-tab.active {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: #fff;
+}
+.diet-band-tab.active small {
+  color: #cfe1d9;
+}
+.diet-band-tab:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+/* Client tab only: picking a different band is a staged, destructive change
+   (it re-derives all the user's weeks), so the pending pick reads as dashed-
+   outline "not committed yet" until Save changes, and the committed band keeps
+   a "current" marker so the nutritionist sees where Cancel would land. */
+.diet-band-tab.pending {
+  border-style: dashed;
+  border-color: var(--primary);
+  background: var(--primary-light);
+  color: var(--primary-dark);
+}
+.diet-band-tab.pending small {
+  color: var(--primary-dark);
+}
+.diet-band-tab .band-current {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--primary);
+  background: var(--primary-light);
+  border-radius: 999px;
+  padding: 1px 6px;
+}
+.diet-band-rail .diet-band-save {
+  margin-left: 4px;
+}

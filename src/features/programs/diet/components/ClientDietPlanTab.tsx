@@ -89,6 +89,55 @@ export function ClientDietPlanTab({
 
   return (
     <>
+      {/* Top tier: the user's calorie band. Unlike the global tab, picking a
+          different band here is a staged, destructive change — the tab reads as
+          pending (dashed) and the committed band keeps a "current" marker until
+          Save changes re-derives every week. */}
+      <div className="diet-band-rail">
+        <span className="diet-band-rail-label">Meal category</span>
+        <div
+          className="diet-band-tabs"
+          role="tablist"
+          aria-label="Meal category"
+        >
+          {CALORIE_BANDS.map((b) => {
+            const isSelected = b === selectedBand
+            const isCurrent = b === currentBand
+            return (
+              <button
+                key={b}
+                role="tab"
+                aria-selected={isSelected}
+                disabled={updateBand.isPending}
+                className={`diet-band-tab${isSelected ? ' active' : ''}${
+                  isSelected && bandChanged ? ' pending' : ''
+                }`}
+                onClick={() => setPendingBand(b === currentBand ? null : b)}
+              >
+                {b} <small>kcal</small>
+                {isCurrent && bandChanged ? (
+                  <span className="band-current">current</span>
+                ) : null}
+              </button>
+            )
+          })}
+        </div>
+        {bandChanged ? (
+          <button
+            className="btn-primary diet-band-save"
+            disabled={updateBand.isPending}
+            onClick={() =>
+              updateBand.mutate(selectedBand, {
+                onSuccess: () => setPendingBand(null),
+              })
+            }
+          >
+            <Icon name="check" />
+            {updateBand.isPending ? 'Saving…' : 'Save changes'}
+          </button>
+        ) : null}
+      </div>
+
       <div className="pw-week-rail">
         {Array.from({ length: totalWeeks }, (_, i) => i + 1).map((w) => (
           <button
@@ -113,40 +162,6 @@ export function ClientDietPlanTab({
           </div>
 
           <div className="diet-sheet-actions">
-            <label className="diet-band-picker">
-              <span className="diet-band-label">Meal Category</span>
-              <select
-                className="select-range"
-                aria-label="Meal category"
-                value={selectedBand}
-                disabled={updateBand.isPending}
-                onChange={(e) =>
-                  setPendingBand(Number(e.target.value) as CalorieBand)
-                }
-              >
-                {CALORIE_BANDS.map((b) => (
-                  <option key={b} value={b}>
-                    {b} kcal
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            {bandChanged ? (
-              <button
-                className="btn-primary diet-band-save"
-                disabled={updateBand.isPending}
-                onClick={() =>
-                  updateBand.mutate(selectedBand, {
-                    onSuccess: () => setPendingBand(null),
-                  })
-                }
-              >
-                <Icon name="check" />
-                {updateBand.isPending ? 'Saving…' : 'Save changes'}
-              </button>
-            ) : null}
-
             <span
               className={`settings-saved-indicator${saved ? ' show' : ''}`}
               aria-live="polite"

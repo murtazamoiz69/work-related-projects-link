@@ -80,6 +80,29 @@ export function DietPlanTab({
 
   return (
     <>
+      {/* Top tier: the calorie band. Pick the band, then the week, then author
+          the sheet — band drives which master sheet the weeks below belong to. */}
+      <div className="diet-band-rail">
+        <span className="diet-band-rail-label">Calorie band</span>
+        <div
+          className="diet-band-tabs"
+          role="tablist"
+          aria-label="Calorie band"
+        >
+          {CALORIE_BANDS.map((b) => (
+            <button
+              key={b}
+              role="tab"
+              aria-selected={b === band}
+              className={`diet-band-tab${b === band ? ' active' : ''}`}
+              onClick={() => setBand(b)}
+            >
+              {b} <small>kcal</small>
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="prog-week-rail">
         {Array.from({ length: totalWeeks }, (_, i) => i + 1).map((w) => (
           <button
@@ -103,22 +126,6 @@ export function DietPlanTab({
           </div>
 
           <div className="diet-sheet-actions">
-            <label className="diet-band-picker">
-              <span className="diet-band-label">Meal Category</span>
-              <select
-                className="select-range"
-                aria-label="Meal category"
-                value={band}
-                onChange={(e) => setBand(Number(e.target.value) as CalorieBand)}
-              >
-                {CALORIE_BANDS.map((b) => (
-                  <option key={b} value={b}>
-                    {b} kcal
-                  </option>
-                ))}
-              </select>
-            </label>
-
             <span
               className={`settings-saved-indicator${saved ? ' show' : ''}`}
               aria-live="polite"

@@ -71,10 +71,7 @@ describe('DietPlanTab autosave', () => {
     await screen.findByLabelText(/Week 1 diet plan/, undefined, EDITOR)
     writes.length = 0
 
-    await user.selectOptions(
-      screen.getByLabelText('Meal category'),
-      screen.getByRole('option', { name: '1200 kcal' }),
-    )
+    await user.click(screen.getByRole('tab', { name: /1200/ }))
     await screen.findByLabelText(/1200 kcal/, undefined, EDITOR)
     await new Promise((r) => setTimeout(r, 1400))
     expect(writes).toHaveLength(0)
