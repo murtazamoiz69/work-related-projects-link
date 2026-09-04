@@ -225,6 +225,21 @@
 .wp-day-rail {
   align-items: center;
 }
+/* Keep the Day tabs reachable when a session runs long: inside the Plan
+   Workspace (the user-side tab) the panel scrolls, and a tall editor used to
+   push the day rail out of view. Pin it to the top of that scroll area so the
+   days stay switchable while the session scrolls under them. Scoped to the
+   workspace, where the rail sits on the overlay's white background. */
+.pw-panel-scroll .wp-day-rail {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--surface);
+  padding-top: 2px;
+  padding-bottom: 10px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--border-soft);
+}
 .wp-add-day {
   display: inline-flex;
   align-items: center;
