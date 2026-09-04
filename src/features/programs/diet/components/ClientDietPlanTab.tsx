@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Icon } from '@/components/atoms/Icon'
 import { LazyRichTextEditor } from '@/components/molecules/LazyRichTextEditor'
 import { apiErrorMessage } from '@/lib/api/errors'
@@ -6,18 +6,17 @@ import { formatFullDate, type Client } from '@/features/clients'
 import { CALORIE_BANDS, type CalorieBand } from '../dietPlan.types'
 import {
   useClientDietPlanQuery,
-  useSaveClientDietPlan,
+  useSaveClientDietPlanToWeeks,
   useUpdateClientBand,
   useUpdateClientReview,
 } from '../useDietPlan'
+import { SaveToWeeksModal } from './SaveToWeeksModal'
 
-const AUTOSAVE_MS = 900
-
-/** One user's diet plan for a week — the master sheet for their calorie band,
- *  narrowed by their onboarding answers. Same shape as the global tab on
- *  purpose: a nutritionist moving between the two shouldn't have to relearn
- *  anything. What's added here is the band control and the filters that were
- *  applied, so the tailoring is visible rather than magic. */
+/** One user's diet plan for a week — the master sheet for their category
+ *  (calorie band), narrowed by their onboarding answers. Same shape as the
+ *  global tab on purpose: a nutritionist moving between the two shouldn't have
+ *  to relearn anything. What's added here is the category control, the filters
+ *  that were applied, and the review sign-off. */
 export function ClientDietPlanTab({
   client,
   totalWeeks,
@@ -30,53 +29,26 @@ export function ClientDietPlanTab({
   setActiveWeek: (n: number) => void
 }) {
   const planQuery = useClientDietPlanQuery(client.id, activeWeek)
-  const savePlan = useSaveClientDietPlan(client.id)
+  const saveToWeeks = useSaveClientDietPlanToWeeks(client.id)
   const updateBand = useUpdateClientBand(client.id)
   const updateReview = useUpdateClientReview(client.id)
 
-  // The meal category is a staged edit, not a live one: moving a user between
+  const [saveOpen, setSaveOpen] = useState(false)
+
+  // The category is a staged edit, not a live one: moving a user between
   // categories swaps the master sheet under all six of their weeks and drops
-  // anything hand-written for them, which is too much to happen on the way
-  // past a dropdown. The select holds a pending value until Save changes.
+  // anything hand-written for them, which is too much to happen on the way past
+  // a tab. The pick is held until Save changes commits it.
   const [pendingBand, setPendingBand] = useState<CalorieBand | null>(null)
 
   const [draft, setDraft] = useState('')
-  const [baseline, setBaseline] = useState<string | null>(null)
-  const [saved, setSaved] = useState(false)
-  const savedTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
 
   const plan = planQuery.data
   const planBody = plan?.body
   useEffect(() => {
     if (planBody === undefined) return
     setDraft(planBody)
-    setBaseline(null)
   }, [planBody, activeWeek])
-
-  // Derived rather than flagged — see the note in DietPlanTab. Re-seeding the
-  // editor (new week, or a band change that re-derives the plan) must never
-  // read as a user edit, or it would autosave over the user's plan and mark it
-  // hand-edited when nobody touched it.
-  const needsSave = baseline !== null && draft !== baseline
-  useEffect(() => {
-    if (!needsSave) return
-    const t = setTimeout(() => {
-      savePlan.mutate(
-        { weekNum: activeWeek, body: draft },
-        {
-          onSuccess: () => {
-            setSaved(true)
-            clearTimeout(savedTimer.current)
-            savedTimer.current = setTimeout(() => setSaved(false), 1600)
-          },
-        },
-      )
-    }, AUTOSAVE_MS)
-    return () => clearTimeout(t)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [draft, needsSave, activeWeek])
-
-  useEffect(() => () => clearTimeout(savedTimer.current), [])
 
   const profile = plan?.profile ?? client.dietProfile
   const currentBand = profile?.band ?? 1600
@@ -86,20 +58,17 @@ export function ClientDietPlanTab({
   // client object the surface that opened it happened to hold, and that one
   // doesn't refetch when the sign-off changes.
   const reviewed = plan?.review === 'reviewed'
+  const firstName = client.name.split(' ')[0]
 
   return (
     <>
-      {/* Top tier: the user's calorie band. Unlike the global tab, picking a
-          different band here is a staged, destructive change — the tab reads as
-          pending (dashed) and the committed band keeps a "current" marker until
+      {/* Top tier: the user's category. Unlike the global tab, picking a
+          different category here is a staged, destructive change — the tab reads
+          as pending (dashed) and the committed one keeps a "current" marker until
           Save changes re-derives every week. */}
       <div className="diet-band-rail">
-        <span className="diet-band-rail-label">Meal category</span>
-        <div
-          className="diet-band-tabs"
-          role="tablist"
-          aria-label="Meal category"
-        >
+        <span className="diet-band-rail-label">Category</span>
+        <div className="diet-band-tabs" role="tablist" aria-label="Category">
           {CALORIE_BANDS.map((b) => {
             const isSelected = b === selectedBand
             const isCurrent = b === currentBand
@@ -156,34 +125,22 @@ export function ClientDietPlanTab({
             <h2>Week {activeWeek} diet plan</h2>
             <p className="panel-sub">
               Drawn from the {profile?.band ?? '—'} kcal master sheet and
-              narrowed to {client.name.split(' ')[0]}. Edits here apply to this
-              user only.
+              narrowed to {firstName}. Edits here apply to this user only.
             </p>
-          </div>
-
-          <div className="diet-sheet-actions">
-            <span
-              className={`settings-saved-indicator${saved ? ' show' : ''}`}
-              aria-live="polite"
-            >
-              <Icon name="check" />
-              Saved
-            </span>
           </div>
         </div>
 
         {bandChanged ? (
           <p className="diet-band-pending-note" role="status">
             <Icon name="alert-triangle" />
-            Moving {client.name.split(' ')[0]} to the {selectedBand} kcal
-            category re-derives all {totalWeeks} weeks from that master sheet
-            and drops anything edited for them here. Nothing changes until you
-            save.
+            Moving {firstName} to the {selectedBand} kcal category re-derives
+            all {totalWeeks} weeks from that master sheet and drops anything
+            edited for them here. Nothing changes until you save.
           </p>
         ) : null}
 
         <ReviewBar
-          firstName={client.name.split(' ')[0]}
+          firstName={firstName}
           reviewed={reviewed}
           reviewedAt={plan?.reviewedAt ?? null}
           pending={updateReview.isPending}
@@ -244,27 +201,58 @@ export function ClientDietPlanTab({
               <p className="diet-sheet-empty-note">
                 <Icon name="info" />
                 The {profile?.band} kcal master sheet has no plan for this week
-                yet. Add one here for {client.name.split(' ')[0]}, or fill the
-                week in Programs first.
+                yet. Add one here for {firstName}, or fill the week in Programs
+                first.
               </p>
             ) : null}
             <LazyRichTextEditor
               ariaLabel={`Week ${activeWeek} diet plan for ${client.name}`}
               value={draft}
               onChange={setDraft}
-              // Adopt the editor's serialisation as BOTH the draft and the
-              // baseline, so an untouched document compares exactly equal. Seeding
-              // only the baseline would leave the draft holding the raw stored
-              // string, which differs from the editor's rendering of it — and the
-              // autosave would fire on open with nobody having typed anything.
-              onSeeded={(html) => {
-                setBaseline(html)
-                setDraft(html)
-              }}
+              onSeeded={setDraft}
             />
+
+            <div className="diet-save-bar">
+              <p className="diet-save-hint">
+                Editing{' '}
+                <b>
+                  {firstName}&apos;s Week {activeWeek}
+                </b>{' '}
+                — Save writes it to the weeks you pick.
+              </p>
+              <button
+                className="btn-primary"
+                onClick={() => setSaveOpen(true)}
+                disabled={saveToWeeks.isPending}
+              >
+                <Icon name="check" />
+                Save
+              </button>
+            </div>
           </>
         )}
       </section>
+
+      {saveOpen ? (
+        <SaveToWeeksModal
+          currentWeek={activeWeek}
+          totalWeeks={totalWeeks}
+          pending={saveToWeeks.isPending}
+          intro={
+            <>
+              Save the plan you just edited for <strong>{firstName}</strong>{' '}
+              into the weeks you pick. Only this user is affected.
+            </>
+          }
+          onClose={() => setSaveOpen(false)}
+          onConfirm={(weeks) =>
+            saveToWeeks.mutate(
+              { body: draft, weeks },
+              { onSuccess: () => setSaveOpen(false) },
+            )
+          }
+        />
+      ) : null}
     </>
   )
 }

@@ -89,6 +89,39 @@ export function useDuplicateMasterSheet() {
   })
 }
 
+/** Save the edited sheet to every week the nutritionist picked. Writes the body
+ *  to the first week, then copies that week across to the rest — one Save that
+ *  fans a plan out across weeks (what "Duplicate" used to do, folded into Save).
+ *  Bands never mix: a sheet is only ever applied within its own band. */
+export function useSaveMasterSheetToWeeks() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({
+      band,
+      body,
+      weeks,
+    }: {
+      band: CalorieBand
+      body: string
+      weeks: number[]
+    }) => {
+      const [first, ...rest] = weeks
+      await saveMasterSheet({ weekNum: first, band, body })
+      if (rest.length) {
+        await duplicateMasterSheet({ fromWeek: first, band, toWeeks: rest })
+      }
+      return { band, weeks }
+    },
+    onSuccess: ({ band, weeks }) => {
+      queryClient.invalidateQueries({ queryKey: dietPlanKeys.masterAll() })
+      queryClient.invalidateQueries({ queryKey: ['diet-plan', 'client'] })
+      const n = weeks.length
+      showToast(`Saved the ${band} kcal plan to ${n} week${n === 1 ? '' : 's'}`)
+    },
+    onError: (error) => showToast(apiErrorMessage(error)),
+  })
+}
+
 export function useClientDietPlanQuery(clientId: string, weekNum: number) {
   return useQuery({
     queryKey: dietPlanKeys.client(clientId, weekNum),
@@ -106,6 +139,28 @@ export function useSaveClientDietPlan(clientId: string) {
       queryClient.invalidateQueries({
         queryKey: dietPlanKeys.client(clientId, plan.weekNum),
       })
+    },
+    onError: (error) => showToast(apiErrorMessage(error)),
+  })
+}
+
+/** Save this user's edited sheet to every week they picked. Per-user plans have
+ *  no duplicate endpoint, so each week is written directly. */
+export function useSaveClientDietPlanToWeeks(clientId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ body, weeks }: { body: string; weeks: number[] }) => {
+      await Promise.all(
+        weeks.map((weekNum) => saveClientDietPlan(clientId, weekNum, { body })),
+      )
+      return { weeks }
+    },
+    onSuccess: ({ weeks }) => {
+      queryClient.invalidateQueries({
+        queryKey: dietPlanKeys.clientAll(clientId),
+      })
+      const n = weeks.length
+      showToast(`Saved this plan to ${n} week${n === 1 ? '' : 's'}`)
     },
     onError: (error) => showToast(apiErrorMessage(error)),
   })

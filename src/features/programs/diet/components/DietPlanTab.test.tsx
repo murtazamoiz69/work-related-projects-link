@@ -1,14 +1,11 @@
-// Regression cover for the diet sheet's autosave.
-//
-// The editor re-serialises whatever it loads, so a stored sheet never comes
-// back byte-for-byte identical. Twice during development that made "has the
-// document changed?" answer yes on load — which autosaved, overwrote a master
-// sheet with an empty document, and flagged untouched user plans as
-// hand-edited. These tests pin the property that broke: nothing is written
-// unless a person actually types.
+// Cover for the diet sheet's save model: the sheet is written only when the
+// nutritionist confirms Save (autosave was removed) — never on load, nor when
+// switching week or category. Those switches re-seed the editor, which once
+// looked like an edit and wrote an empty sheet over a master plan; nothing may
+// write until Save is confirmed.
 import { useState } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { screen } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
 import { server } from '@/mocks/server'
 import { renderWithProviders } from '@/test/renderWithProviders'
 import { resetDietPlanStore } from '../dietPlan.mock'
@@ -41,7 +38,7 @@ function Harness() {
   )
 }
 
-describe('DietPlanTab autosave', () => {
+describe('DietPlanTab saving', () => {
   beforeEach(() => {
     resetDietPlanStore()
     writes.length = 0
@@ -88,9 +85,17 @@ describe('DietPlanTab autosave', () => {
     expect(writes).toHaveLength(0)
   })
 
-  // The positive path — a real edit does reach the server — is covered in
-  // dietPlan.api.test.ts ("saves an edit and reads it back") and verified in a
-  // browser. It isn't asserted here because ProseMirror ignores jsdom's
-  // synthetic key events, so `user.keyboard` into the editor is a no-op and the
-  // test would pass or fail for reasons unrelated to the component.
+  it('writes only when Save is confirmed', async () => {
+    const { user } = renderWithProviders(<Harness />)
+    await screen.findByLabelText(/Week 1 diet plan/, undefined, EDITOR)
+    writes.length = 0
+
+    // Opening the dialog writes nothing.
+    await user.click(screen.getByRole('button', { name: 'Save' }))
+    expect(writes).toHaveLength(0)
+
+    // Confirming (this week is selected by default) writes the sheet.
+    await user.click(screen.getByRole('button', { name: /Save to 1 week/ }))
+    await waitFor(() => expect(writes.length).toBeGreaterThan(0))
+  })
 })

@@ -269,7 +269,12 @@ dish. See [specs/programs.md](../specs/programs.md) › Diet plan for the produc
 rules.
 
 Categories: `1200 | 1400 | 1600 | 1800 | 2000` (kcal). The wire field is `band`;
-the UI label is "Meal Category".
+the UI label is "Category", shown as the **top-tier tabs** — category, then
+week, then the sheet.
+
+The editor saves **explicitly** (no autosave), and one Save can write the sheet
+to several weeks at once: the client PUTs the body to the first chosen week,
+then calls `POST /program/diet-plan/duplicate` to fan it out to the rest.
 
 ## `GET /program/diet-plan?week=&band=`
 One master sheet.
@@ -285,7 +290,9 @@ One master sheet.
 ---
 
 ## `PUT /program/diet-plan`
-Save a master sheet. Autosaved by the editor.
+Save one week's master sheet — sent when the nutritionist confirms **Save** (and
+once per chosen week when a Save targets several, alongside the duplicate call
+below).
 
 **Body** `{ "weekNum": 1, "band": 1600, "body": "<h2>…</h2>" }`
 **Success `200`** — the saved sheet. **Errors:** `422` bad band; `401`; `500`.
@@ -293,7 +300,9 @@ Save a master sheet. Autosaved by the editor.
 ---
 
 ## `POST /program/diet-plan/duplicate`
-Copy one week's sheet onto other weeks.
+Copy one week's sheet onto other weeks. Backs the **Save → apply to weeks** flow
+(the old standalone "Duplicate" button is gone); the client calls it after
+saving the edited week so a single Save can land on many weeks.
 
 **Body** `{ "fromWeek": 1, "band": 1600, "toWeeks": [2, 3, 5] }`
 
@@ -339,6 +348,8 @@ sheet — it never introduces food the master plan doesn't have.
 
 ## `PUT /clients/:id/diet-plan?week=`
 The nutritionist's own edit for one user and week. **Body** `{ "body": "<h2>…</h2>" }`
+Sent on **Save**; a Save that targets several of the user's weeks sends this once
+per chosen week (per-user plans have no duplicate endpoint).
 **Success `200`** — the updated plan with `edited: true`. **Errors:** as above.
 
 ---
