@@ -2,20 +2,20 @@ import { useEffect, useState } from 'react'
 import { Icon } from '@/components/atoms/Icon'
 import { LazyRichTextEditor } from '@/components/molecules/LazyRichTextEditor'
 import { apiErrorMessage } from '@/lib/api/errors'
-import { formatFullDate, type Client } from '@/features/clients'
+import type { Client } from '@/features/clients'
 import {
   useClientDietPlanQuery,
   useSaveClientDietPlanToWeeks,
-  useUpdateClientReview,
 } from '../useDietPlan'
-import { SaveToWeeksModal } from './SaveToWeeksModal'
+import { CopyToWeeksDropdown } from './CopyToWeeksDropdown'
 
 /** One user's diet plan for a week — the master sheet for their category
  *  (calorie band), narrowed by their onboarding answers. Same shape as the
  *  global tab on purpose: a nutritionist moving between the two shouldn't have
  *  to relearn anything. The category is fixed per user (set at onboarding, not
- *  switchable here); what's added is the filters that were applied and the
- *  review sign-off. */
+ *  switchable here); what's added beyond the global tab is the filters that
+ *  were applied. The review sign-off itself is handled from Chat now (a
+ *  banner above the thread), not from this tab. */
 export function ClientDietPlanTab({
   client,
   totalWeeks,
@@ -29,9 +29,7 @@ export function ClientDietPlanTab({
 }) {
   const planQuery = useClientDietPlanQuery(client.id, activeWeek)
   const saveToWeeks = useSaveClientDietPlanToWeeks(client.id)
-  const updateReview = useUpdateClientReview(client.id)
 
-  const [saveOpen, setSaveOpen] = useState(false)
   const [draft, setDraft] = useState('')
 
   const plan = planQuery.data
@@ -41,14 +39,22 @@ export function ClientDietPlanTab({
     setDraft(planBody)
   }, [planBody, activeWeek])
 
+  // The weeks Save will write to for this user, defaulting back to just the
+  // week being viewed whenever it changes.
+  const [selectedWeeks, setSelectedWeeks] = useState<number[]>([activeWeek])
+  useEffect(() => {
+    setSelectedWeeks([activeWeek])
+  }, [activeWeek])
+  const toggleWeek = (week: number) =>
+    setSelectedWeeks((prev) =>
+      prev.includes(week) ? prev.filter((w) => w !== week) : [...prev, week],
+    )
+
   const profile = plan?.profile ?? client.dietProfile
-  // The user's category is fixed here — it's set at onboarding and not changed
-  // from this screen.
-  const currentBand = profile?.band ?? 1600
   // Read off the plan, not the client: this workspace is opened with whatever
   // client object the surface that opened it happened to hold, and that one
-  // doesn't refetch when the sign-off changes.
-  const reviewed = plan?.review === 'reviewed'
+  // doesn't refetch when the sign-off (or the band) changes.
+  const currentBand = profile?.band ?? 1600
   const firstName = client.name.split(' ')[0]
 
   return (
@@ -86,17 +92,14 @@ export function ClientDietPlanTab({
               narrowed to {firstName}. Edits here apply to this user only.
             </p>
           </div>
+          <CopyToWeeksDropdown
+            totalWeeks={totalWeeks}
+            currentWeek={activeWeek}
+            selected={selectedWeeks}
+            onToggle={toggleWeek}
+            onSelect={setSelectedWeeks}
+          />
         </div>
-
-        <ReviewBar
-          firstName={firstName}
-          reviewed={reviewed}
-          reviewedAt={plan?.reviewedAt ?? null}
-          pending={updateReview.isPending}
-          onToggle={() =>
-            updateReview.mutate(reviewed ? 'in-review' : 'reviewed')
-          }
-        />
 
         {profile ? (
           <div className="diet-filter-row">
@@ -167,82 +170,22 @@ export function ClientDietPlanTab({
                 <b>
                   {firstName}&apos;s Week {activeWeek}
                 </b>{' '}
-                — Save writes it to the weeks you pick.
+                — Save writes it to the weeks picked in Copy to weeks.
               </p>
               <button
                 className="btn-primary"
-                onClick={() => setSaveOpen(true)}
-                disabled={saveToWeeks.isPending}
+                disabled={!selectedWeeks.length || saveToWeeks.isPending}
+                onClick={() =>
+                  saveToWeeks.mutate({ body: draft, weeks: selectedWeeks })
+                }
               >
                 <Icon name="check" />
-                Save
+                {saveToWeeks.isPending ? 'Saving…' : 'Save Changes'}
               </button>
             </div>
           </>
         )}
       </section>
-
-      {saveOpen ? (
-        <SaveToWeeksModal
-          currentWeek={activeWeek}
-          totalWeeks={totalWeeks}
-          pending={saveToWeeks.isPending}
-          intro={
-            <>
-              Save the plan you just edited for <strong>{firstName}</strong>{' '}
-              into the weeks you pick. Only this user is affected.
-            </>
-          }
-          onClose={() => setSaveOpen(false)}
-          onConfirm={(weeks) =>
-            saveToWeeks.mutate(
-              { body: draft, weeks },
-              { onSuccess: () => setSaveOpen(false) },
-            )
-          }
-        />
-      ) : null}
     </>
-  )
-}
-
-/** The sign-off gate. A user's plan is filtered by the engine the moment they
- *  onboard, so "there is a plan" and "someone has read the plan" are different
- *  facts — this is the second one. Until it's ticked the plan sits in review
- *  and the Users roster says so, which is how a nutritionist finds the people
- *  still waiting on them. */
-function ReviewBar({
-  firstName,
-  reviewed,
-  reviewedAt,
-  pending,
-  onToggle,
-}: {
-  firstName: string
-  reviewed: boolean
-  reviewedAt: Date | null
-  pending: boolean
-  onToggle: () => void
-}) {
-  return (
-    <div className={`diet-review-bar${reviewed ? ' is-reviewed' : ''}`}>
-      <Icon name={reviewed ? 'check-circle-2' : 'clock'} />
-      <div className="diet-review-copy">
-        <strong>{reviewed ? 'Reviewed' : 'Review in progress'}</strong>
-        <p>
-          {reviewed
-            ? `Signed off${reviewedAt ? ` on ${formatFullDate(reviewedAt)}` : ''} — ${firstName} can see this plan.`
-            : `The engine filtered this plan from the master sheet. ${firstName} won't see it until you've read it through and marked it reviewed.`}
-        </p>
-      </div>
-      <button
-        className={reviewed ? 'btn-secondary' : 'btn-primary'}
-        disabled={pending}
-        onClick={onToggle}
-      >
-        {reviewed ? null : <Icon name="check" />}
-        {reviewed ? 'Reopen review' : 'Reviewed'}
-      </button>
-    </div>
   )
 }

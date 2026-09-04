@@ -1,8 +1,8 @@
-// Cover for the diet sheet's save model: the sheet is written only when the
-// nutritionist confirms Save (autosave was removed) — never on load, nor when
-// switching week or category. Those switches re-seed the editor, which once
-// looked like an edit and wrote an empty sheet over a master plan; nothing may
-// write until Save is confirmed.
+// Cover for the diet sheet's save model: nothing shows until a category is
+// picked, the sheet is written only when the nutritionist confirms Save
+// Changes (autosave was removed) — never on load, nor when switching week or
+// category — and Save Changes writes to whichever weeks are picked in the
+// collapsed "Copy to weeks" dropdown, not to a dialog's separate selection.
 import { useState } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { screen, waitFor } from '@testing-library/react'
@@ -44,8 +44,17 @@ describe('DietPlanTab saving', () => {
     writes.length = 0
   })
 
-  it('loads the sheet for the selected week and band', async () => {
+  it('shows nothing until a category is picked', async () => {
     renderWithProviders(<Harness />)
+    expect(await screen.findByText(/Pick a category above/)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Week 1' })).toBeNull()
+  })
+
+  it('opens the editor once a category is picked', async () => {
+    const { user } = renderWithProviders(<Harness />)
+    await screen.findByText(/Pick a category above/)
+
+    await user.selectOptions(screen.getByLabelText('Category'), '1600')
     expect(
       await screen.findByLabelText(
         /Week 1 diet plan, 1600 kcal/,
@@ -56,7 +65,8 @@ describe('DietPlanTab saving', () => {
   })
 
   it('does not write anything on load', async () => {
-    renderWithProviders(<Harness />)
+    const { user } = renderWithProviders(<Harness />)
+    await user.selectOptions(await screen.findByLabelText('Category'), '1600')
     await screen.findByLabelText(/Week 1 diet plan/, undefined, EDITOR)
     // Comfortably past the autosave debounce.
     await new Promise((r) => setTimeout(r, 1400))
@@ -65,10 +75,11 @@ describe('DietPlanTab saving', () => {
 
   it('does not write when the calorie band changes', async () => {
     const { user } = renderWithProviders(<Harness />)
+    await user.selectOptions(await screen.findByLabelText('Category'), '1600')
     await screen.findByLabelText(/Week 1 diet plan/, undefined, EDITOR)
     writes.length = 0
 
-    await user.click(screen.getByRole('tab', { name: /1200/ }))
+    await user.selectOptions(screen.getByLabelText('Category'), '1200')
     await screen.findByLabelText(/1200 kcal/, undefined, EDITOR)
     await new Promise((r) => setTimeout(r, 1400))
     expect(writes).toHaveLength(0)
@@ -76,6 +87,7 @@ describe('DietPlanTab saving', () => {
 
   it('does not write when the week changes', async () => {
     const { user } = renderWithProviders(<Harness />)
+    await user.selectOptions(await screen.findByLabelText('Category'), '1600')
     await screen.findByLabelText(/Week 1 diet plan/, undefined, EDITOR)
     writes.length = 0
 
@@ -85,17 +97,44 @@ describe('DietPlanTab saving', () => {
     expect(writes).toHaveLength(0)
   })
 
-  it('writes only when Save is confirmed', async () => {
+  it('writes only when Save Changes is clicked, to the week checked by default', async () => {
     const { user } = renderWithProviders(<Harness />)
+    await user.selectOptions(await screen.findByLabelText('Category'), '1600')
     await screen.findByLabelText(/Week 1 diet plan/, undefined, EDITOR)
     writes.length = 0
 
-    // Opening the dialog writes nothing.
-    await user.click(screen.getByRole('button', { name: 'Save' }))
+    // Save Changes is visible without opening anything, and nothing writes
+    // until it's actually clicked.
+    expect(
+      screen.getByRole('button', { name: 'Save Changes' }),
+    ).toBeInTheDocument()
     expect(writes).toHaveLength(0)
 
-    // Confirming (this week is selected by default) writes the sheet.
-    await user.click(screen.getByRole('button', { name: /Save to 1 week/ }))
+    await user.click(screen.getByRole('button', { name: 'Save Changes' }))
+    await waitFor(() => expect(writes.length).toBeGreaterThan(0))
+  })
+
+  it('the week picker starts collapsed behind "Copy to weeks"', async () => {
+    const { user } = renderWithProviders(<Harness />)
+    await user.selectOptions(await screen.findByLabelText('Category'), '1600')
+    await screen.findByLabelText(/Week 1 diet plan/, undefined, EDITOR)
+
+    expect(screen.queryByRole('button', { name: 'All weeks' })).toBeNull()
+    await user.click(screen.getByRole('button', { name: /Copy to weeks/ }))
+    expect(
+      await screen.findByRole('button', { name: 'All weeks' }),
+    ).toBeInTheDocument()
+  })
+
+  it('writes to every week checked, once "All weeks" is picked in the dropdown', async () => {
+    const { user } = renderWithProviders(<Harness />)
+    await user.selectOptions(await screen.findByLabelText('Category'), '1600')
+    await screen.findByLabelText(/Week 1 diet plan/, undefined, EDITOR)
+    writes.length = 0
+
+    await user.click(screen.getByRole('button', { name: /Copy to weeks/ }))
+    await user.click(screen.getByRole('button', { name: 'All weeks' }))
+    await user.click(screen.getByRole('button', { name: 'Save Changes' }))
     await waitFor(() => expect(writes.length).toBeGreaterThan(0))
   })
 })

@@ -57,10 +57,7 @@
   justify-content: center;
 }
 
-/* ---- Diet plan: calorie band as the top-tier tab row ---- */
-/* The band was a "Meal Category" dropdown tucked in the panel head; it is now
-   the top tier of the diet plan — band, then week, then the sheet — shown as
-   tabs (matching the Week chip language, .pw-week-chip). */
+/* ---- Diet plan: the calorie-band row ---- */
 .diet-band-rail {
   display: flex;
   align-items: center;
@@ -75,77 +72,8 @@
   text-transform: uppercase;
   color: var(--text-muted);
 }
-.diet-band-tabs {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-  overflow-x: auto;
-}
-.diet-band-tab {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  border-radius: var(--r-sm);
-  font-size: 12.5px;
-  font-weight: 700;
-  color: var(--text-secondary);
-  border: 1px solid var(--border-soft);
-  background: var(--surface);
-  cursor: pointer;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-.diet-band-tab small {
-  font-weight: 600;
-  font-size: 11px;
-  color: var(--text-muted);
-}
-.diet-band-tab:hover {
-  border-color: var(--border);
-  background: var(--surface-alt);
-}
-/* Selected band — solid fill, same active treatment as the Week chip. */
-.diet-band-tab.active {
-  border-color: var(--primary);
-  background: var(--primary);
-  color: #fff;
-}
-.diet-band-tab.active small {
-  color: #cfe1d9;
-}
-.diet-band-tab:disabled {
-  cursor: default;
-  opacity: 0.6;
-}
-/* Client tab only: picking a different band is a staged, destructive change
-   (it re-derives all the user's weeks), so the pending pick reads as dashed-
-   outline "not committed yet" until Save changes, and the committed band keeps
-   a "current" marker so the nutritionist sees where Cancel would land. */
-.diet-band-tab.pending {
-  border-style: dashed;
-  border-color: var(--primary);
-  background: var(--primary-light);
-  color: var(--primary-dark);
-}
-.diet-band-tab.pending small {
-  color: var(--primary-dark);
-}
-.diet-band-tab .band-current {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.4px;
-  text-transform: uppercase;
-  color: var(--primary);
-  background: var(--primary-light);
-  border-radius: 999px;
-  padding: 1px 6px;
-}
-.diet-band-rail .diet-band-save {
-  margin-left: 4px;
-}
 /* Read-only category chip on the per-user diet tab — the user's one fixed band,
-   not a switcher. Reads like a selected band tab but isn't interactive. */
+   not a switcher. */
 .diet-band-fixed {
   display: inline-flex;
   align-items: baseline;
@@ -164,8 +92,47 @@
   color: #cfe1d9;
 }
 
+/* The week checklist collapses behind "Copy to weeks" (CopyToWeeksDropdown),
+   top right of the panel head, so the editor keeps the full width. */
+.diet-copy-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+.diet-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.diet-copy-chevron {
+  transition: transform 0.12s ease;
+}
+.diet-copy-chevron.is-open {
+  transform: rotate(180deg);
+}
+.diet-copy-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 20;
+  width: 260px;
+  padding: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  box-shadow: 0 12px 28px -12px rgba(0, 0, 0, 0.25);
+}
+.diet-weeks-col-label {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
 /* One explicit Save at the foot of the diet editor (autosave + Duplicate are
-   gone — Save fans the sheet across weeks via the SaveToWeeksModal). */
+   gone — Save Changes writes straight to the weeks picked in Copy to weeks). */
 .diet-save-bar {
   display: flex;
   align-items: center;
@@ -186,7 +153,7 @@
   font-weight: 600;
 }
 
-/* Apply-to-weeks presets in the Save dialog. */
+/* Apply-to-weeks presets inside the Copy to weeks dropdown (WeekSaveTargets). */
 .save-weeks-presets {
   display: flex;
   gap: 6px;
@@ -287,4 +254,16 @@
 }
 .pw-week-chip.active .wp-day-edited-dot {
   background: #f0c07a;
+}
+
+/* ---- Chat: plan-review-pending banner ---- */
+/* A third .chat-handoff-banner variant (alongside .is-ai / .is-human, in
+   app.css) — surfaces the diet review sign-off in Chat instead of the Plan
+   Workspace's Diet Plan tab, with the same amber "pending" tone used
+   elsewhere for an unreviewed plan. */
+.chat-handoff-banner.is-review {
+  background: var(--amber-light);
+}
+.is-review .chat-handoff-icon {
+  color: var(--amber-text);
 }

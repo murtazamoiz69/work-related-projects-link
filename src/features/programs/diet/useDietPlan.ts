@@ -21,7 +21,7 @@ import type { CalorieBand, PlanReviewStatus } from './dietPlan.types'
 
 export const dietPlanKeys = {
   all: ['diet-plan'] as const,
-  master: (weekNum: number, band: CalorieBand) =>
+  master: (weekNum: number, band: CalorieBand | null) =>
     ['diet-plan', 'master', weekNum, band] as const,
   masterAll: () => ['diet-plan', 'master'] as const,
   client: (clientId: string, weekNum: number) =>
@@ -29,10 +29,17 @@ export const dietPlanKeys = {
   clientAll: (clientId: string) => ['diet-plan', 'client', clientId] as const,
 }
 
-export function useMasterSheetQuery(weekNum: number, band: CalorieBand) {
+/** `band: null` means no category is picked yet (the global tab's first-load
+ *  state) — the query stays disabled until one is chosen, rather than
+ *  fetching a default band the nutritionist never asked for. */
+export function useMasterSheetQuery(weekNum: number, band: CalorieBand | null) {
   return useQuery({
     queryKey: dietPlanKeys.master(weekNum, band),
-    queryFn: ({ signal }) => getMasterSheet(weekNum, band, signal),
+    queryFn: ({ signal }) => {
+      if (band === null) throw new Error('unreachable: disabled without a band')
+      return getMasterSheet(weekNum, band, signal)
+    },
+    enabled: band !== null,
     // Hold the current sheet on screen while the next week/band loads. Without
     // it the editor unmounts on every switch, which throws away the cursor and
     // makes the panel flash through a skeleton for a local mock response.
