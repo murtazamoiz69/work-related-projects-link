@@ -15,6 +15,8 @@ import {
   patchConversationDto,
 } from '@/features/chat/api/chat.mock'
 import type { Conversation } from '@/features/chat/types'
+import { resetClientStore } from '@/features/clients/api/clients.mock'
+import { resetDietPlanStore } from '@/features/programs/diet/dietPlan.mock'
 import { ChatPage } from './ChatPage'
 
 const API = 'http://localhost:3000'
@@ -66,11 +68,15 @@ function pick(pred: (c: Conversation) => boolean): Conversation {
 }
 const aiConvo = () => pick((c) => c.handledBy === 'ai' && c.status === 'active')
 const humanConvo = () => pick((c) => c.handledBy === 'nutritionist')
+const inReviewConvo = () => pick((c) => c.client.dietReview === 'in-review')
+const reviewedConvo = () => pick((c) => c.client.dietReview === 'reviewed')
 
 beforeEach(() => {
   navigateSpy.mockClear()
   vi.mocked(showToast).mockClear()
   resetChatStore()
+  resetClientStore()
+  resetDietPlanStore()
 })
 afterEach(() => {
   server.resetHandlers()
@@ -202,6 +208,51 @@ describe('ChatPage — message thread & handoff', () => {
       <ChatPage initialConversationId={pick((c) => c.unread > 0).id} />,
     )
     await waitFor(() => expect(markedRead).toBe(true))
+  })
+})
+
+describe('ChatPage — plan review pending', () => {
+  // Marks when the diet-plan GET (which the review-pending banner reads)
+  // has actually resolved, so "the banner stays absent" tests aren't a false
+  // positive from asserting before the query ever ran.
+  let dietPlanFetched = false
+  beforeEach(() => {
+    dietPlanFetched = false
+  })
+  server.events.on('request:start', ({ request }) => {
+    if (request.method === 'GET' && request.url.includes('/diet-plan')) {
+      dietPlanFetched = true
+    }
+  })
+
+  it('shows the banner for a user whose plan is in review — a new client, here', async () => {
+    const convo = inReviewConvo()
+    renderWithProviders(<ChatPage initialConversationId={convo.id} />)
+    expect(
+      await screen.findByText(/plan review is pending/i),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Review done' }),
+    ).toBeInTheDocument()
+  })
+
+  it('does not show the banner once a plan is already reviewed', async () => {
+    renderWithProviders(<ChatPage initialConversationId={reviewedConvo().id} />)
+    await waitFor(() => expect(dietPlanFetched).toBe(true))
+    expect(screen.queryByText(/plan review is pending/i)).toBeNull()
+  })
+
+  it('marking review done clears the banner and toasts', async () => {
+    const { user } = renderWithProviders(
+      <ChatPage initialConversationId={inReviewConvo().id} />,
+    )
+    await user.click(await screen.findByRole('button', { name: 'Review done' }))
+    await waitFor(() =>
+      expect(screen.queryByText(/plan review is pending/i)).toBeNull(),
+    )
+    expect(showToast).toHaveBeenCalledWith(
+      expect.stringMatching(/reviewed and ready/i),
+    )
   })
 })
 
