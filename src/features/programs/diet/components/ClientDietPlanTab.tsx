@@ -3,11 +3,9 @@ import { Icon } from '@/components/atoms/Icon'
 import { LazyRichTextEditor } from '@/components/molecules/LazyRichTextEditor'
 import { apiErrorMessage } from '@/lib/api/errors'
 import { formatFullDate, type Client } from '@/features/clients'
-import { CALORIE_BANDS, type CalorieBand } from '../dietPlan.types'
 import {
   useClientDietPlanQuery,
   useSaveClientDietPlanToWeeks,
-  useUpdateClientBand,
   useUpdateClientReview,
 } from '../useDietPlan'
 import { SaveToWeeksModal } from './SaveToWeeksModal'
@@ -15,8 +13,9 @@ import { SaveToWeeksModal } from './SaveToWeeksModal'
 /** One user's diet plan for a week — the master sheet for their category
  *  (calorie band), narrowed by their onboarding answers. Same shape as the
  *  global tab on purpose: a nutritionist moving between the two shouldn't have
- *  to relearn anything. What's added here is the category control, the filters
- *  that were applied, and the review sign-off. */
+ *  to relearn anything. The category is fixed per user (set at onboarding, not
+ *  switchable here); what's added is the filters that were applied and the
+ *  review sign-off. */
 export function ClientDietPlanTab({
   client,
   totalWeeks,
@@ -30,17 +29,9 @@ export function ClientDietPlanTab({
 }) {
   const planQuery = useClientDietPlanQuery(client.id, activeWeek)
   const saveToWeeks = useSaveClientDietPlanToWeeks(client.id)
-  const updateBand = useUpdateClientBand(client.id)
   const updateReview = useUpdateClientReview(client.id)
 
   const [saveOpen, setSaveOpen] = useState(false)
-
-  // The category is a staged edit, not a live one: moving a user between
-  // categories swaps the master sheet under all six of their weeks and drops
-  // anything hand-written for them, which is too much to happen on the way past
-  // a tab. The pick is held until Save changes commits it.
-  const [pendingBand, setPendingBand] = useState<CalorieBand | null>(null)
-
   const [draft, setDraft] = useState('')
 
   const plan = planQuery.data
@@ -51,9 +42,9 @@ export function ClientDietPlanTab({
   }, [planBody, activeWeek])
 
   const profile = plan?.profile ?? client.dietProfile
+  // The user's category is fixed here — it's set at onboarding and not changed
+  // from this screen.
   const currentBand = profile?.band ?? 1600
-  const selectedBand = pendingBand ?? currentBand
-  const bandChanged = selectedBand !== currentBand
   // Read off the plan, not the client: this workspace is opened with whatever
   // client object the surface that opened it happened to hold, and that one
   // doesn't refetch when the sign-off changes.
@@ -62,49 +53,16 @@ export function ClientDietPlanTab({
 
   return (
     <>
-      {/* Top tier: the user's category. Unlike the global tab, picking a
-          different category here is a staged, destructive change — the tab reads
-          as pending (dashed) and the committed one keeps a "current" marker until
-          Save changes re-derives every week. */}
+      {/* The user's category is fixed — one band, set at onboarding, shown
+          read-only. Unlike the global tab there is no category switcher here. */}
       <div className="diet-band-rail">
         <span className="diet-band-rail-label">Category</span>
-        <div className="diet-band-tabs" role="tablist" aria-label="Category">
-          {CALORIE_BANDS.map((b) => {
-            const isSelected = b === selectedBand
-            const isCurrent = b === currentBand
-            return (
-              <button
-                key={b}
-                role="tab"
-                aria-selected={isSelected}
-                disabled={updateBand.isPending}
-                className={`diet-band-tab${isSelected ? ' active' : ''}${
-                  isSelected && bandChanged ? ' pending' : ''
-                }`}
-                onClick={() => setPendingBand(b === currentBand ? null : b)}
-              >
-                {b} <small>kcal</small>
-                {isCurrent && bandChanged ? (
-                  <span className="band-current">current</span>
-                ) : null}
-              </button>
-            )
-          })}
-        </div>
-        {bandChanged ? (
-          <button
-            className="btn-primary diet-band-save"
-            disabled={updateBand.isPending}
-            onClick={() =>
-              updateBand.mutate(selectedBand, {
-                onSuccess: () => setPendingBand(null),
-              })
-            }
-          >
-            <Icon name="check" />
-            {updateBand.isPending ? 'Saving…' : 'Save changes'}
-          </button>
-        ) : null}
+        <span
+          className="diet-band-fixed"
+          title="Set from this user's onboarding"
+        >
+          {currentBand} <small>kcal</small>
+        </span>
       </div>
 
       <div className="pw-week-rail">
@@ -129,15 +87,6 @@ export function ClientDietPlanTab({
             </p>
           </div>
         </div>
-
-        {bandChanged ? (
-          <p className="diet-band-pending-note" role="status">
-            <Icon name="alert-triangle" />
-            Moving {firstName} to the {selectedBand} kcal category re-derives
-            all {totalWeeks} weeks from that master sheet and drops anything
-            edited for them here. Nothing changes until you save.
-          </p>
-        ) : null}
 
         <ReviewBar
           firstName={firstName}

@@ -106,11 +106,11 @@ export function ClientTableRow({
             <span className="ct-sub">{client.email}</span>
             <span className="ct-chip-row">
               {/* Which master diet sheet this user follows. Set at onboarding
-                  from their BMR and estimated burn; changed in Manage Plan. */}
+                  from their BMR and estimated burn; fixed per user. */}
               {client.dietProfile ? (
                 <span
                   className="ct-band-chip"
-                  title="Meal category — change it in Manage Plan"
+                  title="Meal category — set from onboarding"
                 >
                   {client.dietProfile.band} kcal
                 </span>

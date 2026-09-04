@@ -144,6 +144,25 @@
 .diet-band-rail .diet-band-save {
   margin-left: 4px;
 }
+/* Read-only category chip on the per-user diet tab — the user's one fixed band,
+   not a switcher. Reads like a selected band tab but isn't interactive. */
+.diet-band-fixed {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  padding: 8px 14px;
+  border-radius: var(--r-sm);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--primary);
+  border: 1px solid var(--primary);
+}
+.diet-band-fixed small {
+  font-weight: 600;
+  font-size: 11px;
+  color: #cfe1d9;
+}
 
 /* One explicit Save at the foot of the diet editor (autosave + Duplicate are
    gone — Save fans the sheet across weeks via the SaveToWeeksModal). */
