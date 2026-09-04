@@ -28,10 +28,38 @@ const DEFAULT_MESSAGE: Record<ApiErrorKind, string> = {
   unknown: 'Something went wrong. Please try again.',
 }
 
+type FastApiDetailItem = { loc?: unknown[]; msg?: string; type?: string }
+
 type ErrorBody = {
   message?: string
   fields?: FieldErrors
   errors?: FieldErrors
+  // FastAPI (the real backend) puts errors here: a string for a raised
+  // HTTPException, or an array of {loc, msg} for request validation.
+  detail?: string | FastApiDetailItem[]
+}
+
+/** Turn FastAPI's validation `detail` array into our `{ fieldName: message }`
+ *  map. `loc` is a path like `["body", "email"]` or `["body", "users", 0,
+ *  "email"]`; the field is the last string segment past the body/query/path
+ *  wrapper, so the form can attach the message to the right input. */
+function fieldsFromDetail(
+  detail: FastApiDetailItem[],
+): FieldErrors | undefined {
+  const out: FieldErrors = {}
+  for (const item of detail) {
+    const loc = item?.loc
+    const msg = item?.msg
+    if (!Array.isArray(loc) || typeof msg !== 'string') continue
+    const key = [...loc]
+      .reverse()
+      .find(
+        (seg): seg is string =>
+          typeof seg === 'string' && !['body', 'query', 'path'].includes(seg),
+      )
+    if (key && !(key in out)) out[key] = msg
+  }
+  return Object.keys(out).length ? out : undefined
 }
 
 export function normalizeError(error: unknown): ApiError {
@@ -44,12 +72,32 @@ export function normalizeError(error: unknown): ApiError {
     if (response) {
       const kind = kindForStatus(response.status)
       const body = (response.data ?? {}) as ErrorBody
+
+      // Our own mock/backends answer with { message, fields }; a FastAPI
+      // backend answers with { detail }. Support both, preferring an explicit
+      // message/fields when present.
+      const detail = body.detail
+      let message = body.message
+      let fields =
+        kind === 'validation' ? (body.fields ?? body.errors) : undefined
+      if (typeof detail === 'string') {
+        message = message ?? detail
+      } else if (Array.isArray(detail)) {
+        if (kind === 'validation' && !fields) fields = fieldsFromDetail(detail)
+        if (
+          !message &&
+          detail.length === 1 &&
+          typeof detail[0]?.msg === 'string'
+        ) {
+          message = detail[0].msg
+        }
+      }
+
       return {
         kind,
-        message: body.message ?? DEFAULT_MESSAGE[kind],
+        message: message ?? DEFAULT_MESSAGE[kind],
         status: response.status,
-        fields:
-          kind === 'validation' ? (body.fields ?? body.errors) : undefined,
+        fields,
       }
     }
 
