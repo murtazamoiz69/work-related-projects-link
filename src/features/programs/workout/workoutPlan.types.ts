@@ -7,9 +7,9 @@
 //
 // Each day is authored as prose in a rich-text editor rather than assembled
 // from a structured exercise library — a coach writes a warm-up, a superset, a
-// form note, a video link, and HTML carries all of it (and it's what the AI
-// engine reads). A small type chip (workout / cardio / rest) tags the day for
-// scanning; it drives the icon and label, nothing structural.
+// form note, and HTML carries all of it (and it's what the AI engine reads). A
+// small type chip (workout / cardio / rest) tags the day for scanning; it
+// drives the icon and label, nothing structural.
 //
 // There is no per-user filtering here: a user's copy starts as the programme's
 // day verbatim and diverges only when a nutritionist edits it for them.
@@ -35,8 +35,8 @@ export const WORKOUT_DAY_TYPE_ICON: Record<WorkoutDayType, string> = {
   rest: 'moon',
 }
 
-/** One day of the programme. `body` is the rich-text session — exercises, sets,
- *  the video link for each movement, or just a rest-day note. */
+/** One day of the programme. `body` is the rich-text session — exercises,
+ *  sets and coaching notes, or just a rest-day note. */
 export type WorkoutDay = {
   dayNum: number
   type: WorkoutDayType

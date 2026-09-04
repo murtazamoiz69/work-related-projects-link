@@ -50,9 +50,7 @@ describe('WorkoutPlanTab', () => {
       EDITOR,
     )
     expect(within(editor).getByText('Barbell Bench Press')).toBeInTheDocument()
-    expect(
-      within(editor).getAllByRole('link', { name: 'Watch demo' }).length,
-    ).toBeGreaterThan(0)
+    expect(within(editor).queryByRole('link')).not.toBeInTheDocument()
   })
 
   it('does not write on load or when switching days', async () => {

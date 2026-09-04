@@ -17,17 +17,23 @@ describe('workout plan api', () => {
   })
 
   describe('the programme plan', () => {
-    it('ships seven authored days to start', async () => {
+    it('ships seven days, the first four authored and the rest blank', async () => {
       const plan = await getWorkoutPlan()
       expect(plan.days).toHaveLength(7)
       expect(plan.days.map((d) => d.dayNum)).toEqual([1, 2, 3, 4, 5, 6, 7])
-      expect(plan.days.every((d) => !isBlankDay(d))).toBe(true)
+      for (const day of plan.days.slice(0, 4)) {
+        expect(isBlankDay(day)).toBe(false)
+      }
+      for (const day of plan.days.slice(4)) {
+        expect(isBlankDay(day)).toBe(true)
+      }
     })
 
-    it('ships a video link beside each exercise on Day 1', async () => {
+    it('never ships a video link — exercises are plain text', async () => {
       const plan = await getWorkoutPlan()
-      expect(plan.days[0].body).toContain('videos.nourishwithsim.com/exercise')
-      expect(plan.days[0].body).toContain('Watch demo')
+      expect(plan.days[0].body).toContain('Barbell Bench Press')
+      expect(plan.days[0].body).not.toContain('http')
+      expect(plan.days[0].body).not.toContain('Watch demo')
     })
 
     it('covers all three day types in the seeded run', async () => {

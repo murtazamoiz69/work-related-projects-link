@@ -65,8 +65,7 @@ export function WorkoutPlanTab() {
           <div>
             <h2>Day {activeDay} workout</h2>
             <p className="panel-sub">
-              One session per day — warm-up, the main set with a video beside
-              each movement, and a finisher.
+              One session per day — warm-up, the main set, and a finisher.
             </p>
           </div>
 

@@ -1,14 +1,11 @@
 // The authored content behind the workout plan.
 //
-// The programme ships seven authored days (Day 1–7); the nutritionist adds more
-// with "Add day" and fills them in. Each day's coach-facing name ("Push Day")
-// is folded into the body as a heading, since the day itself is identified only
-// by its number now.
+// The programme ships four authored days (Day 1–4); the nutritionist adds more
+// with "Add day" and fills them in, and Days 5–7 already exist but start blank
+// for the same reason. Each day's coach-facing name ("Push Day") is folded into
+// the body as a heading, since the day itself is identified only by its number
+// now.
 import { type WorkoutDay, type WorkoutDayType } from './workoutPlan.types'
-
-/** Exercise demo videos. Mock links — a real deployment points these at the
- *  video library, and the nutritionist can paste any URL in the editor. */
-const VIDEO_BASE = 'https://videos.nourishwithsim.com/exercise'
 
 type Movement = {
   name: string
@@ -16,8 +13,6 @@ type Movement = {
   prescription: string
   /** Rest, tempo or a coaching cue — whatever matters for this movement. */
   note: string
-  /** Slug for the demo video. */
-  slug: string
 }
 
 type DaySpec = {
@@ -38,15 +33,11 @@ function escapeHtml(value: string): string {
     .replace(/"/g, '&quot;')
 }
 
-/** One movement as a list item: what to do, then the demo video beside it. The
- *  link is a real anchor rather than bare text so it survives the editor's
- *  round trip and stays clickable for whoever reads the plan. */
+/** One movement as a list item: the name, the prescription, then the note. */
 function movementHtml(m: Movement): string {
-  const href = `${VIDEO_BASE}/${m.slug}`
   return (
     `<li><strong>${escapeHtml(m.name)}</strong> — ${escapeHtml(m.prescription)}` +
-    ` &middot; ${escapeHtml(m.note)} &middot; ` +
-    `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">Watch demo</a></li>`
+    ` &middot; ${escapeHtml(m.note)}</li>`
   )
 }
 
@@ -93,31 +84,26 @@ const WEEK_ONE: DaySpec[] = [
         name: 'Barbell Bench Press',
         prescription: '4 x 8',
         note: '90s rest',
-        slug: 'barbell-bench-press',
       },
       {
         name: 'Seated Dumbbell Shoulder Press',
         prescription: '3 x 10',
         note: '75s rest',
-        slug: 'dumbbell-shoulder-press',
       },
       {
         name: 'Incline Dumbbell Press',
         prescription: '3 x 12',
         note: 'Control the lowering, 3 seconds',
-        slug: 'incline-dumbbell-press',
       },
       {
         name: 'Cable Lateral Raise',
         prescription: '3 x 15',
         note: 'Light, no swinging',
-        slug: 'cable-lateral-raise',
       },
       {
         name: 'Rope Triceps Pushdown',
         prescription: '3 x 15',
         note: '45s rest',
-        slug: 'rope-triceps-pushdown',
       },
     ],
     finisher: ['Chest and shoulder stretch — 3 min'],
@@ -133,7 +119,6 @@ const WEEK_ONE: DaySpec[] = [
         name: 'Treadmill Incline Walk',
         prescription: '35 min',
         note: 'Incline 6-8%, heart rate 120-135',
-        slug: 'incline-treadmill-walk',
       },
     ],
     finisher: ['Calf and hip flexor stretch — 5 min'],
@@ -148,31 +133,26 @@ const WEEK_ONE: DaySpec[] = [
         name: 'Lat Pulldown',
         prescription: '4 x 10',
         note: '90s rest',
-        slug: 'lat-pulldown',
       },
       {
         name: 'Seated Cable Row',
         prescription: '4 x 10',
         note: 'Squeeze for a count at the back',
-        slug: 'seated-cable-row',
       },
       {
         name: 'Dumbbell Single-Arm Row',
         prescription: '3 x 12 each side',
         note: '60s rest',
-        slug: 'single-arm-dumbbell-row',
       },
       {
         name: 'Face Pull',
         prescription: '3 x 15',
         note: 'Shoulder health — do not skip',
-        slug: 'face-pull',
       },
       {
         name: 'Dumbbell Hammer Curl',
         prescription: '3 x 12',
         note: '45s rest',
-        slug: 'hammer-curl',
       },
     ],
     finisher: ['Dead hang — 2 x 30s'],
@@ -203,31 +183,26 @@ const WEEK_ONE: DaySpec[] = [
         name: 'Barbell Back Squat',
         prescription: '4 x 8',
         note: '2 min rest',
-        slug: 'barbell-back-squat',
       },
       {
         name: 'Romanian Deadlift',
         prescription: '3 x 10',
         note: 'Hinge, flat back, feel the hamstrings',
-        slug: 'romanian-deadlift',
       },
       {
         name: 'Walking Lunge',
         prescription: '3 x 12 each leg',
         note: '75s rest',
-        slug: 'walking-lunge',
       },
       {
         name: 'Seated Leg Curl',
         prescription: '3 x 15',
         note: '60s rest',
-        slug: 'seated-leg-curl',
       },
       {
         name: 'Standing Calf Raise',
         prescription: '4 x 15',
         note: 'Pause at the top',
-        slug: 'standing-calf-raise',
       },
     ],
     finisher: ['Quad and hamstring stretch — 5 min'],
@@ -242,13 +217,11 @@ const WEEK_ONE: DaySpec[] = [
         name: 'Rowing Intervals',
         prescription: '8 x 250 m',
         note: '90s easy row between efforts',
-        slug: 'rowing-intervals',
       },
       {
         name: 'Kettlebell Swing',
         prescription: '3 x 20',
         note: 'Hips, not arms — 60s rest',
-        slug: 'kettlebell-swing',
       },
     ],
     finisher: ['5 min walk to bring the heart rate down'],
@@ -263,13 +236,19 @@ const WEEK_ONE: DaySpec[] = [
   },
 ]
 
-/** The programme's authored starting days (Day 1–7). */
+/** Days beyond this one start blank, same as a freshly added day — the
+ *  programme ships a partly-authored week so an unauthored day's empty state
+ *  is visible from the start, not just after someone adds one. */
+const AUTHORED_DAYS = 4
+
+/** The programme's starting days (Day 1–7): the first four authored, the rest
+ *  blank and ready to write. */
 export function buildSeedDays(): WorkoutDay[] {
-  return WEEK_ONE.map((spec, i) => ({
-    dayNum: i + 1,
-    type: spec.type,
-    body: dayBody(spec),
-  }))
+  return WEEK_ONE.map((spec, i) =>
+    i < AUTHORED_DAYS
+      ? { dayNum: i + 1, type: spec.type, body: dayBody(spec) }
+      : { dayNum: i + 1, type: 'rest' as WorkoutDayType, body: '' },
+  )
 }
 
 /** A freshly added day: a rest day with no session, ready to author. */
