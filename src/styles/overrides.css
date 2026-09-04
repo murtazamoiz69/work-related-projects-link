@@ -201,3 +201,50 @@
   padding: 1px 6px;
   margin-left: 8px;
 }
+
+/* ---- Workout plan: a flat run of Day N tabs, extended with "Add day" ---- */
+.wp-day-rail {
+  align-items: center;
+}
+.wp-add-day {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 14px;
+  border-radius: var(--r-sm);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--primary);
+  border: 1px dashed var(--primary);
+  background: transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.wp-add-day:hover {
+  background: var(--primary-light);
+}
+.wp-add-day:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+/* The day type selector, same label+select shape as the diet band picker. */
+.wp-type-picker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+/* A user's edited day carries a dot on its tab, so the diverged days are
+   visible without opening each one. */
+.wp-day-edited-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--amber);
+  display: inline-block;
+  margin-left: 7px;
+  vertical-align: middle;
+}
+.pw-week-chip.active .wp-day-edited-dot {
+  background: #f0c07a;
+}

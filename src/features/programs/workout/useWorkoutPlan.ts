@@ -1,149 +1,92 @@
 // Query + mutation hooks for the workout plan. Components use these; nothing
 // below the hook layer is imported by a component.
-import {
-  keepPreviousData,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { apiErrorMessage } from '@/lib/api/errors'
 import { showToast } from '@/lib/toast'
 import {
-  duplicateWorkoutWeek,
-  getClientWorkoutWeek,
-  getWorkoutWeek,
-  resetClientWorkoutWeek,
-  saveClientWorkoutDay,
-  saveWorkoutDay,
-  swapClientWorkoutDays,
-  swapWorkoutDays,
+  addWorkoutDay,
+  getClientWorkoutPlan,
+  getWorkoutPlan,
+  resetClientWorkoutDay,
+  saveClientWorkoutDays,
+  saveWorkoutDays,
 } from './workoutPlan.api'
-import type {
-  SaveWorkoutDayBody,
-  SwapWorkoutDaysBody,
-} from './workoutPlan.api.types'
+import type { SaveWorkoutDaysBody } from './workoutPlan.api.types'
 
 export const workoutPlanKeys = {
   all: ['workout-plan'] as const,
-  master: (weekNum: number) => ['workout-plan', 'master', weekNum] as const,
-  masterAll: () => ['workout-plan', 'master'] as const,
-  client: (clientId: string, weekNum: number) =>
-    ['workout-plan', 'client', clientId, weekNum] as const,
-  clientAll: (clientId: string) =>
-    ['workout-plan', 'client', clientId] as const,
+  master: () => ['workout-plan', 'master'] as const,
+  client: (clientId: string) => ['workout-plan', 'client', clientId] as const,
 }
 
-export function useWorkoutWeekQuery(weekNum: number) {
+export function useWorkoutPlanQuery() {
   return useQuery({
-    queryKey: workoutPlanKeys.master(weekNum),
-    queryFn: ({ signal }) => getWorkoutWeek(weekNum, signal),
-    // Hold the current week on screen while the next one loads, so the day
-    // list doesn't collapse through a skeleton on every click of the rail.
-    placeholderData: keepPreviousData,
+    queryKey: workoutPlanKeys.master(),
+    queryFn: ({ signal }) => getWorkoutPlan(signal),
   })
 }
 
-export function useSaveWorkoutDay() {
+/** Save the edited day to the days the nutritionist picked. */
+export function useSaveWorkoutDays() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (body: SaveWorkoutDayBody) => saveWorkoutDay(body),
-    onSuccess: (week) => {
-      queryClient.invalidateQueries({
-        queryKey: workoutPlanKeys.master(week.weekNum),
-      })
-      // Every user who hasn't had this week edited for them reads straight
-      // through to the programme's copy.
+    mutationFn: (body: SaveWorkoutDaysBody) => saveWorkoutDays(body),
+    onSuccess: (_plan, body) => {
+      queryClient.invalidateQueries({ queryKey: workoutPlanKeys.master() })
+      // Every user who hasn't had a day edited reads through to the programme.
       queryClient.invalidateQueries({ queryKey: ['workout-plan', 'client'] })
+      const n = body.days.length
+      showToast(`Saved to ${n} day${n === 1 ? '' : 's'}`)
     },
     onError: (error) => showToast(apiErrorMessage(error)),
   })
 }
 
-export function useSwapWorkoutDays() {
+export function useAddWorkoutDay() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (body: SwapWorkoutDaysBody) => swapWorkoutDays(body),
-    onSuccess: (week) => {
-      queryClient.invalidateQueries({
-        queryKey: workoutPlanKeys.master(week.weekNum),
-      })
+    mutationFn: () => addWorkoutDay(),
+    onSuccess: (plan) => {
+      queryClient.invalidateQueries({ queryKey: workoutPlanKeys.master() })
       queryClient.invalidateQueries({ queryKey: ['workout-plan', 'client'] })
-      showToast('Days swapped')
+      showToast(`Day ${plan.days.length} added`)
     },
     onError: (error) => showToast(apiErrorMessage(error)),
   })
 }
 
-export function useDuplicateWorkoutWeek() {
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: ({
-      fromWeek,
-      toWeeks,
-    }: {
-      fromWeek: number
-      toWeeks: number[]
-    }) => duplicateWorkoutWeek({ fromWeek, toWeeks }),
-    onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: workoutPlanKeys.masterAll() })
-      queryClient.invalidateQueries({ queryKey: ['workout-plan', 'client'] })
-      const n = result.weeks.length
-      showToast(
-        n
-          ? `Copied to ${n} week${n === 1 ? '' : 's'}`
-          : 'Nothing to copy — those weeks were already the source',
-      )
-    },
-    onError: (error) => showToast(apiErrorMessage(error)),
-  })
-}
-
-export function useClientWorkoutWeekQuery(clientId: string, weekNum: number) {
+export function useClientWorkoutPlanQuery(clientId: string) {
   return useQuery({
-    queryKey: workoutPlanKeys.client(clientId, weekNum),
-    queryFn: ({ signal }) => getClientWorkoutWeek(clientId, weekNum, signal),
-    placeholderData: keepPreviousData,
+    queryKey: workoutPlanKeys.client(clientId),
+    queryFn: ({ signal }) => getClientWorkoutPlan(clientId, signal),
   })
 }
 
-export function useSaveClientWorkoutDay(clientId: string) {
+export function useSaveClientWorkoutDays(clientId: string) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (body: SaveWorkoutDayBody) =>
-      saveClientWorkoutDay(clientId, body),
-    onSuccess: (week) => {
+    mutationFn: (body: SaveWorkoutDaysBody) =>
+      saveClientWorkoutDays(clientId, body),
+    onSuccess: (_plan, body) => {
       queryClient.invalidateQueries({
-        queryKey: workoutPlanKeys.client(clientId, week.weekNum),
+        queryKey: workoutPlanKeys.client(clientId),
       })
+      const n = body.days.length
+      showToast(`Saved to ${n} day${n === 1 ? '' : 's'} for this user`)
     },
     onError: (error) => showToast(apiErrorMessage(error)),
   })
 }
 
-export function useSwapClientWorkoutDays(clientId: string) {
+export function useResetClientWorkoutDay(clientId: string) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (body: SwapWorkoutDaysBody) =>
-      swapClientWorkoutDays(clientId, body),
-    onSuccess: (week) => {
+    mutationFn: (day: number) => resetClientWorkoutDay(clientId, day),
+    onSuccess: (_plan, day) => {
       queryClient.invalidateQueries({
-        queryKey: workoutPlanKeys.client(clientId, week.weekNum),
+        queryKey: workoutPlanKeys.client(clientId),
       })
-      showToast('Days swapped for this user')
-    },
-    onError: (error) => showToast(apiErrorMessage(error)),
-  })
-}
-
-export function useResetClientWorkoutWeek(clientId: string) {
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: (weekNum: number) => resetClientWorkoutWeek(clientId, weekNum),
-    onSuccess: (week) => {
-      queryClient.invalidateQueries({
-        queryKey: workoutPlanKeys.client(clientId, week.weekNum),
-      })
-      showToast(`Week ${week.weekNum} is back on the programme's plan`)
+      showToast(`Day ${day} is back on the programme's plan`)
     },
     onError: (error) => showToast(apiErrorMessage(error)),
   })

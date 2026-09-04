@@ -186,79 +186,74 @@ the catalog, never a bundled assumption.
 
 # Workout plan
 
-Seven rich-text days per week, six weeks. No per-user filtering: a user's week
-starts as the programme's week verbatim. See
+A flat, ordered run of **days** — Day 1, Day 2, … — not calendar weeks.
+Programmes run different lengths and we don't know which weekday a user starts
+on, so days are identified by number and the nutritionist adds days as far as
+the programme needs. Each day is one rich-text session tagged
+`type: workout | cardio | rest` (drives the chip/icon, nothing structural). No
+per-user filtering: a user's day starts as the programme's day verbatim. See
 [specs/programs.md](../specs/programs.md) › Workout plan for the product rules.
 
-`type`: `workout | cardio | rest`. `dayNum`: 1-7, Monday first.
+The UI: **Day tabs** across the top with an **Add day** button, one editor for
+the active day, a **type** chip, and a single **Save** that writes the day to
+the days the nutritionist picks (this day, all days, or any set).
 
-## `GET /program/workout-plan?week=`
-One week of the programme.
+## `GET /program/workout-plan`
+The whole run of days.
 
 **Success `200`**
 ```json
 {
-  "weekNum": 1,
   "updatedAt": "2026-09-03T…Z",
   "days": [
-    { "dayNum": 1, "label": "Push Day", "type": "workout",
-      "body": "<h3>Main set</h3><ul><li><strong>Barbell Bench Press</strong> — 4 x 8 · 90s rest · <a href=\"https://…\">Watch demo</a></li></ul>" },
-    { "dayNum": 4, "label": "Rest Day", "type": "rest", "body": "<ul><li>8,000 steps…</li></ul>" }
+    { "dayNum": 1, "type": "workout",
+      "body": "<h2>Push Day</h2><h3>Main set</h3><ul><li><strong>Barbell Bench Press</strong> — 4 x 8 · 90s rest · <a href=\"https://…\">Watch demo</a></li></ul>" },
+    { "dayNum": 4, "type": "rest", "body": "<ul><li>8,000 steps…</li></ul>" }
   ]
 }
 ```
-An unauthored day is `{ "label": "", "type": "rest", "body": "" }` — weeks 2-6
-ship that way.
+The day's coach-facing name lives inside `body` (an `<h2>`), since the day is
+identified only by its number. A freshly added day is `{ "type": "rest", "body": "" }`.
 
-**Errors:** `404` unknown week; `401`; `500`.
+**Errors:** `401`; `500`.
 
 ---
 
-## `PUT /program/workout-plan/day`
-Save one day. The whole day travels: renaming it, retyping it and rewriting the
-session are one edit as far as the nutritionist is concerned. Autosaved.
+## `PUT /program/workout-plan/days`
+Save the edited day's `type` + `body` to one or more days at once — the single
+Save's apply-to-days. Every day in `days` is set to the same `type`/`body`
+(a copy across).
 
-**Body** `{ "weekNum": 1, "dayNum": 1, "label": "Push Day", "type": "workout", "body": "<h3>…</h3>" }`
-**Success `200`** — the whole updated week.
+**Body** `{ "type": "workout", "body": "<h2>…</h2>", "days": [1, 3, 5] }`
+**Success `200`** — the whole updated plan.
 **Errors:** `422` `{ "fields": { "type": "Unknown day type." } }` or
-`{ "fields": { "dayNum": "A week has seven days." } }`; `404` unknown week; `401`; `500`.
+`{ "fields": { "days": "Select one or more days." } }`; `401`; `500`.
 
 ---
 
-## `POST /program/workout-plan/swap`
-Trade two days within a week — name, type and session all move. The weekdays
-themselves stay put (Monday is still `dayNum` 1).
+## `POST /program/workout-plan/add-day`
+Append a blank day (`type: rest`, empty `body`) at the end of the run.
 
-**Body** `{ "weekNum": 1, "fromDay": 1, "toDay": 5 }`
-**Success `200`** — the whole updated week.
-**Errors:** `422` same day, unknown day, or unknown week; `401`; `500`.
+**Body** none. **Success `200`** — the whole updated plan (one day longer).
+**Errors:** `401`; `500`.
 
 ---
 
-## `POST /program/workout-plan/duplicate`
-Copy all seven days of one week onto other weeks.
+## `GET /clients/:id/workout-plan`
+The user's copy of the run — the programme's days, each flagged `edited`.
 
-**Body** `{ "fromWeek": 1, "toWeeks": [2, 3, 5] }`
-**Success `200`** `{ "weeks": [2, 3, 5] }` — the weeks actually written; the
-source week and anything out of range are ignored rather than erroring.
-**Errors:** `422` empty `toWeeks`; `401`; `500`.
+**Success `200`** — the same shape as the programme plan, plus `clientId`; each
+day carries `edited`: `false` while the user reads straight through to the
+programme's day, `true` once a nutritionist has changed it for them. The day
+count follows the programme (no per-user Add day).
 
----
+## `PUT /clients/:id/workout-plan/days`
+Same body as the programme equivalent. Sets `edited: true` on the written days
+and leaves the programme untouched.
 
-## `GET /clients/:id/workout-plan?week=`
-The user's copy of a week.
-
-**Success `200`** — the same shape as the programme week, plus `clientId` and
-`edited`. `edited` is `false` while the user is reading straight through to the
-programme's week, and `true` once a nutritionist has changed it for them.
-
-## `PUT /clients/:id/workout-plan/day` · `POST /clients/:id/workout-plan/swap`
-Same bodies as the programme equivalents. Both set `edited: true` and leave the
-programme untouched.
-
-## `POST /clients/:id/workout-plan/reset?week=`
-Throw away this user's version of a week and go back to the programme's.
-**Success `200`** — the week, with `edited: false`.
+## `POST /clients/:id/workout-plan/reset`
+Drop this user's edit for one day and go back to the programme's.
+**Body** `{ "day": 3 }` **Success `200`** — the plan, with that day `edited: false`.
 
 ---
 

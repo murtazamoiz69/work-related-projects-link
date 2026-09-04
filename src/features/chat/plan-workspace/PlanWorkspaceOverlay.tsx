@@ -205,12 +205,7 @@ export function PlanWorkspaceOverlay({
                   inheriting that count. */}
               {activeTab === 'workout' ? (
                 <div className="pw-panel-scroll">
-                  <ClientWorkoutPlanTab
-                    client={client}
-                    totalWeeks={PROGRAM_DURATION_WEEKS}
-                    activeWeek={programWeek}
-                    setActiveWeek={setActiveWeekOverride}
-                  />
+                  <ClientWorkoutPlanTab client={client} />
                 </div>
               ) : null}
               {activeTab === 'diet' ? (

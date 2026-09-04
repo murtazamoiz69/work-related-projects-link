@@ -1,163 +1,161 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Icon } from '@/components/atoms/Icon'
+import { LazyRichTextEditor } from '@/components/molecules/LazyRichTextEditor'
 import { apiErrorMessage } from '@/lib/api/errors'
-import { showToast } from '@/lib/toast'
-import { DuplicateWeeksModal } from '../../components/DuplicateWeeksModal'
-import { isBlankWeek } from '../workoutPlan.types'
 import {
-  useDuplicateWorkoutWeek,
-  useSaveWorkoutDay,
-  useSwapWorkoutDays,
-  useWorkoutWeekQuery,
+  WORKOUT_DAY_TYPES,
+  WORKOUT_DAY_TYPE_LABEL,
+  type WorkoutDayType,
+} from '../workoutPlan.types'
+import {
+  useAddWorkoutDay,
+  useSaveWorkoutDays,
+  useWorkoutPlanQuery,
 } from '../useWorkoutPlan'
-import { WorkoutDayRow } from './WorkoutDayRow'
+import { SaveToDaysModal } from './SaveToDaysModal'
 
-/** The programme's workout plan. One week at a time, seven days down the page,
- *  each expanding into the session for that day. Same rhythm as the diet tab
- *  next door — pick a week on the rail, author it, carry it forward with
- *  Duplicate — because a nutritionist moving between the two shouldn't have to
- *  learn a second way of working. */
-export function WorkoutPlanTab({
-  totalWeeks,
-  activeWeek,
-  setActiveWeek,
-}: {
-  totalWeeks: number
-  activeWeek: number
-  setActiveWeek: (n: number) => void
-}) {
-  const [openDay, setOpenDay] = useState<number | null>(null)
-  const [duplicateOpen, setDuplicateOpen] = useState(false)
+/** The programme's workout plan: a flat run of days — Day 1, Day 2, … — each a
+ *  rich-text session tagged workout / cardio / rest. Pick a day, author it, and
+ *  Save writes it to the days you pick; "Add day" extends the run as far as the
+ *  programme needs. */
+export function WorkoutPlanTab() {
+  const planQuery = useWorkoutPlanQuery()
+  const saveDays = useSaveWorkoutDays()
+  const addDay = useAddWorkoutDay()
 
-  const weekQuery = useWorkoutWeekQuery(activeWeek)
-  const saveDay = useSaveWorkoutDay()
-  const swapDays = useSwapWorkoutDays()
-  const duplicate = useDuplicateWorkoutWeek()
+  const days = planQuery.data?.days ?? []
+  const [activeDay, setActiveDay] = useState(1)
+  const [saveOpen, setSaveOpen] = useState(false)
 
-  const week = weekQuery.data
-  const days = week?.days ?? []
-  const counts = {
-    workout: days.filter((d) => d.type === 'workout').length,
-    cardio: days.filter((d) => d.type === 'cardio').length,
-  }
+  const current = days.find((d) => d.dayNum === activeDay)
+  const [draft, setDraft] = useState('')
+  const [draftType, setDraftType] = useState<WorkoutDayType>('workout')
+  const currentBody = current?.body
+  const currentType = current?.type
+  useEffect(() => {
+    if (currentBody === undefined) return
+    setDraft(currentBody)
+    setDraftType(currentType ?? 'rest')
+  }, [currentBody, currentType, activeDay])
 
   return (
     <>
-      <div className="prog-week-rail">
-        {Array.from({ length: totalWeeks }, (_, i) => i + 1).map((w) => (
+      <div className="prog-week-rail wp-day-rail">
+        {days.map((d) => (
           <button
-            key={w}
-            className={`pw-week-chip${w === activeWeek ? ' active' : ''}`}
-            onClick={() => {
-              setActiveWeek(w)
-              setOpenDay(null)
-            }}
+            key={d.dayNum}
+            className={`pw-week-chip${d.dayNum === activeDay ? ' active' : ''}`}
+            onClick={() => setActiveDay(d.dayNum)}
           >
-            Week {w}
+            Day {d.dayNum}
           </button>
         ))}
+        <button
+          className="wp-add-day"
+          onClick={() => addDay.mutate()}
+          disabled={addDay.isPending || planQuery.isPending}
+        >
+          <Icon name="plus" />
+          Add day
+        </button>
       </div>
 
       <section className="panel diet-sheet-panel">
         <div className="panel-head diet-sheet-head">
           <div>
-            <h2>Week {activeWeek} workout plan</h2>
+            <h2>Day {activeDay} workout</h2>
             <p className="panel-sub">
-              {week && !isBlankWeek(week)
-                ? `${counts.workout} training day${counts.workout === 1 ? '' : 's'} · ${counts.cardio} cardio · ${7 - counts.workout - counts.cardio} rest`
-                : 'Seven days, one session each — open a day to write it.'}
+              One session per day — warm-up, the main set with a video beside
+              each movement, and a finisher.
             </p>
           </div>
 
-          <div className="diet-sheet-actions">
-            <button
-              className="btn-secondary diet-duplicate-btn"
-              onClick={() => setDuplicateOpen(true)}
-              disabled={weekQuery.isPending || weekQuery.isError}
+          <label className="wp-type-picker">
+            <span className="diet-band-label">Type</span>
+            <select
+              className="select-range"
+              aria-label="Day type"
+              value={draftType}
+              onChange={(e) => setDraftType(e.target.value as WorkoutDayType)}
             >
-              <Icon name="copy" />
-              Duplicate
-            </button>
-          </div>
+              {WORKOUT_DAY_TYPES.map((t) => (
+                <option key={t} value={t}>
+                  {WORKOUT_DAY_TYPE_LABEL[t]}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
 
-        {weekQuery.isPending ? (
+        {planQuery.isPending ? (
           <div className="diet-sheet-loading">
             <span className="skel skel-wide" />
             <span className="skel" />
             <span className="skel" />
             <span className="skel skel-narrow" />
           </div>
-        ) : weekQuery.isError ? (
+        ) : planQuery.isError ? (
           <div className="clients-empty is-error" role="alert">
             <Icon name="alert-triangle" />
-            <p>{apiErrorMessage(weekQuery.error)}</p>
+            <p>{apiErrorMessage(planQuery.error)}</p>
             <button
               className="link-btn clients-empty-retry"
-              onClick={() => weekQuery.refetch()}
+              onClick={() => planQuery.refetch()}
             >
               Try again
             </button>
           </div>
         ) : (
           <>
-            {week && isBlankWeek(week) ? (
+            {!currentBody?.trim() ? (
               <p className="diet-sheet-empty-note">
                 <Icon name="info" />
-                No sessions for this week yet. Open a day and write it, or go to
-                a week that has one and use <strong>Duplicate</strong> to copy
-                the whole week across.
+                No session for this day yet. Write it here, then{' '}
+                <strong>Save</strong> it to the days it applies to.
               </p>
             ) : null}
-            <div className="wp-day-list">
-              {days.map((day) => (
-                <WorkoutDayRow
-                  key={day.dayNum}
-                  day={day}
-                  weekNum={activeWeek}
-                  expanded={openDay === day.dayNum}
-                  onToggle={() =>
-                    setOpenDay((prev) =>
-                      prev === day.dayNum ? null : day.dayNum,
-                    )
-                  }
-                  onSave={(next) =>
-                    saveDay.mutate({ weekNum: activeWeek, ...next })
-                  }
-                  onSwap={(fromDay, toDay) =>
-                    swapDays.mutate({ weekNum: activeWeek, fromDay, toDay })
-                  }
-                  otherDays={days.filter((d) => d.dayNum !== day.dayNum)}
-                  editorContext=""
-                  swapPending={swapDays.isPending}
-                />
-              ))}
+            <LazyRichTextEditor
+              ariaLabel={`Day ${activeDay} workout`}
+              value={draft}
+              onChange={setDraft}
+              onSeeded={setDraft}
+            />
+
+            <div className="diet-save-bar">
+              <p className="diet-save-hint">
+                Editing <b>Day {activeDay}</b> — Save writes it to the days you
+                pick.
+              </p>
+              <button
+                className="btn-primary"
+                onClick={() => setSaveOpen(true)}
+                disabled={saveDays.isPending}
+              >
+                <Icon name="check" />
+                Save
+              </button>
             </div>
           </>
         )}
       </section>
 
-      {duplicateOpen ? (
-        <DuplicateWeeksModal
-          title="Duplicate this week"
+      {saveOpen ? (
+        <SaveToDaysModal
+          currentDay={activeDay}
+          totalDays={days.length}
+          pending={saveDays.isPending}
           intro={
             <>
-              Copy all seven days of <strong>Week {activeWeek}</strong> — their
-              names, types and sessions — into the weeks you pick. Anything
-              already saved in those weeks is replaced.
+              Save the <strong>Day {activeDay}</strong> session you just edited
+              into the days you pick. Anything already on those days is
+              replaced.
             </>
           }
-          fromWeek={activeWeek}
-          totalWeeks={totalWeeks}
-          pending={duplicate.isPending}
-          onClose={() => setDuplicateOpen(false)}
-          onConfirm={(weeks) =>
-            duplicate.mutate(
-              { fromWeek: activeWeek, toWeeks: weeks },
-              {
-                onSuccess: () => setDuplicateOpen(false),
-                onError: (error) => showToast(apiErrorMessage(error)),
-              },
+          onClose={() => setSaveOpen(false)}
+          onConfirm={(chosen) =>
+            saveDays.mutate(
+              { type: draftType, body: draft, days: chosen },
+              { onSuccess: () => setSaveOpen(false) },
             )
           }
         />

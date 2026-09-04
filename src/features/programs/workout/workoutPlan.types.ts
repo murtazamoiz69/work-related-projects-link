@@ -1,18 +1,20 @@
 // The workout-plan model for Diwali Glow.
 //
-// Deliberately the same shape as the diet plan next door: a week is authored as
-// prose in a rich-text editor rather than assembled from a structured exercise
-// library. The reason is the same one that drove the diet sheet — what a coach
-// actually writes for a day is a mix of things a schema keeps fighting: a warm
-// up, a superset, a note about form, a link to the video for a movement nobody
-// can spell. HTML carries all of it, and it is what the AI engine reads.
+// A programme is a flat, ordered run of **days** — Day 1, Day 2, … — not
+// calendar weeks. Different programmes run different lengths (20, 25, 30 days),
+// and we don't know which weekday a user starts on, so the plan is authored as
+// "day N" and the nutritionist adds days as far as the programme needs.
 //
-// Unlike the diet plan there is no per-user filtering here. A user's copy
-// starts as the programme's week and diverges only when a nutritionist edits it
-// for them.
+// Each day is authored as prose in a rich-text editor rather than assembled
+// from a structured exercise library — a coach writes a warm-up, a superset, a
+// form note, a video link, and HTML carries all of it (and it's what the AI
+// engine reads). A small type chip (workout / cardio / rest) tags the day for
+// scanning; it drives the icon and label, nothing structural.
+//
+// There is no per-user filtering here: a user's copy starts as the programme's
+// day verbatim and diverges only when a nutritionist edits it for them.
 
-/** What a day is for. Drives the icon and the chip, nothing else — a "cardio"
- *  day is not structurally different from a "workout" one. */
+/** What a day is for. Drives the icon and the chip, nothing else. */
 export const WORKOUT_DAY_TYPES = ['workout', 'cardio', 'rest'] as const
 
 export type WorkoutDayType = (typeof WORKOUT_DAY_TYPES)[number]
@@ -33,51 +35,31 @@ export const WORKOUT_DAY_TYPE_ICON: Record<WorkoutDayType, string> = {
   rest: 'moon',
 }
 
-/** Day 1 is Monday. The programme runs on calendar weeks, so the labels are
- *  fixed rather than "Day 1…Day 7". */
-export const WEEKDAY_NAMES = [
-  'Monday',
-  'Tuesday',
-  'Wednesday',
-  'Thursday',
-  'Friday',
-  'Saturday',
-  'Sunday',
-] as const
-
-export function weekdayName(dayNum: number): string {
-  return WEEKDAY_NAMES[dayNum - 1] ?? `Day ${dayNum}`
-}
-
-/** One day of a week. `label` is the coach's name for it ("Push Day", "Zone 2
- *  Cardio") and `body` is the rich-text session — exercises, sets and the video
- *  link for each movement. */
-export type WorkoutDaySheet = {
+/** One day of the programme. `body` is the rich-text session — exercises, sets,
+ *  the video link for each movement, or just a rest-day note. */
+export type WorkoutDay = {
   dayNum: number
-  label: string
   type: WorkoutDayType
   body: string
 }
 
-export type WorkoutWeekSheet = {
-  weekNum: number
-  days: WorkoutDaySheet[]
+export type WorkoutPlan = {
+  days: WorkoutDay[]
   updatedAt: Date
 }
 
-/** A user's own copy of a week. `edited` flags a week the nutritionist has
- *  changed for this user, so the UI can say it no longer tracks the programme. */
-export type ClientWorkoutWeek = WorkoutWeekSheet & {
+/** A user's own copy. Each day carries `edited`: true once a nutritionist has
+ *  changed it for this user, so it no longer tracks the programme's day. */
+export type ClientWorkoutDay = WorkoutDay & { edited: boolean }
+
+export type ClientWorkoutPlan = {
   clientId: string
-  edited: boolean
+  days: ClientWorkoutDay[]
+  updatedAt: Date
 }
 
-/** A day nobody has authored yet: no name, no session. Weeks 2-6 ship like this
- *  and are filled in directly or copied across with Duplicate. */
-export function isBlankDay(day: WorkoutDaySheet): boolean {
-  return !day.label.trim() && !day.body.trim()
-}
-
-export function isBlankWeek(week: { days: WorkoutDaySheet[] }): boolean {
-  return week.days.every(isBlankDay)
+/** A day nobody has authored yet: no session. Added days start blank and are
+ *  filled in, so an empty day says which still need writing. */
+export function isBlankDay(day: { body: string }): boolean {
+  return !day.body.trim()
 }

@@ -1,14 +1,10 @@
 // The authored content behind the workout plan.
 //
-// Only **week 1** ships written, for the same reason the diet sheet does: the
-// nutritionist builds one week, copies it forward with Duplicate, then varies
-// it. Seeding all six would be six near-identical weeks nobody had decided on,
-// and would hide which weeks have actually been thought about.
-import {
-  WEEKDAY_NAMES,
-  type WorkoutDaySheet,
-  type WorkoutDayType,
-} from './workoutPlan.types'
+// The programme ships seven authored days (Day 1–7); the nutritionist adds more
+// with "Add day" and fills them in. Each day's coach-facing name ("Push Day")
+// is folded into the body as a heading, since the day itself is identified only
+// by its number now.
+import { type WorkoutDay, type WorkoutDayType } from './workoutPlan.types'
 
 /** Exercise demo videos. Mock links — a real deployment points these at the
  *  video library, and the nutritionist can paste any URL in the editor. */
@@ -55,7 +51,10 @@ function movementHtml(m: Movement): string {
 }
 
 function dayBody(spec: DaySpec): string {
-  const parts = [`<p><em>${escapeHtml(spec.intent)}</em></p>`]
+  const parts = [
+    `<h2>${escapeHtml(spec.label)}</h2>`,
+    `<p><em>${escapeHtml(spec.intent)}</em></p>`,
+  ]
   if (spec.warmup.length) {
     parts.push('<h3>Warm-up</h3>')
     parts.push(
@@ -264,35 +263,16 @@ const WEEK_ONE: DaySpec[] = [
   },
 ]
 
-/** Week 1, authored. */
-export function buildWeekOneDays(): WorkoutDaySheet[] {
+/** The programme's authored starting days (Day 1–7). */
+export function buildSeedDays(): WorkoutDay[] {
   return WEEK_ONE.map((spec, i) => ({
     dayNum: i + 1,
-    label: spec.label,
     type: spec.type,
     body: dayBody(spec),
   }))
 }
 
-/** An unauthored week: seven days with no name and no session. */
-export function buildBlankDays(): WorkoutDaySheet[] {
-  return WEEKDAY_NAMES.map((_, i) => ({
-    dayNum: i + 1,
-    label: '',
-    type: 'rest' as WorkoutDayType,
-    body: '',
-  }))
-}
-
-export function buildMasterWeeks(
-  durationWeeks: number,
-): { weekNum: number; days: WorkoutDaySheet[] }[] {
-  const out: { weekNum: number; days: WorkoutDaySheet[] }[] = []
-  for (let w = 1; w <= durationWeeks; w++) {
-    out.push({
-      weekNum: w,
-      days: w === 1 ? buildWeekOneDays() : buildBlankDays(),
-    })
-  }
-  return out
+/** A freshly added day: a rest day with no session, ready to author. */
+export function buildBlankDay(dayNum: number): WorkoutDay {
+  return { dayNum, type: 'rest' as WorkoutDayType, body: '' }
 }

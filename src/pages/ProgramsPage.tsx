@@ -177,11 +177,7 @@ export function ProgramsPage() {
 
         <div>
           {tab === 'workout' ? (
-            <WorkoutPlanTab
-              totalWeeks={program.durationWeeks}
-              activeWeek={activeWeek}
-              setActiveWeek={setActiveWeek}
-            />
+            <WorkoutPlanTab />
           ) : (
             <DietPlanTab
               totalWeeks={program.durationWeeks}
