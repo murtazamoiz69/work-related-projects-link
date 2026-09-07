@@ -5,9 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build --mode development",
+    "build:dev": "tsc -b && vite build --mode development",
     "build:single": "vite build --config vite.config.singlefile.ts",
     "preview": "vite preview",
+    "preview:dev": "vite preview --port 5173",
     "typecheck": "tsc -b",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
