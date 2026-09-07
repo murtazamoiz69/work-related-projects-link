@@ -192,17 +192,14 @@ describe('ClientsPage — interactions', () => {
     expect(lastSearch()).toEqual({ to: '/clients', search: {} })
   })
 
-  it('row Call action fires a toast', async () => {
-    const { user } = renderPage()
+  it('row Call and Email actions are tel:/mailto: links', async () => {
+    renderPage()
     await screen.findByText(new RegExp(`of ${TOTAL}`))
 
-    const callBtn = screen.getAllByRole('button', { name: /^Call / })[0]
-    const name = (callBtn.getAttribute('aria-label') ?? '').replace(
-      /^Call /,
-      '',
-    )
-    await user.click(callBtn)
-    expect(showToast).toHaveBeenCalledWith(`Calling ${name}…`)
+    const call = screen.getAllByRole('link', { name: /^Call / })[0]
+    expect(call.getAttribute('href')).toMatch(/^tel:/)
+    const email = screen.getAllByRole('link', { name: /^Email / })[0]
+    expect(email.getAttribute('href')).toMatch(/^mailto:.+@/)
   })
 
   it('row Manage navigates to the plan workspace', async () => {
@@ -406,8 +403,8 @@ describe('ClientsPage — accessibility', () => {
     const utils = within(firstRow)
     expect(utils.getByRole('button', { name: /^Manage / })).toBeInTheDocument()
     expect(utils.getByRole('button', { name: /^Extend / })).toBeInTheDocument()
-    expect(utils.getByRole('button', { name: /^Call / })).toBeInTheDocument()
-    expect(utils.getByRole('button', { name: /^Email / })).toBeInTheDocument()
+    expect(utils.getByRole('link', { name: /^Call / })).toBeInTheDocument()
+    expect(utils.getByRole('link', { name: /^Email / })).toBeInTheDocument()
   })
 
   it('confirmation dialog focuses Cancel and closes on Escape', async () => {

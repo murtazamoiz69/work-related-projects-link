@@ -179,14 +179,15 @@ describe('NutritionistsPage — interactions', () => {
     ).toBeVisible()
   })
 
-  it('row Call action fires a toast', async () => {
-    const { user } = renderPage()
+  it('row Email action is a mailto: link; Call is disabled without a phone', async () => {
+    renderPage()
     await screen.findByText(new RegExp(`of ${TEAM}`))
 
-    const callBtn = screen.getAllByRole('button', { name: /^Call / })[0]
-    const nm = (callBtn.getAttribute('aria-label') ?? '').replace(/^Call /, '')
-    await user.click(callBtn)
-    expect(showToast).toHaveBeenCalledWith(`Calling ${nm}…`)
+    const email = screen.getAllByRole('link', { name: /^Email / })[0]
+    expect(email.getAttribute('href')).toMatch(/^mailto:.+@/)
+    expect(
+      screen.getAllByRole('button', { name: /^No phone number for / })[0],
+    ).toBeDisabled()
   })
 
   it('toggling access confirms, then sends the PATCH', async () => {
@@ -284,8 +285,11 @@ describe('NutritionistsPage — accessibility', () => {
     await screen.findByText(new RegExp(`of ${TEAM}`))
     const firstRow = screen.getAllByRole('row')[1]
     const utils = within(firstRow)
-    expect(utils.getByRole('button', { name: /^Call / })).toBeInTheDocument()
-    expect(utils.getByRole('button', { name: /^Email / })).toBeInTheDocument()
+    // No phone on file for nutritionists — Call is present but disabled.
+    expect(
+      utils.getByRole('button', { name: /^No phone number for / }),
+    ).toBeInTheDocument()
+    expect(utils.getByRole('link', { name: /^Email / })).toBeInTheDocument()
     expect(utils.getByRole('button', { name: /^Edit / })).toBeInTheDocument()
   })
 

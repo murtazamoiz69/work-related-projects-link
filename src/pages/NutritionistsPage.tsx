@@ -4,7 +4,6 @@ import { Icon } from '@/components/atoms/Icon'
 import { Topbar } from '@/components/organisms/Topbar'
 import { ConfirmDialog } from '@/components/molecules/ConfirmDialog'
 import { apiErrorMessage } from '@/lib/api/errors'
-import { showToast } from '@/lib/toast'
 import {
   useNutritionistsQuery,
   useUpdateNutritionistAccess,
@@ -246,8 +245,6 @@ export function NutritionistsPage({ search }: { search: NutritionistsSearch }) {
                       <NutritionistTableRow
                         key={n.id}
                         nutritionist={n}
-                        onCall={(nut) => showToast(`Calling ${nut.name}…`)}
-                        onEmail={(nut) => showToast(`Emailing ${nut.name}…`)}
                         onRequestToggle={setToggleTarget}
                         onEdit={setEditTarget}
                         onViewMembers={setMembersTarget}

@@ -4,7 +4,6 @@ import { Icon } from '@/components/atoms/Icon'
 import { Topbar } from '@/components/organisms/Topbar'
 import { ConfirmDialog } from '@/components/molecules/ConfirmDialog'
 import { apiErrorMessage } from '@/lib/api/errors'
-import { showToast } from '@/lib/toast'
 import {
   useClientsQuery,
   useClientsSummaryQuery,
@@ -156,9 +155,6 @@ export function ClientsPage({ search }: { search: ClientsSearch }) {
       search: { c: client.conversationId, plan: true },
     })
   }
-
-  const callClient = (client: Client) => showToast(`Calling ${client.name}…`)
-  const emailClient = (client: Client) => showToast(`Emailing ${client.name}…`)
 
   const confirmToggle = () => {
     if (!toggleTarget) return
@@ -325,8 +321,6 @@ export function ClientsPage({ search }: { search: ClientsSearch }) {
                         onOpenChat={openChat}
                         onManage={manageUser}
                         onExtend={setExtendTarget}
-                        onCall={callClient}
-                        onEmail={emailClient}
                         onRequestToggle={setToggleTarget}
                       />
                     ))

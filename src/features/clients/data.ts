@@ -423,7 +423,7 @@ export const CLIENTS_DATA: Client[] = COHORT_IDS.map((id) => {
   const row = NAMED_CLIENTS.find((c) => c.id === id)
   if (!row) throw new Error(`Cohort id ${id} is not in NAMED_CLIENTS`)
   return row
-}).map((c): Client => {
+}).map((c, i): Client => {
   const daysOnProgram = Math.round(
     (Date.now() - c.joinDate.getTime()) / 86_400_000,
   )
@@ -431,6 +431,9 @@ export const CLIENTS_DATA: Client[] = COHORT_IDS.map((id) => {
   return {
     dietProfile: DIET_PROFILES[c.id],
     ...c,
+    // A contact number for the roster's "Call" action. Fictional 555 range; a
+    // real backend supplies the user's own.
+    phone: c.phone ?? `+1 (555) 01${String(i).padStart(2, '0')}`,
     plan: PROGRAM_PLAN[c.program],
     // The chat thread is keyed by the client id today; exposed as its own field
     // so consumers don't hardcode that assumption.

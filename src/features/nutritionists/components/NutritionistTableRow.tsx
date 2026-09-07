@@ -6,15 +6,11 @@ import type { Nutritionist } from '../types'
 
 export function NutritionistTableRow({
   nutritionist: n,
-  onCall,
-  onEmail,
   onRequestToggle,
   onEdit,
   onViewMembers,
 }: {
   nutritionist: Nutritionist
-  onCall: (n: Nutritionist) => void
-  onEmail: (n: Nutritionist) => void
   onRequestToggle: (n: Nutritionist) => void
   onEdit: (n: Nutritionist) => void
   onViewMembers: (n: Nutritionist) => void
@@ -54,21 +50,22 @@ export function NutritionistTableRow({
       <td>
         <div className="ct-actions">
           <button
+            type="button"
             className="icon-btn sm"
-            title="Call"
-            aria-label={`Call ${n.name}`}
-            onClick={() => onCall(n)}
+            disabled
+            title="No phone number on file"
+            aria-label={`No phone number for ${n.name}`}
           >
             <Icon name="phone" />
           </button>
-          <button
+          <a
             className="icon-btn sm"
-            title="Email"
+            href={`mailto:${n.email}`}
+            title={`Email ${n.email}`}
             aria-label={`Email ${n.name}`}
-            onClick={() => onEmail(n)}
           >
             <Icon name="mail" />
-          </button>
+          </a>
           <button
             className="icon-btn sm"
             title="Edit"

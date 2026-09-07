@@ -84,16 +84,12 @@ export function ClientTableRow({
   onOpenChat,
   onManage,
   onExtend,
-  onCall,
-  onEmail,
   onRequestToggle,
 }: {
   client: Client
   onOpenChat: (client: Client) => void
   onManage: (client: Client) => void
   onExtend: (client: Client) => void
-  onCall: (client: Client) => void
-  onEmail: (client: Client) => void
   onRequestToggle: (client: Client) => void
 }) {
   return (
@@ -162,22 +158,34 @@ export function ClientTableRow({
           >
             <Icon name="message-circle" />
           </button>
-          <button
+          {client.phone ? (
+            <a
+              className="icon-btn sm"
+              href={`tel:${client.phone}`}
+              title={`Call ${client.phone}`}
+              aria-label={`Call ${client.name}`}
+            >
+              <Icon name="phone" />
+            </a>
+          ) : (
+            <button
+              type="button"
+              className="icon-btn sm"
+              disabled
+              title="No phone number on file"
+              aria-label={`No phone number for ${client.name}`}
+            >
+              <Icon name="phone" />
+            </button>
+          )}
+          <a
             className="icon-btn sm"
-            title="Call"
-            aria-label={`Call ${client.name}`}
-            onClick={() => onCall(client)}
-          >
-            <Icon name="phone" />
-          </button>
-          <button
-            className="icon-btn sm"
-            title="Email"
+            href={`mailto:${client.email}`}
+            title={`Email ${client.email}`}
             aria-label={`Email ${client.name}`}
-            onClick={() => onEmail(client)}
           >
             <Icon name="mail" />
-          </button>
+          </a>
           <ToggleSwitch
             checked={client.accessEnabled}
             onChange={() => onRequestToggle(client)}

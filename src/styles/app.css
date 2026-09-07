@@ -2156,6 +2156,16 @@ svg {
 .ct-actions .icon-btn {
   flex-shrink: 0;
 }
+/* A row action with nothing to act on (e.g. Call with no phone number). */
+.ct-actions .icon-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.ct-actions .icon-btn:disabled:hover {
+  background: var(--surface);
+  box-shadow: var(--shadow-xs);
+  transform: none;
+}
 
 .adherence-cell {
   display: flex;
