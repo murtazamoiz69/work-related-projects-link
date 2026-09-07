@@ -3,10 +3,15 @@ import { Sidebar } from '@/components/organisms/Sidebar'
 import { RouteFallback } from '@/components/molecules/RouteFallback'
 import { RouteErrorFallback } from '@/components/molecules/RouteErrorFallback'
 import { useLibrariesQuery } from '@/features/programs'
+import { useSyncActiveProfile } from '@/features/shell/hooks/useSyncActiveProfile'
 
 /** The authed app shell: sidebar + main column. Pages render their own Topbar
  *  and `<main className="content">` into the Outlet. */
 export function AppLayout() {
+  // Keep the sidebar profile chip in sync with the real signed-in user (name,
+  // avatar) by hydrating it from the server — not the login snapshot.
+  useSyncActiveProfile()
+
   // Load the reference libraries (exercises/meals/workout templates) once and
   // prime the cache before any page that resolves exercise/meal ids renders.
   // The shell stays visible; only the content area waits.
