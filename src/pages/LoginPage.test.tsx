@@ -101,6 +101,35 @@ describe('LoginPage — successful submission', () => {
     )
   })
 
+  it('remembers the email for next visit when "Remember me" is checked', async () => {
+    const { user, unmount } = renderWithProviders(<LoginPage />)
+    await user.clear(email())
+    await user.type(email(), 'alex@nourishwithsim.com')
+    await user.type(password(), 'secret')
+    // "Remember me" is checked by default.
+    await user.click(signIn())
+    await waitFor(() => expect(navigateSpy).toHaveBeenCalled())
+    expect(localStorage.getItem('nws.rememberedEmail')).toBe(
+      'alex@nourishwithsim.com',
+    )
+
+    // A fresh mount prefills the remembered email, not the demo default.
+    unmount()
+    renderWithProviders(<LoginPage />)
+    expect(email()).toHaveValue('alex@nourishwithsim.com')
+  })
+
+  it('forgets the email when "Remember me" is unchecked', async () => {
+    const { user } = renderWithProviders(<LoginPage />)
+    await user.clear(email())
+    await user.type(email(), 'alex@nourishwithsim.com')
+    await user.type(password(), 'secret')
+    await user.click(screen.getByLabelText('Remember me')) // uncheck
+    await user.click(signIn())
+    await waitFor(() => expect(navigateSpy).toHaveBeenCalled())
+    expect(localStorage.getItem('nws.rememberedEmail')).toBeNull()
+  })
+
   it('shows a pending label and disables submit while signing in', async () => {
     server.use(
       http.post(LOGIN, async () => {

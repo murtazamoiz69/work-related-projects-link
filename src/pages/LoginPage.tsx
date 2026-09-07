@@ -19,6 +19,28 @@ type LoginForm = z.infer<typeof loginSchema>
 
 type LoginPageProps = { redirect?: string }
 
+// "Remember me" persists the last-used email (never the password) so the login
+// form prefills it next time. Cleared when a sign-in leaves the box unchecked.
+const REMEMBERED_EMAIL_KEY = 'nws.rememberedEmail'
+const DEMO_EMAIL = 'sarah@nourishwithsim.com'
+
+function readRememberedEmail(): string | null {
+  try {
+    return localStorage.getItem(REMEMBERED_EMAIL_KEY)
+  } catch {
+    return null
+  }
+}
+
+function writeRememberedEmail(email: string | null): void {
+  try {
+    if (email) localStorage.setItem(REMEMBERED_EMAIL_KEY, email)
+    else localStorage.removeItem(REMEMBERED_EMAIL_KEY)
+  } catch {
+    /* localStorage unavailable — remember-me just won't persist */
+  }
+}
+
 export function LoginPage({ redirect }: LoginPageProps) {
   const navigate = useNavigate()
   const loginMutation = useLogin()
@@ -35,7 +57,9 @@ export function LoginPage({ redirect }: LoginPageProps) {
   } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: 'sarah@nourishwithsim.com',
+      // A remembered email (from a prior "Remember me" sign-in) wins; otherwise
+      // fall back to the demo address as a first-run hint.
+      email: readRememberedEmail() ?? DEMO_EMAIL,
       password: '',
       rememberMe: true,
     },
@@ -50,7 +74,12 @@ export function LoginPage({ redirect }: LoginPageProps) {
 
   const onSubmit = (data: LoginForm) => {
     loginMutation.mutate(data, {
-      onSuccess: () => navigate({ to: redirect ?? '/' }),
+      onSuccess: () => {
+        // Remember (or forget) the email for the next visit — password is never
+        // stored.
+        writeRememberedEmail(data.rememberMe ? data.email.trim() : null)
+        navigate({ to: redirect ?? '/' })
+      },
       onError: (error) => {
         setError('password', {
           message:
@@ -141,11 +170,9 @@ export function LoginPage({ redirect }: LoginPageProps) {
               </label>
               <button
                 type="button"
-                className="link-btn"
+                className="link-btn hidden"
                 onClick={onForgotPassword}
-              >
-                Forgot password?
-              </button>
+              ></button>
             </div>
 
             {firstError ? (
