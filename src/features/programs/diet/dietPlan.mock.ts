@@ -8,6 +8,7 @@ import {
   type CalorieBand,
   type DietProfile,
   type MedicalCondition,
+  type PlanReviewStatus,
 } from './dietPlan.types'
 import type { ClientDietPlanDto, DietPlanSheetDto } from './dietPlan.api.types'
 
@@ -194,15 +195,27 @@ export function tailorForProfile(
   return { body, appliedFilters: applied }
 }
 
+/** The sign-off, as the plan endpoints report it. It lives on the client
+ *  record, so it is stamped onto every response rather than stored with the
+ *  plan — a cached override written before the sign-off would otherwise keep
+ *  reporting the state the plan was in when it was last edited. */
+export type PlanReview = {
+  review: PlanReviewStatus
+  reviewedAt: string | null
+}
+
 /** A user's plan for a week: their own edited copy if one exists, otherwise the
  *  master sheet for their band run through the engine. */
 export function getClientPlan(
   clientId: string,
   weekNum: number,
   profile: DietProfile,
+  sign: PlanReview,
 ): ClientDietPlanDto {
   const existing = clientOverrides.get(clientKey(clientId, weekNum))
-  if (existing && existing.profile.band === profile.band) return existing
+  if (existing && existing.profile.band === profile.band) {
+    return { ...existing, ...sign }
+  }
 
   const master = getMasterSheet(weekNum, profile.band)
   const { body, appliedFilters } = tailorForProfile(master?.body ?? '', profile)
@@ -214,6 +227,7 @@ export function getClientPlan(
     edited: false,
     appliedFilters,
     updatedAt: master?.updatedAt ?? new Date().toISOString(),
+    ...sign,
   }
 }
 
@@ -222,8 +236,9 @@ export function saveClientPlan(
   weekNum: number,
   profile: DietProfile,
   body: string,
+  sign: PlanReview,
 ): ClientDietPlanDto {
-  const current = getClientPlan(clientId, weekNum, profile)
+  const current = getClientPlan(clientId, weekNum, profile, sign)
   const next: ClientDietPlanDto = {
     ...current,
     body,

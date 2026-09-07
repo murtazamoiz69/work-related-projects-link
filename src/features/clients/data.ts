@@ -1,6 +1,6 @@
-// Client roster — ported verbatim from V2 clients.js. 15 hand-authored named
-// clients + deterministically generated ones, so the same person reads
-// consistently everywhere in the prototype.
+// Client roster — ported from V2 clients.js. 15 hand-authored named clients, of
+// which COHORT_IDS picks the ten who are actually on Diwali Glow, so the same
+// person reads consistently everywhere in the prototype.
 import { daysAgo } from '@/lib/seed'
 import type { DietProfile } from '@/features/programs/diet/dietPlan.types'
 import type { Client, ClientStatus } from './types'
@@ -26,9 +26,12 @@ export const PROGRAM_PLAN: Record<string, string> = {
   'Cardiac Health': 'Cardiac Health Nutrition',
 }
 
-// `plan` and `conversationId` are derived in the final map below, so the seed
-// rows don't carry them.
-type NamedClient = Omit<Client, 'plan' | 'conversationId'>
+// `plan`, `conversationId` and the diet-plan sign-off are all derived in the
+// final map below, so the seed rows don't carry them.
+type NamedClient = Omit<
+  Client,
+  'plan' | 'conversationId' | 'dietReview' | 'dietReviewedAt'
+>
 
 const NAMED_CLIENTS: NamedClient[] = [
   {
@@ -410,15 +413,33 @@ const DIET_PROFILES: Record<string, DietProfile> = {
   },
 }
 
+// How long a user counts as newly onboarded for the purposes of the diet-plan
+// sign-off. Everyone inside the window is seeded as still-in-review: their plan
+// was filtered automatically at onboarding and nobody has read it yet, which is
+// exactly the state the Users page's review filter exists to surface.
+const REVIEW_GRACE_DAYS = 21
+
 export const CLIENTS_DATA: Client[] = COHORT_IDS.map((id) => {
   const row = NAMED_CLIENTS.find((c) => c.id === id)
   if (!row) throw new Error(`Cohort id ${id} is not in NAMED_CLIENTS`)
   return row
-}).map((c) => ({
-  dietProfile: DIET_PROFILES[c.id],
-  ...c,
-  plan: PROGRAM_PLAN[c.program],
-  // The chat thread is keyed by the client id today; exposed as its own field
-  // so consumers don't hardcode that assumption.
-  conversationId: c.id,
-}))
+}).map((c): Client => {
+  const daysOnProgram = Math.round(
+    (Date.now() - c.joinDate.getTime()) / 86_400_000,
+  )
+  const inReview = c.status === 'new' || daysOnProgram <= REVIEW_GRACE_DAYS
+  return {
+    dietProfile: DIET_PROFILES[c.id],
+    ...c,
+    plan: PROGRAM_PLAN[c.program],
+    // The chat thread is keyed by the client id today; exposed as its own field
+    // so consumers don't hardcode that assumption.
+    conversationId: c.id,
+    dietReview: inReview ? 'in-review' : 'reviewed',
+    // Signed off a few days after they joined — near enough for a seed, and it
+    // gives the roster chip a real date to show.
+    dietReviewedAt: inReview
+      ? null
+      : new Date(c.joinDate.getTime() + 2 * 86_400_000),
+  }
+})

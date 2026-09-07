@@ -12,6 +12,9 @@ export type AuthUser = {
   email: string
   initials: string
   color: string
+  phone?: string | null
+  bio?: string | null
+  profileImageUrl?: string | null
 }
 
 export type LoginResponse = {

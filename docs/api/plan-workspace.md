@@ -13,6 +13,33 @@ per-user editable training + nutrition plan. See [README.md](./README.md).
 
 > One workspace per user, keyed by the **user (client) id**.
 
+## Backend wiring status (updated 2026-09-07)
+
+> **This surface is mock-only, with one real dependency.** The entire workspace
+> (clinical profile, workout weeks, diet weeks, targets, supplements, versions)
+> is generated **client-side** from a seed — there is no `GET /clients/:id/plan`
+> on the real backend. The **At-a-glance** tab's KPI tiles, Daily Log Coverage
+> calendar and trend charts are likewise **computed on the client** by a seeded
+> generator (`src/features/client-detail/tracker.ts`), not fetched — the backend
+> has no per-day metrics endpoint.
+>
+> The one real endpoint this surface can use is **`GET /clients/:id/detail`**
+> (clinical profile + program list), which the backend **does** expose and which
+> the `client-detail` feature is wired to. It is kept on the mock locally because
+> the workspace opens from **mock Chat** with mock client ids the real backend
+> doesn't have — flipping it live now would `404` those and break the demo. Add
+> `client-detail` to `VITE_LIVE_APIS` once Chat/plan are fed live clients.
+>
+> Every endpoint below is **PROPOSED** — none exists on the real backend yet.
+
+### Endpoints the backend must add for this surface
+- `GET` + `PUT /clients/:id/plan` — the editable per-user workspace.
+- `GET /clients/:id/metrics` (or similar) — real per-day logged metrics
+  (calories eaten/burned, steps, hydration, weight, workouts, cardio) to replace
+  the seeded At-a-glance numbers.
+- Real Chat conversations keyed to live client ids (see [chat.md](./chat.md)),
+  so the workspace can open for real users at all.
+
 ---
 
 ## `GET /clients/:id/plan`

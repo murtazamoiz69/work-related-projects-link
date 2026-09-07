@@ -4,15 +4,41 @@ Covers the **Programs** page. There is a **single global program** (no
 list/create/delete) — this page views/edits it and toggles its availability.
 See [README.md](./README.md) for conventions.
 
+## Backend wiring status (updated 2026-09-07)
+
+> **This page is mock-only.** The real backend has **no program-content
+> resource**: no `GET /program`, no workout-plan or diet-plan endpoints, no
+> reference libraries. The only program data the real backend exposes is
+> `GET /clients/programs` → `{ "programs": string[] }` — a list of program
+> **names**, already live and used by the "Plan" dropdown in Add User.
+> Everything else specified below is **PROPOSED** for the backend to build; the
+> page runs entirely on MSW mocks today.
+>
+> **The one dropdown on this page is a static code array, not a backend
+> value** — the diet **Category** (calorie band) comes from `CALORIE_BANDS` in
+> `src/features/programs/dietPlan.types.ts`. (The program **Goal**/**Difficulty**
+> selects and the workout **Type** chip were removed from the UI; the exercise
+> and meal libraries are static in `src/features/programs/data.ts`.) The Category
+> can only become backend-driven once the backend adds an enum endpoint.
+
+### Endpoints the backend must add for this page
+- `GET` + `PUT /program` — the single global program (overview + targets).
+- `PATCH /program/availability` (or a field on `PUT /program`) — enable/disable.
+- `GET` + `PUT /program/workout-plan`, `POST /program/workout-plan/add-day`.
+- `GET` + `PUT /program/diet-plan`.
+- `GET /libraries/exercises`, `GET /libraries/meals`, and the calorie-band enum
+  — so the Category and any library pickers stop being hardcoded.
+
 ## Page functionality
-- Load the program (overview + workout weeks + diet weeks + nutrition targets).
-- Edit program details (name, description, goal, difficulty, duration).
-- Edit workout content: add/edit/remove workouts and their exercise slots,
-  duplicate a day, drag to swap days, apply a workout template.
-- Edit diet content: add/edit meals per day/slot, apply meal templates.
+- Load the program (overview + nutrition targets).
+- Edit program details (name, description, duration).
 - Toggle availability (Active/Disabled) — gated by a confirm dialog.
-- **Autosave:** every edit persists the whole program (a `PUT`). The UI shows a
-  transient "Saved" indicator.
+- **Autosave:** a detail edit persists the whole program (a `PUT`). The UI shows
+  a transient "Saved" indicator.
+
+The **workout plan** and the **diet plan** are served by their own endpoints —
+see [Workout plan](#workout-plan) and [Diet plan](#diet-plan) below. They are not
+part of the program payload.
 
 ---
 
@@ -59,7 +85,13 @@ Return the current global program.
 | activeUsers / completionRate | number | Overview stats. |
 | notes / activity / versionHistory | arrays | `days` = "N days ago" (integer), not a date. |
 
-**`WorkoutWeek` → `WorkoutDay` → `Workout` → `WorkoutSlot`**
+> **Legacy.** `workoutWeeks` and `dietWeeks` are still on the payload but
+> nothing renders them — the Programs page's two tabs read the workout-plan and
+> diet-plan endpoints instead. They stay because the Plan Workspace's own
+> (differently typed) week arrays are still used by its version history and
+> publish checks. A real backend need not carry them.
+
+**`WorkoutWeek` → `WorkoutDay` → `Workout` → `WorkoutSlot`** *(legacy)*
 ```json
 {
   "weekNum": 1,
@@ -177,12 +209,93 @@ the catalog, never a bundled assumption.
 
 ---
 
+# Workout plan
+
+A flat, ordered run of **days** — Day 1, Day 2, … — not calendar weeks.
+Programmes run different lengths and we don't know which weekday a user starts
+on, so days are identified by number and the nutritionist adds days as far as
+the programme needs. Each day is one rich-text session. No per-user filtering:
+a user's day starts as the programme's day verbatim. See
+[specs/programs.md](../specs/programs.md) › Workout plan for the product rules.
+
+The UI: **Day tabs** across the top with an **Add day** button, one editor for
+the active day, and a single **Save** that writes the day to the days the
+nutritionist picks (this day, all days, or any set).
+
+## `GET /program/workout-plan`
+The whole run of days.
+
+**Success `200`**
+```json
+{
+  "updatedAt": "2026-09-03T…Z",
+  "days": [
+    { "dayNum": 1,
+      "body": "<h2>Push Day</h2><h3>Main set</h3><ul><li><strong>Barbell Bench Press</strong> — 4 x 8 · 90s rest</li></ul>" },
+    { "dayNum": 4, "body": "<ul><li>8,000 steps…</li></ul>" }
+  ]
+}
+```
+The day's coach-facing name lives inside `body` (an `<h2>`), since the day is
+identified only by its number. A freshly added day is `{ "body": "" }`.
+
+**Errors:** `401`; `500`.
+
+---
+
+## `PUT /program/workout-plan/days`
+Save the edited day's `body` to one or more days at once — the single Save's
+apply-to-days. Every day in `days` is set to the same `body` (a copy across).
+
+**Body** `{ "body": "<h2>…</h2>", "days": [1, 3, 5] }`
+**Success `200`** — the whole updated plan.
+**Errors:** `422` `{ "fields": { "days": "Select one or more days." } }`; `401`;
+`500`.
+
+---
+
+## `POST /program/workout-plan/add-day`
+Append a blank day (empty `body`) at the end of the run.
+
+**Body** none. **Success `200`** — the whole updated plan (one day longer).
+**Errors:** `401`; `500`.
+
+---
+
+## `GET /clients/:id/workout-plan`
+The user's copy of the run — the programme's days, each flagged `edited`.
+
+**Success `200`** — the same shape as the programme plan, plus `clientId`; each
+day carries `edited`: `false` while the user reads straight through to the
+programme's day, `true` once a nutritionist has changed it for them. The day
+count follows the programme (no per-user Add day).
+
+## `PUT /clients/:id/workout-plan/days`
+Same body as the programme equivalent. Sets `edited: true` on the written days
+and leaves the programme untouched.
+
+## `POST /clients/:id/workout-plan/reset`
+Drop this user's edit for one day and go back to the programme's.
+**Body** `{ "day": 3 }` **Success `200`** — the plan, with that day `edited: false`.
+
+---
+
 # Diet plan
 
-The programme's diet is organised by **calorie band**, not by dish. See
-[specs/programs.md](../specs/programs.md) › Diet plan for the product rules.
+The programme's diet is organised by **meal category** (a calorie band), not by
+dish. See [specs/programs.md](../specs/programs.md) › Diet plan for the product
+rules.
 
-Bands: `1200 | 1400 | 1600 | 1800 | 2000` (kcal).
+Categories: `1200 | 1400 | 1600 | 1800 | 2000` (kcal). The wire field is `band`;
+the UI label is "Category", shown as the **top-tier tabs** — category, then
+week, then the sheet.
+
+The editor saves **explicitly** (no autosave). **Save** opens a week-picker
+modal (This week / All weeks / any set — the same single-Save model as the
+workout tab; the old inline "Copy to weeks" dropdown is gone), and one Save can
+write the sheet to several weeks at once: the client PUTs the body to the first
+chosen week, then calls `POST /program/diet-plan/duplicate` to fan it out to the
+rest.
 
 ## `GET /program/diet-plan?week=&band=`
 One master sheet.
@@ -198,7 +311,9 @@ One master sheet.
 ---
 
 ## `PUT /program/diet-plan`
-Save a master sheet. Autosaved by the editor.
+Save one week's master sheet — sent when the nutritionist confirms **Save** (and
+once per chosen week when a Save targets several, alongside the duplicate call
+below).
 
 **Body** `{ "weekNum": 1, "band": 1600, "body": "<h2>…</h2>" }`
 **Success `200`** — the saved sheet. **Errors:** `422` bad band; `401`; `500`.
@@ -206,7 +321,9 @@ Save a master sheet. Autosaved by the editor.
 ---
 
 ## `POST /program/diet-plan/duplicate`
-Copy one week's sheet onto other weeks.
+Copy one week's sheet onto other weeks. Backs the **Save → apply to weeks** flow
+(the old standalone "Duplicate" button is gone); the client calls it after
+saving the edited week so a single Save can land on many weeks.
 
 **Body** `{ "fromWeek": 1, "band": 1600, "toWeeks": [2, 3, 5] }`
 
@@ -231,13 +348,17 @@ onboarding answers.
   "body": "<h2>…</h2>",
   "edited": false,
   "appliedFilters": ["Eggitarian — 2 ingredient group(s) removed from the choices."],
-  "updatedAt": "2026-09-03T…Z"
+  "updatedAt": "2026-09-03T…Z",
+  "review": "in-review",
+  "reviewedAt": null
 }
 ```
 | Field | Notes |
 | --- | --- |
 | edited | `true` once a nutritionist has hand-adjusted this copy; it then stops tracking the master sheet. |
 | appliedFilters | What the engine did, shown to the nutritionist so the tailoring is legible. |
+| review | `in-review` \| `reviewed` — the sign-off, mirrored from the client record onto every plan read. Carried here (rather than left on the client) because the surfaces that render a plan don't all hold a freshly fetched client. |
+| reviewedAt | ISO, or `null` while in review. |
 
 The engine only ever **removes or annotates** content already on the master
 sheet — it never introduces food the master plan doesn't have.
@@ -248,6 +369,8 @@ sheet — it never introduces food the master plan doesn't have.
 
 ## `PUT /clients/:id/diet-plan?week=`
 The nutritionist's own edit for one user and week. **Body** `{ "body": "<h2>…</h2>" }`
+Sent on **Save**; a Save that targets several of the user's weeks sends this once
+per chosen week (per-user plans have no duplicate endpoint).
 **Success `200`** — the updated plan with `edited: true`. **Errors:** as above.
 
 ---
@@ -259,6 +382,20 @@ Move a user to a different daily intake target.
 **Success `200`** — the updated `Client` (its `dietProfile.band` drives the
 roster chip). Every week of their plan is re-derived from the new band's master
 sheets, and **hand-edited weeks are dropped** — an edit written against 1400 kcal
-portions doesn't hold at 1800.
+portions doesn't hold at 1800. The sign-off is also reset to `in-review`: what
+was reviewed is not what this user is on any more.
 
 **Errors:** `422` bad band; `404` unknown user; `401`; `500`.
+
+---
+
+## `PATCH /clients/:id/diet-review`
+Sign a user's filtered plan off, or send it back into review. Records only that
+a person has read it — the plan itself is untouched.
+
+**Body** `{ "status": "reviewed" }` (`reviewed` | `in-review`)
+**Success `200`** — the updated `Client`, whose `dietReview` / `dietReviewedAt`
+drive the roster chip and filter.
+
+**Errors:** `422` `{ "fields": { "status": "Unknown review state." } }`;
+`404` unknown user; `401`; `500`.

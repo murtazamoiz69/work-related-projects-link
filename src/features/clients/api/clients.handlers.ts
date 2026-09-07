@@ -8,6 +8,7 @@ import type {
   BulkCreateClientsBody,
   ClientDto,
   ClientExpiryFilter,
+  ClientReviewFilter,
   ClientStatusFilter,
   CreateClientBody,
   ExtendClientExpiryBody,
@@ -96,6 +97,7 @@ export const clientsHandlers = [
       search: url.searchParams.get('search') ?? undefined,
       status: (url.searchParams.get('status') as ClientStatusFilter) ?? 'all',
       expiry: (url.searchParams.get('expiry') as ClientExpiryFilter) ?? 'all',
+      review: (url.searchParams.get('review') as ClientReviewFilter) ?? 'all',
     })
     const start = (page - 1) * pageSize
     return HttpResponse.json({

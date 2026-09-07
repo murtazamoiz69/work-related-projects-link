@@ -56,3 +56,196 @@
   align-items: center;
   justify-content: center;
 }
+
+/* ---- Diet plan: the calorie-band row ---- */
+.diet-band-rail {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.diet-band-rail-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+/* Read-only category chip on the per-user diet tab — the user's one fixed band,
+   not a switcher. */
+.diet-band-fixed {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  padding: 8px 14px;
+  border-radius: var(--r-sm);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--primary);
+  border: 1px solid var(--primary);
+}
+.diet-band-fixed small {
+  font-weight: 600;
+  font-size: 11px;
+  color: #cfe1d9;
+}
+
+/* One explicit Save at the foot of the diet editor — opens the SaveToWeeksModal
+   to pick which weeks it writes to (the same single-Save model as workout). */
+.diet-save-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-soft);
+}
+.diet-save-hint {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 12.5px;
+}
+.diet-save-hint b {
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+/* Apply-to presets shared by SaveToDaysModal and SaveToWeeksModal. */
+.save-weeks-presets {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.save-weeks-preset {
+  border: 1px solid var(--border);
+  background: var(--surface-alt);
+  color: var(--text-secondary);
+  font: inherit;
+  font-weight: 600;
+  font-size: 12px;
+  padding: 6px 11px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.save-weeks-preset[aria-pressed='true'] {
+  border-color: #bfe4d1;
+  background: var(--green-light);
+  color: var(--green-text);
+}
+.save-weeks-editing {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--primary);
+  background: var(--primary-light);
+  border-radius: 999px;
+  padding: 1px 6px;
+  margin-left: 8px;
+}
+
+/* ---- Workout plan: a flat run of Day N tabs, extended with "Add day" ---- */
+.wp-day-rail {
+  align-items: center;
+}
+/* Keep the Day tabs reachable when a session runs long: inside the Plan
+   Workspace (the user-side tab) the panel scrolls, and a tall editor used to
+   push the day rail out of view. Pin it to the top of that scroll area so the
+   days stay switchable while the session scrolls under them. Scoped to the
+   workspace, where the rail sits on the overlay's white background. */
+.pw-panel-scroll .wp-day-rail {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--surface);
+  /* Keep the horizontal day scroll (.prog-week-rail's overflow-x:auto), but that
+     forces overflow-y:auto, which collapsed the row and clipped the taller day
+     chips once the bar had a background. A min-height taller than a chip keeps
+     the chips inside the scroll viewport so they're never vertically clipped. */
+  min-height: 58px;
+  align-items: center;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.wp-add-day {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 14px;
+  border-radius: var(--r-sm);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--primary);
+  border: 1px dashed var(--primary);
+  background: transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.wp-add-day:hover {
+  background: var(--primary-light);
+}
+.wp-add-day:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+/* The day type selector, same label+select shape as the diet band picker. */
+.wp-type-picker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+/* A user's edited day carries a dot on its tab, so the diverged days are
+   visible without opening each one. */
+.wp-day-edited-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--amber);
+  display: inline-block;
+  margin-left: 7px;
+  vertical-align: middle;
+}
+.pw-week-chip.active .wp-day-edited-dot {
+  background: #f0c07a;
+}
+
+/* ---- Chat: plan-review-pending banner ---- */
+/* A third .chat-handoff-banner variant (alongside .is-ai / .is-human, in
+   app.css) — surfaces the diet review sign-off in Chat instead of the Plan
+   Workspace's Diet Plan tab, with the same amber "pending" tone used
+   elsewhere for an unreviewed plan. */
+.chat-handoff-banner.is-review {
+  background: var(--amber-light);
+}
+.is-review .chat-handoff-icon {
+  color: var(--amber-text);
+}
+
+/* ---- Add user: keep the Plan/Weeks row inside the modal ---- */
+/* The two fields in .modal-field-row are `flex: 1` but default to
+   `min-width: auto`, so neither can shrink below its content's intrinsic width.
+   A number input's intrinsic width is wide, so the "Weeks" field refused to
+   shrink and spilled past the modal's right edge. `min-width: 0` lets the flex
+   items shrink to their shared basis, giving two equal columns that fit. */
+.modal-field {
+  min-width: 0;
+}
+/* Chrome/Safari also render a tall, boxed inner-spin-button on the number
+   input; hide it so Weeks reads as a clean numeric field like its siblings. */
+.modal-field input[type='number'] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+.modal-field input[type='number']::-webkit-outer-spin-button,
+.modal-field input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}

@@ -10101,3 +10101,297 @@ body.pw-open {
   margin-top: 2px;
   color: var(--text-muted);
 }
+
+/* ---------- Plan review: roster chip + the sign-off bar ---------- */
+.ct-chip-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+/* In review is the actionable state, so it carries the warm accent; Reviewed
+   is deliberately quiet — it's the resting state of most of the roster. */
+.ct-review-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-top: 3px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--blue-light);
+  color: var(--blue-text);
+  font-size: 10.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.ct-review-chip svg {
+  width: 10px;
+  height: 10px;
+}
+.ct-review-chip.is-reviewed {
+  background: var(--green-light);
+  color: var(--green-text);
+}
+.diet-review-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--blue);
+  border-radius: var(--r-sm);
+  background: var(--blue-light);
+}
+.diet-review-bar > svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: var(--blue-text);
+}
+.diet-review-bar.is-reviewed {
+  border-color: transparent;
+  background: var(--green-light);
+}
+.diet-review-bar.is-reviewed > svg {
+  color: var(--green-text);
+}
+.diet-review-copy {
+  flex: 1;
+  min-width: 0;
+}
+.diet-review-copy strong {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.diet-review-copy p {
+  margin: 2px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+.diet-review-bar button {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.diet-review-bar button svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* ---------- Meal category: staged change + its warning ---------- */
+.diet-band-save {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.diet-band-save svg {
+  width: 14px;
+  height: 14px;
+}
+.diet-band-pending-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--amber);
+  border-radius: var(--r-sm);
+  background: var(--amber-light);
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--amber-text);
+}
+.diet-band-pending-note svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--amber);
+}
+
+/* ---------- Rich text editor: the link row ---------- */
+.rte-link-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-alt);
+  flex-wrap: wrap;
+}
+.rte-link-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 200px;
+}
+.rte-link-field span {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.rte-link-field input {
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  font-size: 13px;
+  color: var(--text-primary);
+  font-family: inherit;
+}
+.rte-link-field input:focus-visible {
+  outline: none;
+  border-color: var(--primary);
+}
+
+/* ---------- Workout plan: the week as seven expanding days ---------- */
+.wp-day-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.wp-day {
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  overflow: hidden;
+}
+.wp-day.is-open {
+  border-color: var(--primary);
+}
+.wp-day.is-blank .wp-day-name {
+  color: var(--text-muted);
+  font-style: italic;
+}
+.wp-day-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+}
+.wp-day-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+}
+.wp-day-toggle > svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+.wp-day-weekday {
+  width: 84px;
+  flex-shrink: 0;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.wp-day-name {
+  font-size: 13px;
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.wp-type-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 700;
+  white-space: nowrap;
+  background: var(--surface-alt);
+  color: var(--text-secondary);
+}
+.wp-type-chip svg {
+  width: 11px;
+  height: 11px;
+}
+.wp-type-chip.is-workout {
+  background: var(--primary-light);
+  color: var(--primary-dark);
+}
+.wp-type-chip.is-cardio {
+  background: var(--amber-light);
+  color: var(--amber-text);
+}
+.wp-swap {
+  flex-shrink: 0;
+}
+.wp-swap select {
+  max-width: 160px;
+}
+.wp-day-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 12px 14px;
+  border-top: 1px solid var(--border-soft);
+  padding-top: 12px;
+}
+.wp-day-fields {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.wp-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+  min-width: 200px;
+}
+.wp-field-type {
+  flex: 0 0 160px;
+  min-width: 140px;
+}
+.wp-field-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.wp-field input {
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  font-size: 13px;
+  color: var(--text-primary);
+  font-family: inherit;
+}
+.wp-field input:focus-visible {
+  outline: none;
+  border-color: var(--primary);
+}
+.wp-day-hint {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.wp-day-hint svg {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+}

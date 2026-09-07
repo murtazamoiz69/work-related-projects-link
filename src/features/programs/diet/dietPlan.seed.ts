@@ -184,21 +184,22 @@ export function buildMasterSheetBody(
 
 /** Every master sheet: one per week per band.
  *
- *  Only **week 1** ships with content. The programme runs one plan throughout,
- *  so the nutritionist authors week 1 for a band and carries it forward with
- *  Duplicate — seeding all six weeks would mean six copies to keep in sync and
- *  would hide whether a week has actually been reviewed. Weeks 2 onward start
- *  blank. */
+ *  Only the **first half of the programme** ships with content. The programme
+ *  runs one plan throughout, so the nutritionist authors the early weeks for a
+ *  band and carries them forward with Save's apply-to-weeks — seeding every
+ *  week would mean six copies to keep in sync and would hide whether a week
+ *  has actually been reviewed. The remaining weeks start blank. */
 export function buildMasterSheets(
   durationWeeks: number,
 ): { weekNum: number; band: CalorieBand; body: string }[] {
+  const authoredWeeks = Math.ceil(durationWeeks / 2)
   const out: { weekNum: number; band: CalorieBand; body: string }[] = []
   for (let w = 1; w <= durationWeeks; w++) {
     for (const band of CALORIE_BANDS) {
       out.push({
         weekNum: w,
         band,
-        body: w === 1 ? buildMasterSheetBody(w, band) : '',
+        body: w <= authoredWeeks ? buildMasterSheetBody(w, band) : '',
       })
     }
   }

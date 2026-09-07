@@ -15,6 +15,9 @@ export function userToProfile(user: AuthUser): Profile {
     initials: user.initials,
     color: user.color,
     email: user.email,
+    phone: user.phone ?? undefined,
+    bio: user.bio ?? undefined,
+    photo: user.profileImageUrl ?? undefined,
   }
 }
 

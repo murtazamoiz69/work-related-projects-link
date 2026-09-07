@@ -43,6 +43,8 @@ function makeClient(overrides: Partial<Client> = {}): Client {
     joinDate: new Date('2024-01-01'),
     goals: ['Lose weight'],
     diet: 'Balanced',
+    dietReview: 'reviewed',
+    dietReviewedAt: new Date('2024-01-03'),
     ...overrides,
   }
 }

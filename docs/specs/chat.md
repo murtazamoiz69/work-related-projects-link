@@ -13,19 +13,19 @@ Authenticated.
 - **Conversation list** (left): search, tabs (All / Needs Attention / New / Active / Pinned), conversation cards (avatar, name, preview, time, AI/needs-nutritionist tag, unread dot, star).
 - **Message thread** (center): header (user identity + "Manage Plan" / "At a glance"), AI/human handoff banner, message list (bubbles, date separators, attachments, system messages, typing indicator), AI suggestion chips, composer (attach, emoji, textarea, send) OR a locked composer with "Take over".
 - **Client overview** (right rail): AI insights summary, section tabs (Notes / Medical / Activity), notes composer.
-- **Plan Workspace overlay** (full-screen): tabs (At a glance / Workout / Diet / Activity / Notes), context sidebar (profile/medical/preferences), week rail, day cards, + a family of modals.
+- **Plan Workspace overlay** (full-screen): tabs (At a glance / Workout / Diet / Activity / Notes), context sidebar (profile/medical/preferences). The Workout and Diet tabs are the rich-text plans, bounded to the programme's six weeks — see [specs/programs.md](./programs.md).
 - **Program Progress modal** ("At a glance"): the tracker dashboard over the chat.
 - **Activity Log modal**: full activity history with filters.
 
 ## Components
-`ConversationList`, `MessageThread`, `ClientOverview`, `PlanWorkspaceOverlay` (+ `WorkoutTab`, `DietTab`, `PwContext`, and modals: `MealPickerModal`, `ExercisePickerModal`, `WorkoutTemplatePickerModal`, `WorkoutEditorModal`, `WorkoutPreviewModal`, `EditPlanModal`, `PublishReportModal`, `SaveWeekTemplateModal`), `ProgramProgressModal`, `ActivityLogModal`, `ActivityLogList`, `ActivityFilterBar`, `ProgramTrackerDashboard`, `PhotoLightbox`, `Avatar`, `Icon`. Hooks: `useActivityFilters`.
+`ConversationList`, `MessageThread`, `ClientOverview`, `PlanWorkspaceOverlay` (+ `PwContext`, `ClientWorkoutPlanTab`, `ClientDietPlanTab`), `ProgramProgressModal`, `ActivityLogModal`, `ActivityLogList`, `ActivityFilterBar`, `ProgramTrackerDashboard`, `PhotoLightbox`, `Avatar`, `Icon`. Hooks: `useActivityFilters`.
 
 ## User Actions
 **List:** search conversations · switch tab · select conversation · pin/unpin (star).
 **Thread:** send message · attach file (image/doc) · insert emoji · use an AI suggestion chip · refresh suggestions · **take over** conversation · **hand back** to AI · open attachment in lightbox.
 **Overview rail:** switch Notes/Medical/Activity · add note (+ optional document attachment) · open "View all activity".
 **Activity Log modal:** filter by kind (check-in/meal/workout/weight/photo) and sub-category · view photos.
-**Plan Workspace:** switch tabs · switch week · edit plan details · **publish** plan (report) · add/edit/remove workouts and exercises · preview a workout · pick meals · import/save meal templates (week or day) · save a week as a workout template · edit notes · close (Escape).
+**Plan Workspace:** switch tabs · switch week · author this user's workout day (name, type, session) · swap two days · reset a week back to the programme · change this user's **Meal Category** (staged behind Save changes) · edit their diet sheet · mark the diet plan **Reviewed** / reopen it · edit notes · close (Escape).
 **Program Progress modal:** view tracker · switch day · open photos · close.
 
 ## Data Requirements
@@ -70,9 +70,13 @@ Errors (all): `401`, `403`, `404`, `409` (concurrent plan edit), `422`, `500`, n
 ## Forms
 - **Message composer:** text (optional if attachment), attachment (image/doc). Enabled only when `handledBy === 'nutritionist'`. Submit appends message + triggers reply; clears input/attachment; disables send when empty.
 - **Note composer:** text (optional if attachment), attachment (.pdf/.doc/.docx/.txt). Submit prepends note + toast.
-- **Edit Plan modal:** plan name, description, targets (calories/protein/carbs/fat/water), supplements, hydration — numeric validation, required name.
-- **Publish Report modal:** summary + message to the user — required, submit publishes a version.
-- **Workout Editor / Meal Picker / etc.:** structured editors (sets/reps/weight/rest/tempo/rpe; meal slot/time) — numeric + enum validation, upcoming-only edit gating (a past-dated session is read-only).
+- **Workout day:** name (free text), type (`workout|cardio|rest`), session body (rich text) — all three autosave together on one debounce.
+- **Meal Category:** a staged select + **Save changes**, with a warning that the move re-derives all six weeks and drops this user's hand edits.
+
+> `EditPlanModal` and `PublishReportModal` still exist and are still tested, but
+> nothing opens them — they were reachable only from the structured workout
+> builder that the rich-text plan replaced. Either wire them back to a control
+> or delete them; leaving them is the current state, not the intent.
 
 ## Loading States
 - Conversation list skeleton; thread skeleton; right-rail summary skeleton.

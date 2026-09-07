@@ -11,6 +11,7 @@ import {
   useUpdateClientAccess,
   type Client,
   type ClientExpiryFilter,
+  type ClientReviewFilter,
   type ClientStatusFilter,
   type ClientsSearch,
   type ListClientsParams,
@@ -60,6 +61,7 @@ export function ClientsPage({ search }: { search: ClientsSearch }) {
   const q = search.q ?? ''
   const status: ClientStatusFilter = search.status ?? 'all'
   const expiry: ClientExpiryFilter = search.expiry ?? 'all'
+  const review: ClientReviewFilter = search.review ?? 'all'
   const page = search.page ?? 1
 
   const [searchInput, setSearchInput] = useState(q)
@@ -100,10 +102,11 @@ export function ClientsPage({ search }: { search: ClientsSearch }) {
       search: q || undefined,
       status,
       expiry,
+      review,
       page,
       pageSize: PAGE_SIZE,
     }),
-    [q, status, expiry, page],
+    [q, status, expiry, review, page],
   )
 
   const clientsQuery = useClientsQuery(params)
@@ -117,7 +120,11 @@ export function ClientsPage({ search }: { search: ClientsSearch }) {
   const currentPage = Math.min(page, totalPages)
   const start = (currentPage - 1) * PAGE_SIZE
 
-  const hasFilters = status !== 'all' || expiry !== 'all' || q.trim().length > 0
+  const hasFilters =
+    status !== 'all' ||
+    expiry !== 'all' ||
+    review !== 'all' ||
+    q.trim().length > 0
   const showError = clientsQuery.isError && !data
   const showSkeleton = clientsQuery.isPending
   const noResults = !showSkeleton && !showError && total === 0
@@ -230,6 +237,27 @@ export function ClientsPage({ search }: { search: ClientsSearch }) {
                 <option value="expiring-soon">Expiring soon</option>
                 <option value="expired">Expired</option>
                 <option value="active">Active</option>
+              </select>
+              {/* Whose filtered diet plan is still waiting on a nutritionist.
+                  A queue, not a status — hence its own filter rather than a
+                  column nobody would sort by. */}
+              <select
+                className="select-range"
+                aria-label="Filter by plan review"
+                value={review}
+                onChange={(e) =>
+                  updateSearch({
+                    review:
+                      e.target.value === 'all'
+                        ? undefined
+                        : (e.target.value as ClientReviewFilter),
+                    page: undefined,
+                  })
+                }
+              >
+                <option value="all">All plans</option>
+                <option value="in-review">In review</option>
+                <option value="reviewed">Reviewed</option>
               </select>
             </div>
           </div>

@@ -4,6 +4,10 @@ import { Avatar } from '@/components/atoms/Avatar'
 import { PhotoLightbox } from '@/components/molecules/PhotoLightbox'
 import { showToast } from '@/lib/toast'
 import {
+  useClientDietPlanQuery,
+  useUpdateClientReview,
+} from '@/features/programs/diet/useDietPlan'
+import {
   EMOJI_PICKER_POOL,
   formatDateSep,
   formatTime,
@@ -220,6 +224,14 @@ export function MessageThread({
 
   const sendMessageMutation = useSendMessage()
   const handoff = useHandoff()
+  // Review status lives on the plan response, not on `convo.client` — that
+  // client object is a snapshot taken when the conversation was seeded and
+  // never refetches, so reading it here would show the review as pending
+  // forever even after it's marked done. Week 1 is just a vehicle: the
+  // sign-off is a per-user flag, stamped identically onto every week's plan.
+  const dietPlanQuery = useClientDietPlanQuery(c.id, 1)
+  const updateReview = useUpdateClientReview(c.id)
+  const reviewPending = dietPlanQuery.data?.review === 'in-review'
   // Realtime source (client-side sim for the mock; websocket/poll later). It
   // appends inbound messages to the detail cache and owns the typing indicator.
   const { typing, triggerClientReply } = useConversationRealtime(
@@ -364,6 +376,25 @@ export function MessageThread({
           </button>
         </div>
       )}
+
+      {reviewPending ? (
+        <div className="chat-handoff-banner is-review">
+          <span className="chat-handoff-icon">
+            <Icon name="clipboard-list" />
+          </span>
+          <span className="chat-handoff-text">
+            <strong>{firstName}&apos;s</strong> meal and workout plan review is
+            pending.
+          </span>
+          <button
+            className="btn-primary sm"
+            disabled={updateReview.isPending}
+            onClick={() => updateReview.mutate('reviewed')}
+          >
+            {updateReview.isPending ? 'Saving…' : 'Review done'}
+          </button>
+        </div>
+      ) : null}
 
       <div className="chat-scroll" id="chatScrollArea" ref={scrollRef}>
         <Thread messages={convo.messages} typing={typing} convo={convo} />

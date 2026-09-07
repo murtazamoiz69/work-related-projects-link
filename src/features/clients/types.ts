@@ -1,7 +1,10 @@
 // Type-only import: the diet model belongs to the programs feature, and
 // importing it as a type leaves no runtime edge from clients -> programs (which
 // would close a cycle, since programs/data.ts reads CLIENTS_DATA).
-import type { DietProfile } from '@/features/programs/diet/dietPlan.types'
+import type {
+  DietProfile,
+  PlanReviewStatus,
+} from '@/features/programs/diet/dietPlan.types'
 
 export type ClientStatus = 'active' | 'attention' | 'paused' | 'new'
 
@@ -46,4 +49,10 @@ export type Client = {
    *  the master diet sheet down to their own copy. Captured at onboarding;
    *  the band is adjustable later from Manage Plan as their burn changes. */
   dietProfile?: DietProfile
+  /** Whether a nutritionist has signed off on the diet plan the engine filtered
+   *  for this user. Everyone starts in review — the filtering is automatic, so
+   *  until a person has read the result nobody has checked it. */
+  dietReview: PlanReviewStatus
+  /** When it was signed off. `null` while the plan is still in review. */
+  dietReviewedAt: Date | null
 }
