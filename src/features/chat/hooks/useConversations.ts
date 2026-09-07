@@ -53,19 +53,21 @@ function writeConversation(queryClient: QueryClient, c: Conversation): void {
   queryClient.invalidateQueries({ queryKey: chatKeys.tabs() })
 }
 
-export function useConversationsQuery() {
+export function useConversationsQuery(opts?: { enabled?: boolean }) {
   return useQuery({
     queryKey: chatKeys.list(),
     queryFn: ({ signal }) => getConversations(signal),
+    enabled: opts?.enabled,
   })
 }
 
 // The list's tab chips + badge counts. Kept fresh after mutations via the
 // invalidation in writeConversation.
-export function useConversationTabsQuery() {
+export function useConversationTabsQuery(opts?: { enabled?: boolean }) {
   return useQuery({
     queryKey: chatKeys.tabs(),
     queryFn: ({ signal }) => getConversationTabs(signal),
+    enabled: opts?.enabled,
   })
 }
 

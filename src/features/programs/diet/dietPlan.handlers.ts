@@ -51,7 +51,9 @@ function signOff(dto: {
   return { review: dto.dietReview, reviewedAt: dto.dietReviewedAt }
 }
 
-export const dietPlanHandlers = [
+/** The programme's global master sheets — `/program/diet-plan*`. Wired to the
+ *  real backend under the `program-diet` flag (VITE_LIVE_APIS). */
+export const masterDietPlanHandlers = [
   // GET /program/diet-plan?week=&band= — one master sheet.
   http.get(`${base}/program/diet-plan`, ({ request }) => {
     const url = new URL(request.url)
@@ -93,7 +95,13 @@ export const dietPlanHandlers = [
     const weeks = duplicateMasterSheet(body.fromWeek, body.band, body.toWeeks)
     return HttpResponse.json({ band: body.band, weeks })
   }),
+]
 
+/** A single user's tailored copy and their sign-off — `/clients/:id/diet-plan*`,
+ *  `/clients/:id/diet-band`, `/clients/:id/diet-review`. Used by the Plan
+ *  Workspace and the per-user diet management (mock Chat clients), so it stays
+ *  mock-only regardless of the programme flags. */
+export const clientDietPlanHandlers = [
   // GET /clients/:id/diet-plan?week= — the user's tailored copy.
   http.get(`${base}/clients/:id/diet-plan`, async ({ params, request }) => {
     const clientId = String(params.id)

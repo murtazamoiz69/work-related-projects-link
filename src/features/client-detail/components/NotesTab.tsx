@@ -1,11 +1,14 @@
 import { useRef, useState } from 'react'
 import { Icon } from '@/components/atoms/Icon'
 import { formatCheckIn } from '@/features/clients'
+import { useAuthStore } from '@/store/useAuthStore'
 import { summarizeNotes } from '../data'
 import type { InternalNote, NoteAttachment } from '../types'
 
 const ATTACHMENT_ACCEPT =
   '.pdf,.doc,.docx,.txt,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain'
+
+const DAY_MS = 24 * 60 * 60 * 1000
 
 function authorInitials(author: string): string {
   return author
@@ -14,6 +17,18 @@ function authorInitials(author: string): string {
     .join('')
     .slice(0, 2)
     .toUpperCase()
+}
+
+/** "2 days ago" from the note's timestamp when it has one, else the stored
+ *  relative `days`. A real `createdAt` keeps ageing; `days` is frozen. */
+function noteAge(n: InternalNote): string {
+  if (n.createdAt) {
+    const ms = Date.now() - Date.parse(n.createdAt)
+    return formatCheckIn(
+      Number.isNaN(ms) ? n.days : Math.max(0, Math.floor(ms / DAY_MS)),
+    )
+  }
+  return formatCheckIn(n.days)
 }
 
 function attachmentTypeLabel(file: File): string {
@@ -38,11 +53,18 @@ export function NotesTab({
     null,
   )
   const fileRef = useRef<HTMLInputElement>(null)
+  const me = useAuthStore((s) => s.activeProfile)
 
   const addNote = () => {
     const text = draft.trim()
     if (!text && !draftAttachment) return
-    onAdd({ author: 'Sarah Nolan', text, days: 0, attachment: draftAttachment })
+    onAdd({
+      author: me.name,
+      text,
+      days: 0,
+      createdAt: new Date().toISOString(),
+      attachment: draftAttachment,
+    })
     setDraft('')
     setDraftAttachment(null)
   }
@@ -77,8 +99,7 @@ export function NotesTab({
               <span
                 className="avatar avatar-xs"
                 style={{
-                  background:
-                    n.author === 'Sarah Nolan' ? '#2F5D50' : '#55789D',
+                  background: n.author === me.name ? me.color : '#55789D',
                 }}
               >
                 {authorInitials(n.author)}
@@ -86,7 +107,7 @@ export function NotesTab({
               <div className="note-body">
                 <div className="note-meta">
                   <span className="note-author">{n.author}</span>
-                  <span className="note-time">{formatCheckIn(n.days)}</span>
+                  <span className="note-time">{noteAge(n)}</span>
                 </div>
                 {n.text ? <p className="note-text">{n.text}</p> : null}
                 {n.attachment ? (

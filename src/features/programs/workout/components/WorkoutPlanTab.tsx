@@ -92,7 +92,6 @@ export function WorkoutPlanTab() {
               ariaLabel={`Day ${activeDay} workout`}
               value={draft}
               onChange={setDraft}
-              onSeeded={setDraft}
             />
 
             <div className="diet-save-bar">

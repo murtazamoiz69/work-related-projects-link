@@ -7,19 +7,8 @@ import { CLIENTS_DATA } from '@/features/clients'
 import { deriveDetail } from '@/features/client-detail'
 import { deriveClinicalProfile } from '../clinical'
 import { getWorkspace } from '../plan'
-import type { Workspace } from '../types'
+import { toWorkspaceDto } from './plan.api'
 import type { WorkspaceDto } from './plan.types'
-
-export function toWorkspaceDto(ws: Workspace): WorkspaceDto {
-  return {
-    ...ws,
-    profile: {
-      ...ws.profile,
-      programStart: ws.profile.programStart.toISOString(),
-    },
-    versions: ws.versions.map((v) => ({ ...v, date: v.date.toISOString() })),
-  }
-}
 
 const store = new Map<string, WorkspaceDto>()
 

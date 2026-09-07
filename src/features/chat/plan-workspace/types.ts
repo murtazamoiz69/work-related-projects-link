@@ -10,7 +10,7 @@ export type WsWorkout = Workout & { time?: string }
 export type WsWorkoutDay = {
   dayNum: number
   label: string
-  type: 'rest' | 'workout'
+  type: 'rest' | 'workout' | 'cardio'
   workout: WsWorkout | null
   extraWorkouts: WsWorkout[]
 }
@@ -89,6 +89,9 @@ export type ClinicalProfile = {
   waistTrend: number
   photoCount: number
   tenureDays: number
+  /** Mock-only: the deterministic RNG seed the prototype plan builders use. Not
+   *  on the wire — the real-API mapper fills it with 0 (those builders never run
+   *  on real data). */
   _seed: number
 }
 

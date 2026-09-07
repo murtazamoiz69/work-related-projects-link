@@ -37,6 +37,7 @@ export type {
   UpdateProgramBody,
   UpdateProgramAvailabilityBody,
 } from './api/programs.types'
+export { getCalorieBands } from './api/libraries.api'
 
 // Query / mutation hooks
 export { useProgramQuery } from './hooks/useProgramQuery'
@@ -44,3 +45,4 @@ export {
   useUpdateProgram,
   useUpdateProgramAvailability,
 } from './hooks/useProgramMutations'
+export { useCalorieBandsQuery } from './hooks/useCalorieBands'

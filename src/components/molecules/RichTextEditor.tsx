@@ -84,6 +84,14 @@ export function RichTextEditor({
   // The last HTML this editor emitted, so a `value` that is merely our own
   // change coming back round is not mistaken for a new document to load.
   const lastEmitted = useRef<string | null>(null)
+  // With `immediatelyRender: false` the ProseMirror view mounts in an effect
+  // and fires one `onUpdate` for an *empty* doc before the seeding effect has
+  // loaded `value` into it. Forwarding that to `onChange` overwrites the
+  // caller's freshly-fetched value with "<p></p>" (only visible when `value`
+  // arrives async — a slow real-backend read). That first empty update is
+  // never a user edit (the user can't type before the view exists), so drop it.
+  const sawFirstUpdate = useRef(false)
+  const isEmptyDoc = (html: string) => html === '' || html === '<p></p>'
   const editor = useEditor({
     extensions: [StarterKit],
     content: value,
@@ -102,6 +110,10 @@ export function RichTextEditor({
     },
     onUpdate: ({ editor: e }) => {
       const html = e.getHTML()
+      if (!sawFirstUpdate.current) {
+        sawFirstUpdate.current = true
+        if (isEmptyDoc(html)) return
+      }
       lastEmitted.current = html
       onChange(html)
     },

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Icon } from '@/components/atoms/Icon'
 import { LazyRichTextEditor } from '@/components/molecules/LazyRichTextEditor'
 import { apiErrorMessage } from '@/lib/api/errors'
+import { isApiError } from '@/lib/api/types'
 import type { Client } from '@/features/clients'
 import {
   useClientWorkoutPlanQuery,
@@ -81,6 +82,14 @@ export function ClientWorkoutPlanTab({ client }: { client: Client }) {
             <span className="skel" />
             <span className="skel" />
           </div>
+        ) : planQuery.isError &&
+          isApiError(planQuery.error) &&
+          planQuery.error.kind === 'not-found' ? (
+          <p className="diet-sheet-empty-note">
+            <Icon name="info" />
+            {firstName} doesn’t have a workout plan yet — it’s set once they
+            finish onboarding.
+          </p>
         ) : planQuery.isError ? (
           <div className="clients-empty is-error" role="alert">
             <Icon name="alert-triangle" />
@@ -106,7 +115,6 @@ export function ClientWorkoutPlanTab({ client }: { client: Client }) {
               ariaLabel={`Day ${activeDay} workout for ${client.name}`}
               value={draft}
               onChange={setDraft}
-              onSeeded={setDraft}
             />
 
             <div className="diet-save-bar">

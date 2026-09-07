@@ -14,7 +14,11 @@ import {
 
 const base = env.apiUrl
 
-export const programsHandlers = [
+/** `GET`/`PUT /program` and `PATCH /program/availability`. All three are wired
+ *  to the real backend under the `program` flag (VITE_LIVE_APIS): `GET`/`PUT`
+ *  speak `ProgramOverview`, `PUT` takes `{ name, description, durationWeeks }`,
+ *  and the toggle returns `ProgramOverview` too. */
+export const programHandlers = [
   // GET /program — the current global program.
   http.get(`${base}/program`, () => HttpResponse.json(getProgramDto())),
 

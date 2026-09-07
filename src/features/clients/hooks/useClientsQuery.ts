@@ -11,11 +11,15 @@ import {
 import { clientKeys } from '../api/clients.keys'
 import type { ListClientsParams } from '../api/clients.types'
 
-export function useClientsQuery(params: ListClientsParams) {
+export function useClientsQuery(
+  params: ListClientsParams,
+  opts?: { enabled?: boolean },
+) {
   return useQuery({
     queryKey: clientKeys.list(params),
     queryFn: ({ signal }) => listClients(params, signal),
     placeholderData: keepPreviousData,
+    enabled: opts?.enabled,
   })
 }
 

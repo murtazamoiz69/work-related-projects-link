@@ -48,6 +48,11 @@ export type NoteAttachment = { name: string; type: string }
 export type InternalNote = {
   author: string
   text: string
+  /** When the note was written (ISO). The authoritative age — `days` is a
+   *  legacy fallback for records that predate this field. */
+  createdAt?: string
+  /** @deprecated Relative age in days-ago. Frozen at write time; use
+   *  `createdAt`. Kept for backward compatibility with older stored notes. */
   days: number
   attachment?: NoteAttachment | null
 }

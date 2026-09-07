@@ -4,35 +4,33 @@ Covers the **Programs** page. There is a **single global program** (no
 list/create/delete) — this page views/edits it and toggles its availability.
 See [README.md](./README.md) for conventions.
 
-## Backend wiring status (updated 2026-09-07)
+## Backend wiring status (updated 2026-09-08)
 
-> **This page is mock-only.** The real backend has **no program resource**:
-> `GET /program`, the workout-plan and diet-plan endpoints, and everything
-> below do **not** exist yet (`GET /program` currently returns `404`). The only
-> program-related data the real backend exposes is
-> `GET /clients/programs` → `{ "programs": string[] }` — a list of program
-> **names**, already live and used by the "Plan" dropdown in Add User.
-> Everything specified here is **PROPOSED** for the backend to build.
+> **Fully LIVE.** The Programs page calls the real `programs v1 web` backend for
+> everything it needs (per-resource `VITE_LIVE_APIS` flags: `program`,
+> `program-workout`, `program-diet`, `libraries`):
 >
-> **The workout and diet plans are free rich text.** The nutritionist authors
-> each workout day and each diet sheet in a rich-text editor; the wire carries
-> an HTML `body` string. There is **no** structured week / day / exercise /
-> meal model on the program, and **no reference-library resource** — the UI
-> resolves no ids. The only structured control on the page is the diet
-> **Category** (calorie band), a static enum: `CALORIE_BANDS` in
-> `src/features/programs/diet/dietPlan.types.ts`.
-
-### Endpoints the backend must add for this page
-- `GET` + `PUT /program` — the single global program (identity, timeline,
-  availability). A small object; **no plan content**.
-- `PATCH /program/availability` (or a field on `PUT /program`) — enable/disable.
-- `GET /program/workout-plan`, `PUT /program/workout-plan/days`,
-  `POST /program/workout-plan/add-day` — plus the per-user variants.
-- `GET /program/diet-plan`, `PUT /program/diet-plan`,
-  `POST /program/diet-plan/duplicate` — plus the per-user variants,
-  `PATCH /clients/:id/diet-band` and `PATCH /clients/:id/diet-review`.
-- Optionally a calorie-band enum endpoint, so the diet **Category** stops being
-  a hardcoded list.
+> | Endpoint | Status |
+> | --- | --- |
+> | `GET /program` | **Live** — response is `ProgramOverview` |
+> | `PUT /program` | **Live** — body `ProgramDetailsPut` `{ name, description?, durationWeeks }`, returns `ProgramOverview` |
+> | `PATCH /program/availability` | **Live** — body `{ enabled }`, returns `ProgramOverview` |
+> | `GET`/`PUT`/`POST /program/workout-plan*` | **Live** — shapes match |
+> | `GET`/`PUT`/`POST /program/diet-plan*` | **Live** — shapes match |
+> | `GET /libraries/calorie-bands` | **Live** — drives the diet **Category** dropdown |
+>
+> The workout and diet plans are **free rich text**: each workout day and each
+> diet sheet is a single HTML `body` string. There is no structured week / day /
+> exercise / meal model on the program, and the UI resolves no exercise/meal
+> ids (so `GET /libraries/{exercises,meals,workout-templates}` exist on the
+> backend but are **not consumed**).
+>
+> The per-client plan endpoints (`/clients/:id/workout-plan*`,
+> `/clients/:id/diet-plan*`, `/clients/:id/diet-band`, `/clients/:id/diet-review`)
+> belong to the **Plan Workspace**, not this page, and stay on the mock for now
+> (their consumers are mock Chat clients).
+>
+> All date fields on `ProgramOverview` are `createdAt` / `updatedAt` (ISO).
 
 ## Page functionality
 - Load the program (name, description, duration, availability, enrolled count).
@@ -84,16 +82,17 @@ configured — the UI shows "No program configured yet".)
 Save the editable program details. Autosave sends this on a name / description /
 timeline change.
 
-**Request body**
+**Request body** (`ProgramDetailsPut`)
 ```json
 { "name": "Diwali Glow", "description": "…", "durationWeeks": 6 }
 ```
-Only these three fields are editable here. `enabled` is owned by
-`PATCH /program/availability`; `id`, `enrolledCount`, and the timestamps are
-server-owned.
+Only these three fields are editable here (`description` is optional, defaults to
+`""`). `enabled` is owned by `PATCH /program/availability`; `id`,
+`enrolledCount`, and the timestamps are server-owned.
 
-**Success `200`** — the full updated program (same shape as `GET`; the server
-stamps `updatedAt`).
+**Success `200`** — the updated program as `ProgramOverview` (same shape as
+`GET`; the server stamps `updatedAt`). The client writes this straight into the
+`['program']` cache.
 
 **Errors**
 | Status | When | Body |
@@ -110,8 +109,24 @@ Toggle availability.
 ```json
 { "enabled": false }
 ```
-**Success `200`** — the full updated program.
+**Success `200`** — the updated program as `ProgramOverview` (same shape as
+`GET /program`).
+
 **Errors:** `401`; `500`.
+
+---
+
+## `GET /libraries/calorie-bands`
+The daily-intake targets the diet plan is organised by — drives the diet tab's
+**Category** dropdown.
+
+**Success `200`**
+```json
+{ "bands": [1200, 1400, 1600, 1800, 2000] }
+```
+Read-only reference data; the client caches it for the session and falls back to
+the built-in list while it loads or if it fails, so the dropdown never changes
+shape. **Errors:** `401`; `500`.
 
 ---
 

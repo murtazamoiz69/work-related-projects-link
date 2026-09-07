@@ -19,7 +19,7 @@ switches over by pointing `VITE_API_URL` at the real server and disabling mocks
 | [auth.md](./auth.md) | Login / session | `/auth/*` |
 | [users.md](./users.md) | Users (Clients) roster | `/clients` |
 | [nutritionists.md](./nutritionists.md) | Nutritionists | `/nutritionists` |
-| [programs.md](./programs.md) | Program (single global) + the workout and diet plans | `/program`, `/program/workout-plan`, `/program/diet-plan` |
+| [programs.md](./programs.md) | Program (single global) + the workout and diet plans | `/program`, `/program/workout-plan`, `/program/diet-plan`, `/libraries/calorie-bands` |
 | [dashboard.md](./dashboard.md) | Dashboard | `/dashboard/*` |
 | [chat.md](./chat.md) | Chat conversations | `/conversations` |
 | [plan-workspace.md](./plan-workspace.md) | Plan Workspace | `/clients/:id/plan` |
@@ -39,10 +39,10 @@ proxy; the rest stay on the mocks in this folder. What's real **today**:
 | Nutritionists | **Live** | |
 | Dashboard | **Live** | all `/dashboard/*` aggregates |
 | Settings › Profile | **Live** | `/me/settings/profile`, `/uploads` |
-| Client detail | Endpoint **real**, mock-locked | `GET /clients/:id/detail` exists and is wired, but kept on the mock locally — its only consumer (Plan Workspace) is still fed mock Chat clients. See [plan-workspace.md](./plan-workspace.md). |
-| **Program** (single global) | **Mock only** | The real backend has **no** `/program` resource (it 404s). Workout / diet plans are free rich text (`body` HTML); there is no reference-library resource. `/clients/programs` returns only program *name* strings. See [programs.md](./programs.md). |
-| **Plan Workspace** | **Mock only** | The whole plan (and the At-a-glance metrics) is generated client-side. See [plan-workspace.md](./plan-workspace.md). |
-| Chat | **Mock only** | |
+| Client detail | **Live** | `GET /clients/:id/detail` — the Plan Workspace "At a glance" tracker. Wired via the `client-detail` flag. |
+| **Program** (single global) | **Live** | `GET`/`PUT /program`, `PATCH /program/availability`, the workout-plan and diet-plan endpoints, and `GET /libraries/calorie-bands` are all wired (per-resource flags). `PUT` takes a partial `{name,description,durationWeeks}` and, like the toggle, returns `ProgramOverview`. See [programs.md](./programs.md). |
+| **Plan Workspace** | **Live** | `GET`/`PUT /clients/:id/plan` + the per-client `/clients/:id/workout-plan*`, `/clients/:id/diet-plan*`, `diet-band`, `diet-review` — wired via the `plan-workspace` flag. Opened from the Users-page **Manage Plan** action, which resolves the real client from the roster by `conversationId`. The **Activity** tab has no real source yet (Chat is mock) and shows its empty state. See [plan-workspace.md](./plan-workspace.md). |
+| Chat | **Mock only** | The in-Chat "Manage Plan" / "View Program" buttons open against mock conversation clients, so their downstream real calls `404` — use the Users page. |
 
 Every endpoint below marked **PROPOSED** does **not** exist on the real backend
 yet — it is the spec for the backend team to build.
@@ -134,11 +134,13 @@ relevant to it. Listed here so the backend scope is unambiguous:
 - **Settings → Profile** (name / email / phone / bio / photo) is not yet an
   endpoint — it edits the session profile in the auth store. Belongs with auth;
   see [auth.md](./auth.md).
-- **Reference libraries** (exercise / meal / workout-template catalogs) — there
-  is **no** `/libraries` endpoint. The workout and diet plans are authored as
+- **Reference libraries** (exercise / meal / workout-template catalogs) — the
+  backend exposes `GET /libraries/{exercises,meals,workout-templates}` but the
+  frontend **does not consume them**: the workout and diet plans are authored as
   free rich text and carry no exercise / meal ids, so nothing needs resolving.
-  The catalogs that remain (used only by the prototype plan-builder in Chat and
-  the activity-filter sub-categories) are static seed data in the frontend.
+  Only `GET /libraries/calorie-bands` is used (the diet Category dropdown). The
+  catalogs still referenced by the prototype plan-builder in Chat and the
+  activity-filter sub-categories are static seed data in the frontend.
 
 > **Now served by an API (previously in this list):** the **client-detail
 > "At a glance" tracker / AI summary** is `GET /clients/:id/detail`

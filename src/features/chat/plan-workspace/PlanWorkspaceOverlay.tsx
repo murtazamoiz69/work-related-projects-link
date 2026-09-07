@@ -49,6 +49,10 @@ export function PlanWorkspaceOverlay({
   const detail = detailQuery.data
 
   const [activeTab, setActiveTab] = useState<PwTab>('glance')
+  // The Activity feed comes from the client's conversation — a separate fetch
+  // we only want once the Activity tab is actually opened, not on every plan
+  // open. Latches on so switching away doesn't drop the loaded feed.
+  const [activityOpened, setActivityOpened] = useState(false)
   const [activeWeekOverride, setActiveWeekOverride] = useState<number | null>(
     null,
   )
@@ -76,8 +80,11 @@ export function PlanWorkspaceOverlay({
   }, [onClose])
 
   // Activity + its filter hook must run unconditionally, before the loading
-  // guard below. Activity comes from the client's conversation (the API).
-  const convoQuery = useConversationQuery(client.conversationId)
+  // guard below. The conversation is only fetched once the Activity tab has
+  // been opened (see `activityOpened`).
+  const convoQuery = useConversationQuery(
+    activityOpened ? client.conversationId : null,
+  )
   const activityItems = convoQuery.data?.activity ?? []
   const activityFirstName = client.name.split(' ')[0]
   const activityFilters = useActivityFilters(activityItems, activityFirstName)
@@ -174,7 +181,10 @@ export function PlanWorkspaceOverlay({
                   className={`pw-tab${activeTab === t.key ? ' active' : ''}`}
                   role="tab"
                   aria-selected={activeTab === t.key}
-                  onClick={() => setActiveTab(t.key)}
+                  onClick={() => {
+                    setActiveTab(t.key)
+                    if (t.key === 'activity') setActivityOpened(true)
+                  }}
                 >
                   <Icon name={t.icon} />
                   {t.label}

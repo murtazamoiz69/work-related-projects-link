@@ -13,32 +13,35 @@ per-user editable training + nutrition plan. See [README.md](./README.md).
 
 > One workspace per user, keyed by the **user (client) id**.
 
-## Backend wiring status (updated 2026-09-07)
+## Backend wiring status (updated 2026-09-08)
 
-> **This surface is mock-only, with one real dependency.** The entire workspace
-> (clinical profile, workout weeks, diet weeks, targets, supplements, versions)
-> is generated **client-side** from a seed — there is no `GET /clients/:id/plan`
-> on the real backend. The **At-a-glance** tab's KPI tiles, Daily Log Coverage
-> calendar and trend charts are likewise **computed on the client** by a seeded
-> generator (`src/features/client-detail/tracker.ts`), not fetched — the backend
-> has no per-day metrics endpoint.
+> **LIVE.** The backend shipped the whole surface and the app is wired to it via
+> the `plan-workspace` and `client-detail` flags:
 >
-> The one real endpoint this surface can use is **`GET /clients/:id/detail`**
-> (clinical profile + program list), which the backend **does** expose and which
-> the `client-detail` feature is wired to. It is kept on the mock locally because
-> the workspace opens from **mock Chat** with mock client ids the real backend
-> doesn't have — flipping it live now would `404` those and break the demo. Add
-> `client-detail` to `VITE_LIVE_APIS` once Chat/plan are fed live clients.
+> | Endpoint | Status |
+> | --- | --- |
+> | `GET`/`PUT /clients/:id/plan` → `Workspace` | **Live** |
+> | `GET /clients/:id/detail` → `ClientDetail` | **Live** — the "At a glance" tracker |
+> | `GET /clients/:id/workout-plan` + `PUT .../days` + `POST .../reset` | **Live** — Workout Plan tab |
+> | `GET`/`PUT /clients/:id/diet-plan?week=` | **Live** — Diet Plan tab |
+> | `PATCH /clients/:id/diet-band`, `PATCH /clients/:id/diet-review` → `Client` | **Live** |
 >
-> Every endpoint below is **PROPOSED** — none exists on the real backend yet.
-
-### Endpoints the backend must add for this surface
-- `GET` + `PUT /clients/:id/plan` — the editable per-user workspace.
-- `GET /clients/:id/metrics` (or similar) — real per-day logged metrics
-  (calories eaten/burned, steps, hydration, weight, workouts, cardio) to replace
-  the seeded At-a-glance numbers.
-- Real Chat conversations keyed to live client ids (see [chat.md](./chat.md)),
-  so the workspace can open for real users at all.
+> **How it opens:** the Users-page **Manage Plan** action navigates to
+> `/chat?c=<conversationId>&plan=true`; ChatPage looks the **real** client up in
+> the live `GET /clients` roster by `conversationId` (Chat itself is still
+> mock), then the overlay drives all the above by that client's id.
+>
+> **Wire-shape notes:** `Workspace.profile.bmi` is a **string** on the wire (the
+> app coerces to a number); `profile.age`/`heightCm`/`weightKg`/`targetWeightKg`/
+> `gender` are **nullable** (a partly-onboarded client). `Workspace.workoutWeeks`
+> / `dietWeeks` are still on the payload but the tabs render the rich-text
+> `/clients/:id/workout-plan` and `/clients/:id/diet-plan` bodies instead — the
+> structured arrays only back version-history snapshots.
+>
+> **Not live:** the **Activity** tab reads a conversation (`/conversations/:id`),
+> which stays mock; against a real client it `404`s and the tab shows its empty
+> state. A real per-day **metrics** endpoint would replace the seeded At-a-glance
+> numbers `src/features/client-detail/tracker.ts` derives — still `PROPOSED`.
 
 ---
 
@@ -59,7 +62,7 @@ Return the user's workspace (built from their profile + goals on first access).
   "workoutWeeks": [ /* WsWorkoutWeek[] */ ],
   "dietWeeks": [ /* WsDietWeek[] */ ],
   "versions": [ /* PlanVersion[] — see below */ ],
-  "notes": [ { "author": "Sarah Nolan", "text": "Prefers morning check-ins", "days": 2, "attachment": null } ]
+  "notes": [ { "author": "Sarah Nolan", "text": "Prefers morning check-ins", "createdAt": "2026-09-05T09:12:00.000Z", "days": 2, "attachment": null } ]
 }
 ```
 
@@ -77,7 +80,7 @@ Return the user's workspace (built from their profile + goals on first access).
 | workoutWeeks | `WsWorkoutWeek[]` | Week → days → workout → exercise slots (see below). |
 | dietWeeks | `WsDietWeek[]` | Week → days → meal entries. |
 | versions | `PlanVersion[]` | Version history; each has a `date` (ISO). |
-| notes | `Note[]` | Nutritionist's private notes on the client. Each: `{ author: string, text: string, days: number, attachment?: { name, type } \| null }`. `days` = age of the note in days (0 = today); no absolute date is stored. Newest first. Persisted with the workspace via `PUT` (edited in place like every other plan edit). |
+| notes | `Note[]` | Nutritionist's private notes on the client. Each: `{ author: string, text: string, createdAt: string (ISO), days: number, attachment?: { name, type } \| null }`. `author` is the signed-in nutritionist. **`createdAt` (ISO) is the authoritative timestamp** — the frontend sends it on new notes and ages the "N days ago" label from it. **`days` is legacy/derived** — the frontend recomputes it from `createdAt` on every read and write, so a backend that only knows `days` still gets a valid value, but it must **persist and echo `createdAt`** for notes to age correctly (a note stored with only `days` stays frozen). Newest first. Persisted with the workspace via `PUT`. |
 
 **`ClinicalProfile`** (large; the only date is `programStart`). Key fields:
 ```json
@@ -186,8 +189,9 @@ sets `published` and appends a `PlanVersion`).
 - **Activity tab** — reads the conversation's `activity` (see [chat.md](./chat.md)),
   filtered client-side.
 
-> **Notes tab** — now **part of the `Workspace`** (`notes[]` above), persisted
-> with the plan via `PUT`. Previously local-only (added notes were lost on
-> reload); fixed. Distinct from the chat-side conversation notes
-> (`POST /conversations/:id/notes`, see [chat.md](./chat.md)) — the plan notes
-> travel with the plan resource.
+> **Notes tab** — **part of the `Workspace`** (`notes[]` above), persisted with
+> the plan via `PUT`. `author` is the signed-in nutritionist; each note carries
+> an ISO `createdAt` that the "N days ago" label ages from (`days` is a derived
+> legacy field). **Backend: persist and echo `createdAt`** — without it notes
+> freeze at the age they were saved. Distinct from the chat-side conversation
+> notes (`POST /conversations/:id/notes`, see [chat.md](./chat.md)).

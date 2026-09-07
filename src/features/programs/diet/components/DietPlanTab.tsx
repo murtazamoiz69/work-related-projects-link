@@ -3,6 +3,7 @@ import { Icon } from '@/components/atoms/Icon'
 import { LazyRichTextEditor } from '@/components/molecules/LazyRichTextEditor'
 import { apiErrorMessage } from '@/lib/api/errors'
 import { CALORIE_BANDS, type CalorieBand } from '../dietPlan.types'
+import { useCalorieBandsQuery } from '../../hooks/useCalorieBands'
 import { useMasterSheetQuery, useSaveMasterSheetToWeeks } from '../useDietPlan'
 import { SaveToWeeksModal } from './SaveToWeeksModal'
 
@@ -22,6 +23,12 @@ export function DietPlanTab({
 }) {
   const [band, setBand] = useState<CalorieBand | null>(null)
   const [saveOpen, setSaveOpen] = useState(false)
+
+  // The calorie bands come from `GET /libraries/calorie-bands`; the static list
+  // is the fallback while that loads or if it fails, so the dropdown is never
+  // empty and its options don't visibly change.
+  const bandsQuery = useCalorieBandsQuery()
+  const bands: readonly number[] = bandsQuery.data ?? CALORIE_BANDS
 
   const sheetQuery = useMasterSheetQuery(activeWeek, band)
   const saveToWeeks = useSaveMasterSheetToWeeks()
@@ -53,7 +60,7 @@ export function DietPlanTab({
             }
           >
             <option value="">Select a category…</option>
-            {CALORIE_BANDS.map((b) => (
+            {bands.map((b) => (
               <option key={b} value={b}>
                 {b} kcal
               </option>
@@ -124,7 +131,6 @@ export function DietPlanTab({
                   ariaLabel={`Week ${activeWeek} diet plan, ${band} kcal`}
                   value={draft}
                   onChange={setDraft}
-                  onSeeded={setDraft}
                 />
 
                 <div className="diet-save-bar">

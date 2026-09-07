@@ -32,7 +32,9 @@ function saveBodyError(body: SaveWorkoutDaysBody): Response | null {
   return null
 }
 
-export const workoutPlanHandlers = [
+/** The programme's global run of days — `/program/workout-plan*`. Wired to the
+ *  real backend under the `program-workout` flag (VITE_LIVE_APIS). */
+export const masterWorkoutPlanHandlers = [
   // GET /program/workout-plan — the whole run of days.
   http.get(`${base}/program/workout-plan`, () =>
     HttpResponse.json(getMasterPlan()),
@@ -50,7 +52,12 @@ export const workoutPlanHandlers = [
   http.post(`${base}/program/workout-plan/add-day`, () =>
     HttpResponse.json(addMasterDay()),
   ),
+]
 
+/** A single user's copy — `/clients/:id/workout-plan*`. Used by the Plan
+ *  Workspace (mock Chat clients), so it stays mock-only regardless of the
+ *  programme flags. */
+export const clientWorkoutPlanHandlers = [
   // GET /clients/:id/workout-plan — the user's copy (days flagged `edited`).
   http.get(`${base}/clients/:id/workout-plan`, ({ params }) =>
     HttpResponse.json(getClientPlan(String(params.id))),
