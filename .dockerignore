@@ -1,0 +1,12 @@
+node_modules
+dist
+dist-single
+.git
+.husky
+.gitlab-ci.yml
+ci-cd
+*.md
+.env.*
+coverage
+.vscode
+.idea

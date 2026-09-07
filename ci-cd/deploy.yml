@@ -1,0 +1,12 @@
+deploy-dev:
+  stage: deploy
+  resource_group: deploy-${ENVIRONMENT}-${CI_COMMIT_REF_SLUG}
+  interruptible: false
+  before_script:
+    - chmod +x ci-cd/deploy.sh
+  script:
+    - bash ci-cd/deploy.sh
+  environment:
+    name: $ENVIRONMENT
+  when: on_success
+  allow_failure: false

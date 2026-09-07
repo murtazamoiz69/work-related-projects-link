@@ -1,0 +1,16 @@
+services:
+  app:
+    container_name: nws-app
+    build: .
+    image: ${IMAGE_NAME:-nws-app}:${IMAGE_TAG:-latest}
+    ports:
+      - "8082:80"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/ >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    restart: always
