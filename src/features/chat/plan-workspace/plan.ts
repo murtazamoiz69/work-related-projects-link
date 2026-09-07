@@ -11,7 +11,7 @@ import {
   mealsByCategory,
   MEAL_SLOTS,
   newMealEntry,
-} from '@/features/programs'
+} from '@/features/programs/data'
 import type { Meal, MealEntry } from '@/features/programs'
 import {
   computeTargets,

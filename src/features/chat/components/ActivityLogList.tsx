@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Icon } from '@/components/atoms/Icon'
 import { PhotoLightbox } from '@/components/molecules/PhotoLightbox'
-import { MEAL_SLOTS, WORKOUT_TEMPLATES } from '@/features/programs'
+import { MEAL_SLOTS, WORKOUT_TEMPLATES } from '@/features/programs/data'
 import { formatDateSep, formatTime, isToday } from '../data'
 import type { ChatActivityItem, ChatActivityKind } from '../types'
 

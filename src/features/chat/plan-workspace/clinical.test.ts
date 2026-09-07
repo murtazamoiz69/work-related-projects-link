@@ -4,7 +4,7 @@
 // profiles/meals/exercises.
 import { describe, expect, it } from 'vitest'
 import { CLIENTS_DATA } from '@/features/clients'
-import { EXERCISE_LIBRARY, MEAL_LIBRARY } from '@/features/programs'
+import { EXERCISE_LIBRARY, MEAL_LIBRARY } from '@/features/programs/data'
 import type { Exercise, Meal } from '@/features/programs'
 import type { ClinicalProfile } from './types'
 import {

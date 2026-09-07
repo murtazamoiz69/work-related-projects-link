@@ -143,6 +143,33 @@ export type MealTotals = {
   fiber: number
 }
 
+/**
+ * The single global program as the current UI needs it. The workout and diet
+ * content are authored as free rich text under their own endpoints
+ * (`/program/workout-plan`, `/program/diet-plan`) — the program object is just
+ * its identity, timeline, availability, and enrolled count. See
+ * `docs/api/programs.md`.
+ */
+export type Program = {
+  id: string
+  name: string
+  description: string
+  /** Programme length in weeks — the diet tab's week rail, and the Edit modal. */
+  durationWeeks: number
+  /** Program availability — the Active/Disabled toggle. */
+  enabled: boolean
+  /** How many users are enrolled on this program (server-computed). */
+  enrolledCount: number
+  createdAt: Date
+  updatedAt: Date
+}
+
+/**
+ * @deprecated The structured week-by-week model behind the old plan builder.
+ * The live Programs page and Plan Workspace author plans as rich text now; this
+ * type is kept only for the not-yet-removed prototype builders in `data.ts` /
+ * `store.ts`. New code uses {@link Program}.
+ */
 export type TrainingProgram = {
   id: string
   name: string

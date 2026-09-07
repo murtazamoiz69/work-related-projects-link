@@ -46,10 +46,10 @@ export function ProgramsPage() {
     [],
   )
 
-  // Autosave: stamp updatedDate, persist the whole program, and flash the pill.
+  // Autosave: stamp updatedAt, persist the program details, and flash the pill.
   const flashSaved = () => {
     if (!program) return
-    program.updatedDate = new Date()
+    program.updatedAt = new Date()
     updateProgram.mutate(program)
     setSaved(true)
     if (savedTimer.current) clearTimeout(savedTimer.current)

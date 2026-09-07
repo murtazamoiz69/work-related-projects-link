@@ -3,8 +3,8 @@
 import { http, HttpResponse } from 'msw'
 import { env } from '@/lib/api/env'
 import type {
-  TrainingProgramDto,
   UpdateProgramAvailabilityBody,
+  UpdateProgramBody,
 } from './programs.types'
 import {
   getProgramDto,
@@ -18,9 +18,9 @@ export const programsHandlers = [
   // GET /program — the current global program.
   http.get(`${base}/program`, () => HttpResponse.json(getProgramDto())),
 
-  // PUT /program — save the whole program (autosave sends the full object).
+  // PUT /program — save the editable program details (autosave).
   http.put(`${base}/program`, async ({ request }) => {
-    const body = (await request.json()) as TrainingProgramDto
+    const body = (await request.json()) as UpdateProgramBody
     if (!body?.name?.trim()) {
       return HttpResponse.json(
         {

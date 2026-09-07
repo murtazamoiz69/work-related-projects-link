@@ -6,154 +6,95 @@ See [README.md](./README.md) for conventions.
 
 ## Backend wiring status (updated 2026-09-07)
 
-> **This page is mock-only.** The real backend has **no program-content
-> resource**: no `GET /program`, no workout-plan or diet-plan endpoints, no
-> reference libraries. The only program data the real backend exposes is
+> **This page is mock-only.** The real backend has **no program resource**:
+> `GET /program`, the workout-plan and diet-plan endpoints, and everything
+> below do **not** exist yet (`GET /program` currently returns `404`). The only
+> program-related data the real backend exposes is
 > `GET /clients/programs` → `{ "programs": string[] }` — a list of program
 > **names**, already live and used by the "Plan" dropdown in Add User.
-> Everything else specified below is **PROPOSED** for the backend to build; the
-> page runs entirely on MSW mocks today.
+> Everything specified here is **PROPOSED** for the backend to build.
 >
-> **The one dropdown on this page is a static code array, not a backend
-> value** — the diet **Category** (calorie band) comes from `CALORIE_BANDS` in
-> `src/features/programs/dietPlan.types.ts`. (The program **Goal**/**Difficulty**
-> selects and the workout **Type** chip were removed from the UI; the exercise
-> and meal libraries are static in `src/features/programs/data.ts`.) The Category
-> can only become backend-driven once the backend adds an enum endpoint.
+> **The workout and diet plans are free rich text.** The nutritionist authors
+> each workout day and each diet sheet in a rich-text editor; the wire carries
+> an HTML `body` string. There is **no** structured week / day / exercise /
+> meal model on the program, and **no reference-library resource** — the UI
+> resolves no ids. The only structured control on the page is the diet
+> **Category** (calorie band), a static enum: `CALORIE_BANDS` in
+> `src/features/programs/diet/dietPlan.types.ts`.
 
 ### Endpoints the backend must add for this page
-- `GET` + `PUT /program` — the single global program (overview + targets).
+- `GET` + `PUT /program` — the single global program (identity, timeline,
+  availability). A small object; **no plan content**.
 - `PATCH /program/availability` (or a field on `PUT /program`) — enable/disable.
-- `GET` + `PUT /program/workout-plan`, `POST /program/workout-plan/add-day`.
-- `GET` + `PUT /program/diet-plan`.
-- `GET /libraries/exercises`, `GET /libraries/meals`, and the calorie-band enum
-  — so the Category and any library pickers stop being hardcoded.
+- `GET /program/workout-plan`, `PUT /program/workout-plan/days`,
+  `POST /program/workout-plan/add-day` — plus the per-user variants.
+- `GET /program/diet-plan`, `PUT /program/diet-plan`,
+  `POST /program/diet-plan/duplicate` — plus the per-user variants,
+  `PATCH /clients/:id/diet-band` and `PATCH /clients/:id/diet-review`.
+- Optionally a calorie-band enum endpoint, so the diet **Category** stops being
+  a hardcoded list.
 
 ## Page functionality
-- Load the program (overview + nutrition targets).
-- Edit program details (name, description, duration).
+- Load the program (name, description, duration, availability, enrolled count).
+- Edit program details (name, description, timeline in weeks) — a modal.
 - Toggle availability (Active/Disabled) — gated by a confirm dialog.
-- **Autosave:** a detail edit persists the whole program (a `PUT`). The UI shows
-  a transient "Saved" indicator.
+- **Autosave:** an edit persists the program details (`PUT /program`); the
+  toggle is a `PATCH`. The UI shows a transient "Saved" indicator.
 
-The **workout plan** and the **diet plan** are served by their own endpoints —
-see [Workout plan](#workout-plan) and [Diet plan](#diet-plan) below. They are not
-part of the program payload.
+The **workout plan** and the **diet plan** are separate resources with their own
+endpoints — see [Workout plan](#workout-plan) and [Diet plan](#diet-plan) below.
+They are **not** part of the program payload.
 
 ---
 
 ## `GET /program`
 Return the current global program.
 
-**Success `200`** — a `TrainingProgram`. Top-level shape:
+**Success `200`**
 ```json
 {
   "id": "prog-1",
-  "name": "12-Week Fat Loss Reset",
-  "description": "…",
-  "goal": "Fat Loss",
-  "difficulty": "Intermediate",
-  "durationWeeks": 12,
-  "coach": "Sarah Nolan",
+  "name": "Diwali Glow",
+  "description": "Six weeks to your brightest Diwali yet…",
+  "durationWeeks": 6,
   "enabled": true,
-  "createdDate": "2026-01-05T00:00:00.000Z",
-  "updatedDate": "2026-08-26T00:00:00.000Z",
-  "version": "1.4",
-  "members": [ /* ProgramMember[] — see below */ ],
-  "enrolledCount": 48,
-  "activeUsers": 48,
-  "completionRate": 62,
-  "nutritionTargets": { "calories": 2000, "protein": 160, "carbs": 180, "fat": 60, "water": 3 },
-  "workoutWeeks": [ /* WorkoutWeek[] */ ],
-  "dietWeeks": [ /* DietWeek[] */ ],
-  "notes": [ { "author": "Sarah Nolan", "text": "…", "days": 3 } ],
-  "activity": [ { "text": "…", "days": 2 } ],
-  "versionHistory": [ { "version": "1.4", "text": "…", "days": 5 } ]
+  "enrolledCount": 10,
+  "createdAt": "2026-01-05T00:00:00.000Z",
+  "updatedAt": "2026-09-07T00:00:00.000Z"
 }
 ```
 
 **Field reference**
 | Field | Type | Notes |
 | --- | --- | --- |
-| goal | enum | `Fat Loss` \| `Muscle Gain` \| `Bulk` \| `PCOS` \| `Diabetes` \| `General Fitness` |
-| difficulty | enum | `Beginner` \| `Intermediate` \| `Advanced` |
-| durationWeeks | number | Number of weeks; `workoutWeeks`/`dietWeeks` length should match. |
-| enabled | boolean | Availability (the toggle). |
-| createdDate / updatedDate | ISO date | Only date fields at top level. |
-| nutritionTargets | object | `{ calories, protein, carbs, fat, water }` (numbers). |
-| enrolledCount | number | Total users enrolled — the overview's "N users enrolled". Server-computed; the client must not count another resource for it. |
-| activeUsers / completionRate | number | Overview stats. |
-| notes / activity / versionHistory | arrays | `days` = "N days ago" (integer), not a date. |
+| id | string | Stable id of the one program. |
+| name | string | Shown as the page title; required (see `PUT`). |
+| description | string | Free text under the title. |
+| durationWeeks | number | Programme length. Drives the **diet** tab's week rail. The **workout** plan is a flat run of days and does **not** derive its length from this. |
+| enabled | boolean | Availability — the Active/Disabled toggle. |
+| enrolledCount | number | Users enrolled — the overview's "N users enrolled". **Server-computed**; the client must not count another resource for it. |
+| createdAt / updatedAt | ISO date | The only date fields. |
 
-> **Legacy.** `workoutWeeks` and `dietWeeks` are still on the payload but
-> nothing renders them — the Programs page's two tabs read the workout-plan and
-> diet-plan endpoints instead. They stay because the Plan Workspace's own
-> (differently typed) week arrays are still used by its version history and
-> publish checks. A real backend need not carry them.
-
-**`WorkoutWeek` → `WorkoutDay` → `Workout` → `WorkoutSlot`** *(legacy)*
-```json
-{
-  "weekNum": 1,
-  "isDeload": false,
-  "days": [
-    {
-      "dayNum": 1, "label": "Mon", "type": "workout",
-      "workout": {
-        "uid": "w1", "name": "Push Day", "muscle": "Chest/Shoulders",
-        "description": "", "estimatedMinutes": 50, "difficulty": "Intermediate",
-        "caloriesBurn": 350, "warmup": "…", "cooldown": "…",
-        "exercises": [
-          { "uid": "s1", "exerciseId": "ex-bench", "sets": 4, "reps": "8-10",
-            "weight": "60kg", "rest": "90s", "tempo": "2-0-1", "rpe": 8, "notes": "" }
-        ]
-      }
-    },
-    { "dayNum": 2, "label": "Tue", "type": "rest", "workout": null }
-  ]
-}
-```
-- `WorkoutDay.type`: `"rest"` | `"workout"`; `workout` is `null` on rest days.
-- `WorkoutSlot.exerciseId` references the exercise **library** (see note below).
-
-**`DietWeek` → `DietDay` → `MealEntry`**
-```json
-{
-  "weekNum": 1,
-  "days": [
-    { "dayNum": 1, "label": "Mon",
-      "meals": [ { "uid": "m1", "mealId": "meal-oats", "slot": "Breakfast", "time": "08:00" } ] }
-  ]
-}
-```
-- `MealEntry.slot`: `Breakfast` | `Lunch` | `Snack` | `Dinner`.
-- `MealEntry.mealId` references the meal **library** (see note below).
-
-**`ProgramMember`**
-```json
-{
-  "clientId": "c-4", "currentWeek": 6, "progressPct": 55, "currentWeight": 78,
-  "assignedDate": "2026-06-01T00:00:00.000Z", "lastActive": 1, "status": "active",
-  "notes": [ { "author": "…", "text": "…", "days": 2 } ], "overrides": { "workouts": 0, "meals": 0 }
-}
-```
-- `assignedDate` is ISO. `status`: `active` | `paused` | `completed`. `lastActive` = days ago.
-
-**Errors:** `401`; `500`. (`404`/empty is acceptable only if no program is configured — the UI shows "No program configured yet".)
+**Errors:** `401`; `500`. (`404` / empty is acceptable only if no program is
+configured — the UI shows "No program configured yet".)
 
 ---
 
 ## `PUT /program`
-Save the whole program (autosave sends the full object on every edit, including
-detail edits, workout/diet edits, and publishing a new version).
+Save the editable program details. Autosave sends this on a name / description /
+timeline change.
 
-**Request body:** a full `TrainingProgram` (same shape as `GET`).
-**Success `200`** — the saved `TrainingProgram` (server may stamp `updatedDate`).
-**Behaviour notes**
-- The client sends the entire program; the server should replace/persist it.
-- Prefer accepting the full object. If you'd rather have granular endpoints
-  (e.g. `PATCH /program/weeks/:weekNum/days/:dayNum`), tell us and we'll split
-  the mutation — the current client PUTs the whole thing.
+**Request body**
+```json
+{ "name": "Diwali Glow", "description": "…", "durationWeeks": 6 }
+```
+Only these three fields are editable here. `enabled` is owned by
+`PATCH /program/availability`; `id`, `enrolledCount`, and the timestamps are
+server-owned.
+
+**Success `200`** — the full updated program (same shape as `GET`; the server
+stamps `updatedAt`).
+
 **Errors**
 | Status | When | Body |
 | --- | --- | --- |
@@ -169,43 +110,8 @@ Toggle availability.
 ```json
 { "enabled": false }
 ```
-**Success `200`** — the updated `TrainingProgram`.
+**Success `200`** — the full updated program.
 **Errors:** `401`; `500`.
-
----
-
-## `GET /libraries` — reference catalogs
-The program, plan, and template payloads carry only join keys (`exerciseId`,
-`mealId`); the display data (name, muscle, equipment, ingredients, steps…) comes
-from these read-only catalogs. The client fetches this **once at app load** and
-caches it, then resolves ids locally — so a slot like
-`{ "exerciseId": "ex-1", "sets": 3 }` becomes "Barbell Bench Press · Chest" from
-the catalog, never a bundled assumption.
-
-**Success `200`**
-```json
-{
-  "exercises": [
-    { "id": "ex-1", "name": "Barbell Bench Press", "muscle": "Chest",
-      "equipment": "Barbell", "description": "Lower the bar to mid-chest…", "…": "…" }
-  ],
-  "meals": [
-    { "id": "meal-oats", "name": "Overnight Oats", "category": "Breakfast",
-      "calories": 380, "protein": 18, "ingredients": ["oats","…"], "steps": ["…"], "…": "…" }
-  ],
-  "workoutTemplates": [
-    { "id": "tpl-push", "name": "Push", "muscle": "Chest", "…": "…" }
-  ]
-}
-```
-
-**Behaviour**
-- Read-only, session-stable — the client caches with `staleTime: Infinity` and
-  loads it before any library-dependent screen renders.
-- `exercises[].id` / `meals[].id` are the join keys for every `exerciseId` /
-  `mealId` in the program, plan, template, and activity payloads.
-- May be split into `GET /libraries/{exercises,meals,workout-templates}` if you
-  prefer independent caching; the client currently fetches all three in one call.
 
 ---
 

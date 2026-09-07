@@ -20,20 +20,10 @@ export {
   type WorkoutTemplate,
 } from './data'
 export { seedTrainingPrograms, TRAINING_PROGRAMS } from './store'
-// Reference libraries — API-populated cache (source of truth is `GET /libraries`,
-// not a bundled array). Same names as before; the values are now the live cache.
-export {
-  EXERCISE_LIBRARY,
-  MEAL_LIBRARY,
-  WORKOUT_TEMPLATES,
-  exerciseById,
-  mealById,
-  mealsByCategory,
-  primeLibraries,
-  librariesReady,
-  type Libraries,
-} from './library-store'
-export { useLibrariesQuery } from './hooks/useLibraries'
+// The reference catalogs (EXERCISE_LIBRARY / MEAL_LIBRARY / WORKOUT_TEMPLATES
+// and their by-id helpers) live in ./data and are imported from there directly
+// by the few modules that need them — they are static seed data, not an API,
+// and are kept out of this barrel so unrelated routes don't pull them in.
 
 // API layer
 export {
@@ -43,8 +33,8 @@ export {
   toProgram,
 } from './api/programs.api'
 export type {
-  TrainingProgramDto,
-  ProgramMemberDto,
+  ProgramDto,
+  UpdateProgramBody,
   UpdateProgramAvailabilityBody,
 } from './api/programs.types'
 

@@ -4,55 +4,81 @@
 `/programs`
 
 ## Purpose
-Manage the **single global program** available across the platform — its details, its week-by-week workout and diet content, and whether it is currently available to users. (There is no program list / create / delete; per-user assignment and progress live in Users/Chat.)
+Manage the **single global program** available across the platform — its
+details, its workout and diet content (each authored as free rich text), and
+whether it is currently available to users. (There is no program list / create /
+delete; per-user assignment and progress live in Users/Chat.)
 
 ## User Role
 Authenticated.
 
 ## UI Sections
-- Topbar: title, **autosave "Saved" pill**, **Edit** button, **availability toggle** (Active/Disabled).
-- **Program Overview** (name, description, goal, difficulty, duration, enrolled count, nutrition targets, version).
-- **Tabs**: Workout Plan / Diet Plan. Both are a **week rail** over a
-  rich-text plan — see **Workout plan** and **Diet plan** below. The Workout
-  tab is seven expanding day rows; the Diet tab is a meal-category picker over
-  one sheet.
-- Modals: **Edit Program**, **Duplicate weeks**; **Enable/Disable confirm**.
+- Topbar: title, **autosave "Saved" pill**, **Edit** button, **availability
+  toggle** (Active/Disabled).
+- **Program Overview** (name, description, availability, duration in weeks, last
+  updated, enrolled count).
+- **Tabs**: Workout Plan / Diet Plan. Both are a **rich-text editor** over a
+  single `body`:
+  - **Workout** — a flat run of **Day 1, Day 2, … tabs** with an **Add day**
+    button; one editor for the active day.
+  - **Diet** — a **Category** (calorie band) select, then **Week 1..N** chips,
+    then one editor for that week's sheet.
+- Modals: **Edit Program**; **Save to days** / **Save to weeks** pickers;
+  **Enable/Disable confirm**.
 
 ## Components
-`ProgramOverview`, `WorkoutPlanTab`, `WorkoutDayRow`, `DietPlanTab`,
-`DuplicateWeeksModal`, `RichTextEditor`, `EditProgramModal`, `ToggleSwitch`,
+`ProgramOverview`, `WorkoutPlanTab`, `DietPlanTab`, `SaveToDaysModal`,
+`SaveToWeeksModal`, `LazyRichTextEditor`, `EditProgramModal`, `ToggleSwitch`,
 `ConfirmDialog`, `Topbar`.
 
 ## User Actions
-- **Edit** program details (modal).
+- **Edit** program details — name, description, timeline in weeks (modal).
 - **Toggle availability** (Active/Disabled) — gated by confirm.
-- **Switch** tab (Workout / Diet) and **week**.
-- **Author** a day's session — name it, set its type, write the exercises and
-  their video links — and **swap** two days of a week.
-- **Author** the diet sheet for a meal category.
-- **Duplicate** a week onto other weeks (both tabs).
-- **Autosave** — edits persist on a debounce and flash a "Saved" pill.
+- **Switch** tab (Workout / Diet); pick a **day** (workout) or a **category +
+  week** (diet).
+- **Author** a workout day's session in the rich-text editor.
+- **Author** a diet sheet for a category + week.
+- **Save** — the workout tab writes the edited day to the days you pick (this
+  day / all days / any set); the diet tab writes the edited sheet to the weeks
+  you pick. Program-detail edits autosave and flash a "Saved" pill.
 
 ## Data Requirements
 **Server Data**
-- Program: `id, name, description, goal, difficulty, durationWeeks, coach, enabled, createdDate, updatedDate, version, workoutWeeks[], dietWeeks[], nutritionTargets, members[], activeUsers, completionRate, notes[], activity[], versionHistory[]`.
-- Enrolled count (currently `CLIENTS_DATA.length`).
-- **Libraries**: exercises, meals, workout templates.
+- Program: `id, name, description, durationWeeks, enabled, enrolledCount,
+  createdAt, updatedAt` (see [api/programs.md](../api/programs.md) — a small
+  object, **no plan content**).
+- Workout plan: `GET /program/workout-plan` → `{ updatedAt, days: [{ dayNum,
+  body }] }`.
+- Diet plan: `GET /program/diet-plan?week=&band=` → `{ weekNum, band, body,
+  updatedAt }`.
 
 **Client State**
-- `tab`, `activeWeek`, `saved` pill, modal open states, edit targets.
+- `tab`, `activeWeek`, selected diet `band`, `saved` pill, modal open states.
 
 **URL State**
 - Recommended: `?tab=workout|diet`, `?week=`.
 
 ## API Requirements
-> All `PROPOSED`. Today: `TRAINING_PROGRAMS[0]` in a store, persisted to localStorage; edits mutate in place + `commit()`.
+> All `PROPOSED`. Today: an in-session mock store per resource; the program is
+> also mirrored to `localStorage` so edits survive a reload.
 
-1. `GET` `/program` `PROPOSED` → the `TrainingProgram`.
-2. `PUT` `/program` `PROPOSED` — full program (or granular `PATCH /program/weeks/:weekNum/...` for a day/slot) → saved program.
-3. `PATCH` `/program/availability` `PROPOSED` — body `{ "enabled": boolean }` → updated program.
-4. `GET` `/libraries/exercises` · `/libraries/meals` · `/libraries/workout-templates` `PROPOSED`.
-   - Errors (all): `401`, `403`, `404`, `422`, `500`, network. Writes invalidate `['program']`. Autosave = debounced PUT/PATCH.
+1. `GET /program` `PROPOSED` → the program object.
+2. `PUT /program` `PROPOSED` — body `{ name, description, durationWeeks }` →
+   the updated program.
+3. `PATCH /program/availability` `PROPOSED` — body `{ enabled: boolean }` → the
+   updated program.
+4. `GET /program/workout-plan`, `PUT /program/workout-plan/days`,
+   `POST /program/workout-plan/add-day` `PROPOSED` — see
+   [api/programs.md](../api/programs.md) › Workout plan (plus the per-user
+   variants).
+5. `GET /program/diet-plan`, `PUT /program/diet-plan`,
+   `POST /program/diet-plan/duplicate` `PROPOSED` — see
+   [api/programs.md](../api/programs.md) › Diet plan (plus the per-user
+   variants, `PATCH /clients/:id/diet-band`, `PATCH /clients/:id/diet-review`).
+
+There is **no** `/libraries` endpoint: the plans are free rich text and carry no
+exercise / meal ids. Errors (all): `401`, `403`, `404`, `422`, `500`, network.
+Writes invalidate the relevant query key.
 
 ## Forms
 **Edit Program modal**
@@ -61,114 +87,103 @@ Authenticated.
 | --- | --- | --- | --- |
 | name | string | ✅ | non-empty |
 | description | string | ❌ | — |
-| goal | enum (`Fat Loss`…) | ✅ | one of allowed |
-| difficulty | enum (`Beginner|Intermediate|Advanced`) | ✅ | one of allowed |
-| durationWeeks | number | ✅ | > 0 |
-| nutritionTargets | numbers (cal/protein/carbs/fat/water) | ✅ | ≥ 0 |
+| durationWeeks | number | ✅ | clamped to 1–24 |
 
-**Workout day** — `label` (free text, may be empty), `type`
-(`workout|cardio|rest`), `body` (rich text). All three save together on one
-debounce.
-- **Submit/Autosave:** persist + flash "Saved"; no explicit save button for inline edits.
-- **Success:** "Saved" pill; toast for availability toggle.
-- **Error:** modal-inline error; failed autosave surfaces a toast and does not silently drop the edit.
+**Workout / diet body** — a single rich-text `body` per day (workout) or per
+week + band (diet). Program-detail edits autosave on a debounce; plan edits are
+saved explicitly via the day/week picker.
+- **Success:** "Saved" pill (program detail); toast for availability toggle.
+- **Error:** modal-inline error; a failed save surfaces a toast and does not
+  silently drop the edit.
 
 ## Loading States
-Overview skeleton; week/day card skeletons; library pickers loading list.
+Overview skeleton; the editor panel shows a skeleton while its `body` loads.
 
 ## Empty States
 - "No program configured yet" (no program).
-- A week nobody has authored (weeks 2-6 ship blank in both tabs) → a note
-  pointing at Duplicate. An unauthored day reads "Not set".
+- A day / week nobody has authored → an inline note: "Write it here, then Save
+  it to the days/weeks it applies to."
 
 ## Error States
-Fetch failure → page error + retry. Autosave failure → toast (edit retained locally). Availability toggle failure → revert toggle + toast.
+Fetch failure → page error + retry. Save failure → toast (edit retained
+locally). Availability toggle failure → revert toggle + toast.
 
 ## Permissions
 Authenticated to view/edit.
 
 ## Performance Considerations
-- Cache libraries (long staleTime).
 - Debounce autosave writes; coalesce rapid edits.
-- Lazy-load heavy editor modals.
+- Lazy-load the rich-text editor (`LazyRichTextEditor`).
 
 ## Accessibility
 - Tabs use `role="tablist"`/`aria-selected`; availability toggle is a labelled switch.
 - Modals trap focus and restore on close; confirm dialog for the destructive/impactful availability change.
-- Numeric inputs have labels + helper/error text.
+- The editor has an `aria-label` naming the day / week + band it edits.
 
 ## Mock Data
 ```json
 {
-  "id": "prog-1", "name": "Body Recomposition Plan",
-  "goal": "Fat Loss", "difficulty": "Intermediate", "durationWeeks": 12,
-  "enabled": true, "version": "1.4",
-  "nutritionTargets": { "calories": 2000, "protein": 160, "carbs": 180, "fat": 60, "water": 3 },
-  "workoutWeeks": [
-    { "weekNum": 1, "days": [
-      { "dayNum": 1, "label": "Mon", "type": "workout",
-        "workout": { "uid": "w1", "name": "Push A", "muscle": "Chest/Shoulders",
-          "estimatedMinutes": 50, "difficulty": "Intermediate", "caloriesBurn": 350,
-          "exercises": [ { "uid": "s1", "exerciseId": "ex-bench", "sets": 4, "reps": "8-10",
-            "weight": "60kg", "rest": "90s", "tempo": "2-0-1", "rpe": 8, "notes": "" } ] } }
-    ] }
-  ],
-  "dietWeeks": [ { "weekNum": 1, "days": [
-    { "dayNum": 1, "label": "Mon", "meals": [ { "uid": "m1", "mealId": "meal-oats", "slot": "Breakfast", "time": "08:00" } ] }
-  ] } ]
+  "id": "prog-1",
+  "name": "Diwali Glow",
+  "description": "Six weeks to your brightest Diwali yet…",
+  "durationWeeks": 6,
+  "enabled": true,
+  "enrolledCount": 10,
+  "createdAt": "2026-01-05T00:00:00.000Z",
+  "updatedAt": "2026-09-07T00:00:00.000Z"
 }
 ```
+The workout and diet content are served by their own endpoints — a run of
+`{ dayNum, body }` and a per-week `{ weekNum, band, body }`, where `body` is an
+HTML string.
 
 ## Acceptance Criteria
-- The program's overview renders from the fetched program; the workout and diet
-  plans render from their own endpoints.
-- Toggling availability opens a confirm; on confirm the status flips, a toast shows, and it persists.
-- Switching tab/week shows the corresponding content without a full reload.
-- Editing a day or a sheet persists and flashes "Saved"; a failed save notifies and retains the edit.
-- **Opening** a day, switching week, or switching meal category writes nothing.
+- The overview renders from the fetched program; the workout and diet plans
+  render from their own endpoints.
+- Toggling availability opens a confirm; on confirm the status flips, a toast
+  shows, and it persists.
+- Switching tab / day / week / category shows the corresponding content without
+  a full reload.
+- Editing a program detail autosaves and flashes "Saved"; a failed save notifies
+  and retains the edit.
+- **Opening** a day, switching week, or switching category writes nothing — only
+  a confirmed **Save** (and **Add day**) reaches the server.
 - "No program configured" appears only when no program exists.
 
 ---
 
 ## Workout plan
 
-Seven days a week, six weeks, one **rich-text session per day**. Deliberately
-the same shape as the diet sheet: a nutritionist moving between the two tabs
-shouldn't have to learn a second way of working.
+A flat, ordered run of **days** — Day 1, Day 2, … — not calendar weeks.
+Programmes run different lengths and we don't know which weekday a user starts
+on, so days are identified by **number**. Each day is **one rich-text session**.
+Deliberately the same shape as the diet sheet: a nutritionist moving between the
+two tabs shouldn't have to learn a second way of working.
 
-### The week
-A day row shows its **weekday** (Monday first — the programme runs on calendar
-weeks), a **type chip** (`Workout` / `Cardio` / `Rest`), and the coach's **name**
-for it ("Push Day", "Zone 2 Cardio"). Clicking the row expands it into the
-editor for that session, where the name, the type and the body are all editable
-and save together on one debounce.
+### The day run
+**Day tabs** run across the top with an **Add day** button that appends a blank
+day at the end — the nutritionist adds days as far as the programme needs.
+Selecting a day loads its `body` into the editor. The day's coach-facing name
+lives **inside** the body (an `<h2>`), since the day is identified only by its
+number.
 
-The body is rich text for the same reason the diet sheet is: a session is a
-warm-up, a main set, a finisher and a pile of coaching notes, and each exercise
-carries a **demo video link** beside it. Links are real anchors, so they survive
-the editor's round trip and stay clickable. The toolbar has a link control for
-adding more.
+The body is rich text because a session is a warm-up, a main set, a finisher and
+a pile of coaching notes, and each exercise can carry a **demo video link**
+beside it. Links are real anchors, so they survive the editor's round trip and
+stay clickable. The toolbar has a link control for adding more.
 
-**Swapping** two days is a picker on each row ("Swap with…"), not a drag. A week
-is seven rows any of which may be open with an editor inside it; dragging over
-that is fiddly and unreachable from a keyboard. The swap trades everything —
-name, type and session — and the weekdays themselves stay put.
-
-**Duplicate** copies all seven days of the open week onto any other weeks,
-chosen with checkboxes. Only **week 1** ships authored; weeks 2-6 start blank
-and are filled by hand or copied forward.
+**Save** writes the day you just edited to the days you pick — **this day**,
+**all days**, or any set (`SaveToDaysModal`). Anything already on those days is
+replaced. There is no autosave and no "Duplicate" button; the single Save with
+its day picker does both jobs. Only **Day 1** ships authored; the rest start
+blank and are filled by hand or copied forward with a Save.
 
 ### Per-user
-There is **no filtering here** — unlike the diet plan, a user's week starts as
-the programme's week verbatim and diverges only when a nutritionist edits it for
-them. Once it does, the week is flagged **Edited for this user**, stops tracking
-the programme, and a **Reset to programme** button undoes it.
-
-> **Legacy:** `TrainingProgram.workoutWeeks` / `.dietWeeks` are still on the
-> program payload but nothing renders them any more — both plans are served by
-> their own endpoints. The Plan Workspace's separate `ws.workoutWeeks` (a
-> different type) is still load-bearing for its version history and publish
-> checks.
+There is **no filtering here** — unlike the diet plan, a user's day starts as
+the programme's day verbatim and diverges only when a nutritionist edits it for
+them (from **Manage Plan → Workout Plan**). Once it does, the day is flagged
+**edited**, stops tracking the programme, and a **Reset to programme** button
+undoes it. The day count follows the programme (no per-user Add day).
 
 ---
 
@@ -202,11 +217,11 @@ not.
 
 The body is **rich text** (HTML, edited with TipTap) because that is what the AI
 engine reads and because a plan needs headings, swap lists, emphasis on
-non-negotiables, and links out to recipes. It **autosaves**.
-
-**Duplicate** copies the open week's sheet onto any other weeks of the **same
-band**, chosen with checkboxes. Same-band only: a 1200 kcal sheet's portions
-mean nothing on an 1800 kcal week.
+non-negotiables, and links out to recipes. It saves **explicitly**: **Save**
+opens a week picker and can write the sheet to several weeks of the **same band**
+at once (the client PUTs the first week, then `POST /program/diet-plan/duplicate`
+fans it out). Same-band only: a 1200 kcal sheet's portions mean nothing on an
+1800 kcal week.
 
 ### Per-user plans
 A user's plan is the master sheet for their week and band, narrowed by three

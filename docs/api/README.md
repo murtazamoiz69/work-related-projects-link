@@ -19,7 +19,7 @@ switches over by pointing `VITE_API_URL` at the real server and disabling mocks
 | [auth.md](./auth.md) | Login / session | `/auth/*` |
 | [users.md](./users.md) | Users (Clients) roster | `/clients` |
 | [nutritionists.md](./nutritionists.md) | Nutritionists | `/nutritionists` |
-| [programs.md](./programs.md) | Program (single global) + reference libraries + the workout and diet plans | `/program`, `/program/workout-plan`, `/program/diet-plan`, `/libraries` |
+| [programs.md](./programs.md) | Program (single global) + the workout and diet plans | `/program`, `/program/workout-plan`, `/program/diet-plan` |
 | [dashboard.md](./dashboard.md) | Dashboard | `/dashboard/*` |
 | [chat.md](./chat.md) | Chat conversations | `/conversations` |
 | [plan-workspace.md](./plan-workspace.md) | Plan Workspace | `/clients/:id/plan` |
@@ -40,7 +40,7 @@ proxy; the rest stay on the mocks in this folder. What's real **today**:
 | Dashboard | **Live** | all `/dashboard/*` aggregates |
 | Settings › Profile | **Live** | `/me/settings/profile`, `/uploads` |
 | Client detail | Endpoint **real**, mock-locked | `GET /clients/:id/detail` exists and is wired, but kept on the mock locally — its only consumer (Plan Workspace) is still fed mock Chat clients. See [plan-workspace.md](./plan-workspace.md). |
-| **Program** (single global) | **Mock only** | The real backend has **no** program-content resource; `/clients/programs` returns only program *name* strings. See [programs.md](./programs.md). |
+| **Program** (single global) | **Mock only** | The real backend has **no** `/program` resource (it 404s). Workout / diet plans are free rich text (`body` HTML); there is no reference-library resource. `/clients/programs` returns only program *name* strings. See [programs.md](./programs.md). |
 | **Plan Workspace** | **Mock only** | The whole plan (and the At-a-glance metrics) is generated client-side. See [plan-workspace.md](./plan-workspace.md). |
 | Chat | **Mock only** | |
 
@@ -134,9 +134,12 @@ relevant to it. Listed here so the backend scope is unambiguous:
 - **Settings → Profile** (name / email / phone / bio / photo) is not yet an
   endpoint — it edits the session profile in the auth store. Belongs with auth;
   see [auth.md](./auth.md).
+- **Reference libraries** (exercise / meal / workout-template catalogs) — there
+  is **no** `/libraries` endpoint. The workout and diet plans are authored as
+  free rich text and carry no exercise / meal ids, so nothing needs resolving.
+  The catalogs that remain (used only by the prototype plan-builder in Chat and
+  the activity-filter sub-categories) are static seed data in the frontend.
 
-> **Now served by an API (previously in this list):** the **reference catalogs**
-> (exercise/meal/workout-template libraries) are `GET /libraries`
-> ([programs.md](./programs.md)), and the **client-detail "At a glance" tracker /
-> AI summary** is `GET /clients/:id/detail` ([users.md](./users.md)) —
-> backend-computed, no longer derived in the client.
+> **Now served by an API (previously in this list):** the **client-detail
+> "At a glance" tracker / AI summary** is `GET /clients/:id/detail`
+> ([users.md](./users.md)) — backend-computed, no longer derived in the client.

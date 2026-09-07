@@ -1,21 +1,32 @@
 // Programs API contracts. The program is a single global entity (no list), so
 // there is no pagination here. Wire dates are ISO strings; the api.ts mapper
 // converts them to/from the domain model's `Date`s.
-import type { ProgramMember, TrainingProgram } from '../types'
+//
+// Workout and diet content are NOT on this object — they are authored as rich
+// text under `/program/workout-plan` and `/program/diet-plan`. See
+// docs/api/programs.md.
 
-export type ProgramMemberDto = Omit<ProgramMember, 'assignedDate'> & {
-  assignedDate: string
+/** `GET /program` / `PUT /program` response — the single global program. */
+export type ProgramDto = {
+  id: string
+  name: string
+  description: string
+  durationWeeks: number
+  enabled: boolean
+  /** Server-computed; the client must not count another resource for it. */
+  enrolledCount: number
+  createdAt: string
+  updatedAt: string
 }
 
-export type TrainingProgramDto = Omit<
-  TrainingProgram,
-  'createdDate' | 'updatedDate' | 'members'
-> & {
-  createdDate: string
-  updatedDate: string
-  members: ProgramMemberDto[]
+/** `PUT /program` body — the editable program details (autosave sends all of it). */
+export type UpdateProgramBody = {
+  name: string
+  description: string
+  durationWeeks: number
 }
 
+/** `PATCH /program/availability` body. */
 export type UpdateProgramAvailabilityBody = {
   enabled: boolean
 }

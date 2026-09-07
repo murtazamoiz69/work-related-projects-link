@@ -8,7 +8,7 @@ import {
   EXERCISE_LIBRARY,
   mealById,
   mealsByCategory,
-} from '@/features/programs'
+} from '@/features/programs/data'
 import type { Exercise, Meal, MealSlot } from '@/features/programs'
 import type { ClinicalProfile, Conflict, WsTargets } from './types'
 

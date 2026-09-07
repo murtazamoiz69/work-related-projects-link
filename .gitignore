@@ -7,6 +7,9 @@ dist-single/
 dist-ssr/
 build/
 
+# graphify knowledge-graph output (local analysis artifact)
+graphify-out/
+
 # Logs
 logs
 *.log

@@ -1,18 +1,21 @@
 import { useState } from 'react'
 import { Modal } from '@/components/molecules/Modal'
 import { showToast } from '@/lib/toast'
-import { buildEmptyDietWeek, buildEmptyWorkoutWeek } from '../../data'
-import type { TrainingProgram } from '../../types'
+import type { Program } from '../../types'
 
-// Header pencil → Edit Program. Extending the timeline adds blank (rest-day,
-// no-meal) weeks; shortening removes weeks from the end, never past an assigned
-// member's current week.
+const MIN_WEEKS = 1
+const MAX_WEEKS = 24
+
+// Header pencil -> Edit Program. Name, description, and the programme length in
+// weeks. The workout and diet content are authored on their own tabs (a flat
+// run of days / one sheet per week+band), so changing the length here is just a
+// number — the diet tab's week rail follows it.
 export function EditProgramModal({
   program: p,
   onClose,
   onSaved,
 }: {
-  program: TrainingProgram
+  program: Program
   onClose: () => void
   onSaved: () => void
 }) {
@@ -28,26 +31,10 @@ export function EditProgramModal({
     }
     p.name = trimmed
     p.description = desc.trim() || p.description
-
-    const maxMemberWeek = p.members.reduce(
-      (a, m) => Math.max(a, m.currentWeek),
-      1,
+    p.durationWeeks = Math.min(
+      MAX_WEEKS,
+      Math.max(MIN_WEEKS, Math.round(Number(weeks) || p.durationWeeks)),
     )
-    const requestedWeeks = Math.min(
-      24,
-      Math.max(maxMemberWeek, Math.round(Number(weeks) || p.durationWeeks)),
-    )
-    const currentLen = p.workoutWeeks.length
-    if (requestedWeeks > currentLen) {
-      for (let i = currentLen; i < requestedWeeks; i++) {
-        p.workoutWeeks.push(buildEmptyWorkoutWeek(i + 1))
-        p.dietWeeks.push(buildEmptyDietWeek(i + 1))
-      }
-    } else if (requestedWeeks < currentLen) {
-      p.workoutWeeks.length = requestedWeeks
-      p.dietWeeks.length = requestedWeeks
-    }
-    p.durationWeeks = requestedWeeks
 
     onClose()
     onSaved()
@@ -91,15 +78,16 @@ export function EditProgramModal({
         <span>Timeline (weeks)</span>
         <input
           type="number"
-          min={1}
-          max={24}
+          min={MIN_WEEKS}
+          max={MAX_WEEKS}
           value={weeks}
           onChange={(e) => setWeeks(e.target.value)}
         />
       </label>
       <p className="pw-muted">
-        Extending adds new weeks with blank (rest-day, no-meal) days to build
-        out; shortening removes weeks from the end.
+        The number of weeks the diet plan is authored across. Shortening it
+        hides the trailing weeks&apos; sheets; they are kept and come back if
+        you extend again.
       </p>
     </Modal>
   )

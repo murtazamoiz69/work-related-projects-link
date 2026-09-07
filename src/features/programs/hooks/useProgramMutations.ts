@@ -4,14 +4,14 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiErrorMessage } from '@/lib/api/errors'
 import { showToast } from '@/lib/toast'
-import type { TrainingProgram } from '../types'
+import type { Program } from '../types'
 import { updateProgram, updateProgramAvailability } from '../api/programs.api'
 import { programKeys } from '../api/programs.keys'
 
 export function useUpdateProgram() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (program: TrainingProgram) => updateProgram(program),
+    mutationFn: (program: Program) => updateProgram(program),
     onSuccess: (saved) => {
       queryClient.setQueryData(programKeys.detail(), saved)
     },

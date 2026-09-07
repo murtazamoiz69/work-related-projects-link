@@ -9,7 +9,6 @@ import { env } from '@/lib/api/env'
 import { clientsHandlers } from '@/features/clients/api/clients.handlers'
 import { nutritionistsHandlers } from '@/features/nutritionists/api/nutritionists.handlers'
 import { programsHandlers } from '@/features/programs/api/programs.handlers'
-import { librariesHandlers } from '@/features/programs/api/libraries.handlers'
 import { clientDetailHandlers } from '@/features/client-detail/api/detail.handlers'
 import { dashboardHandlers } from '@/features/dashboard/api/dashboard.handlers'
 import { authHandlers } from '@/features/auth/api/auth.handlers'
@@ -27,7 +26,6 @@ export const handlers = [
   ...forFeature('clients', clientsHandlers),
   ...forFeature('nutritionists', nutritionistsHandlers),
   ...programsHandlers,
-  ...librariesHandlers,
   ...forFeature('client-detail', clientDetailHandlers),
   ...forFeature('dashboard', dashboardHandlers),
   ...chatHandlers,

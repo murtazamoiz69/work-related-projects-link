@@ -12,9 +12,10 @@ describe('programs.api', () => {
   it('loads the program with Date fields', async () => {
     const program = await getProgram()
     expect(program.name).toBeTruthy()
-    expect(program.createdDate).toBeInstanceOf(Date)
-    expect(program.updatedDate).toBeInstanceOf(Date)
-    expect(Array.isArray(program.workoutWeeks)).toBe(true)
+    expect(program.createdAt).toBeInstanceOf(Date)
+    expect(program.updatedAt).toBeInstanceOf(Date)
+    expect(typeof program.durationWeeks).toBe('number')
+    expect(typeof program.enrolledCount).toBe('number')
   })
 
   it('persists an edit across reloads', async () => {

@@ -1,6 +1,6 @@
 import { Icon } from '@/components/atoms/Icon'
 import { formatJoinDate } from '@/features/clients'
-import type { TrainingProgram } from '../../types'
+import type { Program } from '../../types'
 
 // Read-only summary of the single global program — name, description,
 // availability, duration, and the informational (non-manageable) enrolled
@@ -9,7 +9,7 @@ export function ProgramOverview({
   program: p,
   enrolledCount,
 }: {
-  program: TrainingProgram
+  program: Program
   enrolledCount: number
 }) {
   return (
@@ -27,7 +27,7 @@ export function ProgramOverview({
         </span>
         <span>
           <Icon name="calendar-clock" />
-          Last updated: {formatJoinDate(p.updatedDate)}
+          Last updated: {formatJoinDate(p.updatedAt)}
         </span>
         <span>
           <Icon name="users" />

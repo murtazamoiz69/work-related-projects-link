@@ -1,30 +1,27 @@
 // Mock backend for the single global program. Stateful (like nutritionists):
 // edits and the availability toggle persist in an in-session store, so autosave
 // behaves like a real backend. Seeded from the TRAINING_PROGRAMS seed (mapped
-// Date -> ISO). Reset with resetProgramStore() in tests.
+// Date -> ISO, slimmed to the fields the UI uses). Reset with
+// resetProgramStore() in tests.
 //
-// NOTE: the exercise / meal / workout-template LIBRARIES stay local reference
-// data (features/programs/data.ts) — they are a static, non-editable catalog
-// resolved synchronously all over the UI (macro totals, names). Moving them
-// behind /libraries endpoints is a separate, larger step.
+// The program object carries only identity + timeline + availability + enrolled
+// count. Workout and diet content live under their own rich-text endpoints
+// (workoutPlan.*, dietPlan.*).
 import { TRAINING_PROGRAMS } from '../store'
-import type { TrainingProgram } from '../types'
-import type { ProgramMemberDto, TrainingProgramDto } from './programs.types'
+import type { ProgramDto, UpdateProgramBody } from './programs.types'
 
-export function toProgramDto(p: TrainingProgram): TrainingProgramDto {
+function seed(): ProgramDto {
+  const p = TRAINING_PROGRAMS[0]
   return {
-    ...p,
-    createdDate: p.createdDate.toISOString(),
-    updatedDate: p.updatedDate.toISOString(),
-    members: p.members.map((m): ProgramMemberDto => ({
-      ...m,
-      assignedDate: m.assignedDate.toISOString(),
-    })),
+    id: p.id,
+    name: p.name,
+    description: p.description,
+    durationWeeks: p.durationWeeks,
+    enabled: p.enabled,
+    enrolledCount: p.enrolledCount,
+    createdAt: p.createdDate.toISOString(),
+    updatedAt: p.updatedDate.toISOString(),
   }
-}
-
-function seed(): TrainingProgramDto {
-  return toProgramDto(TRAINING_PROGRAMS[0])
 }
 
 // The mock is backed by localStorage so program edits survive a page reload —
@@ -33,14 +30,14 @@ function seed(): TrainingProgramDto {
 // mock demo/dev experience faithful.
 //
 // The stored copy is stamped with a signature of the seed it came from. Change
-// the programme's identity in data.ts — its name, goal or length — and every
+// the programme's identity in data.ts — its name or length — and every
 // browser's cached copy is recognised as stale and thrown away on the next
 // load. Without this a machine that had run the app once kept showing the old
 // programme forever, which is exactly what happened when Diwali Glow replaced
 // the previous seed.
 const STORAGE_KEY = 'nws_mock_program'
 
-type StoredProgram = { seed: string; program: TrainingProgramDto }
+type StoredProgram = { seed: string; program: ProgramDto }
 
 // Keys from before the cache was seed-versioned. A browser that ran the older
 // build still holds them; they are ignored either way, so clear them rather
@@ -52,11 +49,11 @@ try {
   /* storage unavailable — nothing to clean up */
 }
 
-function seedSignature(p: TrainingProgramDto): string {
-  return `${p.name}|${p.goal}|${p.durationWeeks}`
+function seedSignature(p: ProgramDto): string {
+  return `${p.name}|${p.durationWeeks}`
 }
 
-function load(currentSeed: TrainingProgramDto): TrainingProgramDto | null {
+function load(currentSeed: ProgramDto): ProgramDto | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return null
@@ -69,7 +66,7 @@ function load(currentSeed: TrainingProgramDto): TrainingProgramDto | null {
   }
 }
 
-function persist(p: TrainingProgramDto): void {
+function persist(p: ProgramDto): void {
   try {
     const stored: StoredProgram = { seed: seedSignature(seed()), program: p }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(stored))
@@ -79,7 +76,7 @@ function persist(p: TrainingProgramDto): void {
 }
 
 const seeded = seed()
-let program: TrainingProgramDto = load(seeded) ?? seeded
+let program: ProgramDto = load(seeded) ?? seeded
 
 export function resetProgramStore(): void {
   program = seed()
@@ -90,18 +87,24 @@ export function resetProgramStore(): void {
   }
 }
 
-export function getProgramDto(): TrainingProgramDto {
+export function getProgramDto(): ProgramDto {
   return program
 }
 
-export function setProgramDto(next: TrainingProgramDto): TrainingProgramDto {
-  program = { ...next, updatedDate: new Date().toISOString() }
+export function setProgramDto(body: UpdateProgramBody): ProgramDto {
+  program = {
+    ...program,
+    name: body.name,
+    description: body.description,
+    durationWeeks: body.durationWeeks,
+    updatedAt: new Date().toISOString(),
+  }
   persist(program)
   return program
 }
 
-export function setProgramAvailability(enabled: boolean): TrainingProgramDto {
-  program = { ...program, enabled, updatedDate: new Date().toISOString() }
+export function setProgramAvailability(enabled: boolean): ProgramDto {
+  program = { ...program, enabled, updatedAt: new Date().toISOString() }
   persist(program)
   return program
 }
