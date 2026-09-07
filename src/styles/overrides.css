@@ -92,47 +92,8 @@
   color: #cfe1d9;
 }
 
-/* The week checklist collapses behind "Copy to weeks" (CopyToWeeksDropdown),
-   top right of the panel head, so the editor keeps the full width. */
-.diet-copy-wrap {
-  position: relative;
-  flex-shrink: 0;
-}
-.diet-copy-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-.diet-copy-chevron {
-  transition: transform 0.12s ease;
-}
-.diet-copy-chevron.is-open {
-  transform: rotate(180deg);
-}
-.diet-copy-dropdown {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  z-index: 20;
-  width: 260px;
-  padding: 14px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r-md);
-  box-shadow: 0 12px 28px -12px rgba(0, 0, 0, 0.25);
-}
-.diet-weeks-col-label {
-  display: block;
-  margin-bottom: 10px;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.8px;
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
-
-/* One explicit Save at the foot of the diet editor (autosave + Duplicate are
-   gone — Save Changes writes straight to the weeks picked in Copy to weeks). */
+/* One explicit Save at the foot of the diet editor — opens the SaveToWeeksModal
+   to pick which weeks it writes to (the same single-Save model as workout). */
 .diet-save-bar {
   display: flex;
   align-items: center;
@@ -153,7 +114,7 @@
   font-weight: 600;
 }
 
-/* Apply-to-weeks presets inside the Copy to weeks dropdown (WeekSaveTargets). */
+/* Apply-to presets shared by SaveToDaysModal and SaveToWeeksModal. */
 .save-weeks-presets {
   display: flex;
   gap: 6px;

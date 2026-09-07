@@ -14,24 +14,24 @@ See [README.md](./README.md) for conventions.
 > Everything else specified below is **PROPOSED** for the backend to build; the
 > page runs entirely on MSW mocks today.
 >
-> **The dropdowns on this page are static code arrays, not backend values** —
-> `goal` (`PROGRAM_GOALS`), `difficulty` (`PROGRAM_DIFFICULTIES`), meal slots
-> (`MEAL_SLOTS`), the exercise library, and the workout-type chip all live in
-> `src/features/programs/data.ts`. They can only become backend-driven once the
-> backend adds the enum/library endpoints listed next.
+> **The one dropdown on this page is a static code array, not a backend
+> value** — the diet **Category** (calorie band) comes from `CALORIE_BANDS` in
+> `src/features/programs/dietPlan.types.ts`. (The program **Goal**/**Difficulty**
+> selects and the workout **Type** chip were removed from the UI; the exercise
+> and meal libraries are static in `src/features/programs/data.ts`.) The Category
+> can only become backend-driven once the backend adds an enum endpoint.
 
 ### Endpoints the backend must add for this page
 - `GET` + `PUT /program` — the single global program (overview + targets).
 - `PATCH /program/availability` (or a field on `PUT /program`) — enable/disable.
 - `GET` + `PUT /program/workout-plan`, `POST /program/workout-plan/add-day`.
 - `GET` + `PUT /program/diet-plan`.
-- `GET /libraries/exercises`, `GET /libraries/meals`, and option enums (goals,
-  difficulties, workout types, meal slots) — so the dropdowns above stop being
-  hardcoded.
+- `GET /libraries/exercises`, `GET /libraries/meals`, and the calorie-band enum
+  — so the Category and any library pickers stop being hardcoded.
 
 ## Page functionality
 - Load the program (overview + nutrition targets).
-- Edit program details (name, description, goal, difficulty, duration).
+- Edit program details (name, description, duration).
 - Toggle availability (Active/Disabled) — gated by a confirm dialog.
 - **Autosave:** a detail edit persists the whole program (a `PUT`). The UI shows
   a transient "Saved" indicator.
@@ -214,14 +214,13 @@ the catalog, never a bundled assumption.
 A flat, ordered run of **days** — Day 1, Day 2, … — not calendar weeks.
 Programmes run different lengths and we don't know which weekday a user starts
 on, so days are identified by number and the nutritionist adds days as far as
-the programme needs. Each day is one rich-text session tagged
-`type: workout | cardio | rest` (drives the chip/icon, nothing structural). No
-per-user filtering: a user's day starts as the programme's day verbatim. See
+the programme needs. Each day is one rich-text session. No per-user filtering:
+a user's day starts as the programme's day verbatim. See
 [specs/programs.md](../specs/programs.md) › Workout plan for the product rules.
 
 The UI: **Day tabs** across the top with an **Add day** button, one editor for
-the active day, a **type** chip, and a single **Save** that writes the day to
-the days the nutritionist picks (this day, all days, or any set).
+the active day, and a single **Save** that writes the day to the days the
+nutritionist picks (this day, all days, or any set).
 
 ## `GET /program/workout-plan`
 The whole run of days.
@@ -231,33 +230,32 @@ The whole run of days.
 {
   "updatedAt": "2026-09-03T…Z",
   "days": [
-    { "dayNum": 1, "type": "workout",
-      "body": "<h2>Push Day</h2><h3>Main set</h3><ul><li><strong>Barbell Bench Press</strong> — 4 x 8 · 90s rest · <a href=\"https://…\">Watch demo</a></li></ul>" },
-    { "dayNum": 4, "type": "rest", "body": "<ul><li>8,000 steps…</li></ul>" }
+    { "dayNum": 1,
+      "body": "<h2>Push Day</h2><h3>Main set</h3><ul><li><strong>Barbell Bench Press</strong> — 4 x 8 · 90s rest</li></ul>" },
+    { "dayNum": 4, "body": "<ul><li>8,000 steps…</li></ul>" }
   ]
 }
 ```
 The day's coach-facing name lives inside `body` (an `<h2>`), since the day is
-identified only by its number. A freshly added day is `{ "type": "rest", "body": "" }`.
+identified only by its number. A freshly added day is `{ "body": "" }`.
 
 **Errors:** `401`; `500`.
 
 ---
 
 ## `PUT /program/workout-plan/days`
-Save the edited day's `type` + `body` to one or more days at once — the single
-Save's apply-to-days. Every day in `days` is set to the same `type`/`body`
-(a copy across).
+Save the edited day's `body` to one or more days at once — the single Save's
+apply-to-days. Every day in `days` is set to the same `body` (a copy across).
 
-**Body** `{ "type": "workout", "body": "<h2>…</h2>", "days": [1, 3, 5] }`
+**Body** `{ "body": "<h2>…</h2>", "days": [1, 3, 5] }`
 **Success `200`** — the whole updated plan.
-**Errors:** `422` `{ "fields": { "type": "Unknown day type." } }` or
-`{ "fields": { "days": "Select one or more days." } }`; `401`; `500`.
+**Errors:** `422` `{ "fields": { "days": "Select one or more days." } }`; `401`;
+`500`.
 
 ---
 
 ## `POST /program/workout-plan/add-day`
-Append a blank day (`type: rest`, empty `body`) at the end of the run.
+Append a blank day (empty `body`) at the end of the run.
 
 **Body** none. **Success `200`** — the whole updated plan (one day longer).
 **Errors:** `401`; `500`.
@@ -292,9 +290,12 @@ Categories: `1200 | 1400 | 1600 | 1800 | 2000` (kcal). The wire field is `band`;
 the UI label is "Category", shown as the **top-tier tabs** — category, then
 week, then the sheet.
 
-The editor saves **explicitly** (no autosave), and one Save can write the sheet
-to several weeks at once: the client PUTs the body to the first chosen week,
-then calls `POST /program/diet-plan/duplicate` to fan it out to the rest.
+The editor saves **explicitly** (no autosave). **Save** opens a week-picker
+modal (This week / All weeks / any set — the same single-Save model as the
+workout tab; the old inline "Copy to weeks" dropdown is gone), and one Save can
+write the sheet to several weeks at once: the client PUTs the body to the first
+chosen week, then calls `POST /program/diet-plan/duplicate` to fan it out to the
+rest.
 
 ## `GET /program/diet-plan?week=&band=`
 One master sheet.

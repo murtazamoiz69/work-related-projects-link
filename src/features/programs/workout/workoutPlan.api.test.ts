@@ -36,14 +36,6 @@ describe('workout plan api', () => {
       expect(plan.days[0].body).not.toContain('Watch demo')
     })
 
-    it('covers all three day types in the seeded run', async () => {
-      const plan = await getWorkoutPlan()
-      const types = new Set(plan.days.map((d) => d.type))
-      expect(types).toContain('workout')
-      expect(types).toContain('cardio')
-      expect(types).toContain('rest')
-    })
-
     it('appends a blank day with Add day', async () => {
       const plan = await addWorkoutDay()
       expect(plan.days).toHaveLength(8)
@@ -54,13 +46,11 @@ describe('workout plan api', () => {
 
     it('saves the edited day to the days chosen', async () => {
       const plan = await saveWorkoutDays({
-        type: 'cardio',
         body: '<h2>Recovery ride</h2><p>40 min easy</p>',
         days: [2, 4, 6],
       })
       for (const dayNum of [2, 4, 6]) {
         const day = plan.days.find((d) => d.dayNum === dayNum)
-        expect(day?.type).toBe('cardio')
         expect(day?.body).toContain('Recovery ride')
       }
       // Untargeted days are untouched.
@@ -69,24 +59,9 @@ describe('workout plan api', () => {
       )
     })
 
-    it('rejects an unknown day type', async () => {
-      try {
-        await saveWorkoutDays({
-          // @ts-expect-error — deliberately invalid to prove the contract.
-          type: 'yoga',
-          body: '<p>x</p>',
-          days: [1],
-        })
-        throw new Error('expected rejection')
-      } catch (e) {
-        expect(isApiError(e)).toBe(true)
-        if (isApiError(e)) expect(e.kind).toBe('validation')
-      }
-    })
-
     it('rejects a save with no days chosen', async () => {
       try {
-        await saveWorkoutDays({ type: 'workout', body: '<p>x</p>', days: [] })
+        await saveWorkoutDays({ body: '<p>x</p>', days: [] })
         throw new Error('expected rejection')
       } catch (e) {
         expect(isApiError(e)).toBe(true)
@@ -108,7 +83,6 @@ describe('workout plan api', () => {
 
     it("keeps a nutritionist's edit for that user and day only", async () => {
       const updated = await saveClientWorkoutDays('c-1', {
-        type: 'workout',
         body: '<h2>Priya push day</h2>',
         days: [1],
       })
@@ -125,7 +99,6 @@ describe('workout plan api', () => {
 
     it('resets one day back to the programme', async () => {
       await saveClientWorkoutDays('c-1', {
-        type: 'rest',
         body: '<p>custom</p>',
         days: [2],
       })

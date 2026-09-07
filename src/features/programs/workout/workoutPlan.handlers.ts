@@ -2,7 +2,6 @@
 // programme's days and the per-user copies. Registered via src/mocks/handlers.ts.
 import { http, HttpResponse } from 'msw'
 import { env } from '@/lib/api/env'
-import { isWorkoutDayType } from './workoutPlan.types'
 import {
   addMasterDay,
   getClientPlan,
@@ -21,15 +20,6 @@ const base = env.apiUrl
 /** The rules a Save has to satisfy, shared by the global and per-user endpoints
  *  so the two can't drift. Returns null when the body is fine. */
 function saveBodyError(body: SaveWorkoutDaysBody): Response | null {
-  if (!isWorkoutDayType(body.type)) {
-    return HttpResponse.json(
-      {
-        message: 'The day could not be saved.',
-        fields: { type: 'Unknown day type.' },
-      },
-      { status: 422 },
-    )
-  }
   if (!Array.isArray(body.days) || !body.days.length) {
     return HttpResponse.json(
       {

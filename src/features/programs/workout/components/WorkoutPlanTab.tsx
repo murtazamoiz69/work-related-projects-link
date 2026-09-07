@@ -3,11 +3,6 @@ import { Icon } from '@/components/atoms/Icon'
 import { LazyRichTextEditor } from '@/components/molecules/LazyRichTextEditor'
 import { apiErrorMessage } from '@/lib/api/errors'
 import {
-  WORKOUT_DAY_TYPES,
-  WORKOUT_DAY_TYPE_LABEL,
-  type WorkoutDayType,
-} from '../workoutPlan.types'
-import {
   useAddWorkoutDay,
   useSaveWorkoutDays,
   useWorkoutPlanQuery,
@@ -15,9 +10,8 @@ import {
 import { SaveToDaysModal } from './SaveToDaysModal'
 
 /** The programme's workout plan: a flat run of days — Day 1, Day 2, … — each a
- *  rich-text session tagged workout / cardio / rest. Pick a day, author it, and
- *  Save writes it to the days you pick; "Add day" extends the run as far as the
- *  programme needs. */
+ *  rich-text session. Pick a day, author it, and Save writes it to the days you
+ *  pick; "Add day" extends the run as far as the programme needs. */
 export function WorkoutPlanTab() {
   const planQuery = useWorkoutPlanQuery()
   const saveDays = useSaveWorkoutDays()
@@ -29,14 +23,11 @@ export function WorkoutPlanTab() {
 
   const current = days.find((d) => d.dayNum === activeDay)
   const [draft, setDraft] = useState('')
-  const [draftType, setDraftType] = useState<WorkoutDayType>('workout')
   const currentBody = current?.body
-  const currentType = current?.type
   useEffect(() => {
     if (currentBody === undefined) return
     setDraft(currentBody)
-    setDraftType(currentType ?? 'rest')
-  }, [currentBody, currentType, activeDay])
+  }, [currentBody, activeDay])
 
   return (
     <>
@@ -68,22 +59,6 @@ export function WorkoutPlanTab() {
               One session per day — warm-up, the main set, and a finisher.
             </p>
           </div>
-
-          <label className="wp-type-picker">
-            <span className="diet-band-label">Type</span>
-            <select
-              className="select-range"
-              aria-label="Day type"
-              value={draftType}
-              onChange={(e) => setDraftType(e.target.value as WorkoutDayType)}
-            >
-              {WORKOUT_DAY_TYPES.map((t) => (
-                <option key={t} value={t}>
-                  {WORKOUT_DAY_TYPE_LABEL[t]}
-                </option>
-              ))}
-            </select>
-          </label>
         </div>
 
         {planQuery.isPending ? (
@@ -153,7 +128,7 @@ export function WorkoutPlanTab() {
           onClose={() => setSaveOpen(false)}
           onConfirm={(chosen) =>
             saveDays.mutate(
-              { type: draftType, body: draft, days: chosen },
+              { body: draft, days: chosen },
               { onSuccess: () => setSaveOpen(false) },
             )
           }

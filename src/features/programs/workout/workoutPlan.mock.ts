@@ -43,14 +43,12 @@ export function getMasterPlan(): WorkoutPlanDto {
   return { days: clone(masterDays), updatedAt: masterUpdatedAt }
 }
 
-/** Write the edited day's `type` + `body` to every day in `days` (the Save's
+/** Write the edited day's `body` to every day in `days` (the Save's
  *  apply-to-days). Days outside the plan are ignored. */
 export function saveMasterDays(body: SaveWorkoutDaysBody): WorkoutPlanDto {
   const targets = new Set(body.days)
   masterDays = masterDays.map((d) =>
-    targets.has(d.dayNum)
-      ? { dayNum: d.dayNum, type: body.type, body: body.body }
-      : d,
+    targets.has(d.dayNum) ? { dayNum: d.dayNum, body: body.body } : d,
   )
   masterUpdatedAt = new Date().toISOString()
   return getMasterPlan()
@@ -84,8 +82,8 @@ export function getClientPlan(clientId: string): ClientWorkoutPlanDto {
   }
 }
 
-/** Save the edited day's `type` + `body` to the chosen days, for this user
- *  only. Only days that exist in the programme are written. */
+/** Save the edited day's `body` to the chosen days, for this user only. Only
+ *  days that exist in the programme are written. */
 export function saveClientDays(
   clientId: string,
   body: SaveWorkoutDaysBody,
@@ -95,7 +93,6 @@ export function saveClientDays(
     if (!exists.has(dayNum)) continue
     clientDays.set(clientDayKey(clientId, dayNum), {
       dayNum,
-      type: body.type,
       body: body.body,
     })
   }

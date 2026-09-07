@@ -1,17 +1,8 @@
 import { useState } from 'react'
 import { Modal } from '@/components/molecules/Modal'
 import { showToast } from '@/lib/toast'
-import {
-  PROGRAM_DIFFICULTIES,
-  PROGRAM_GOALS,
-  buildEmptyDietWeek,
-  buildEmptyWorkoutWeek,
-} from '../../data'
-import type {
-  ProgramDifficulty,
-  ProgramGoal,
-  TrainingProgram,
-} from '../../types'
+import { buildEmptyDietWeek, buildEmptyWorkoutWeek } from '../../data'
+import type { TrainingProgram } from '../../types'
 
 // Header pencil → Edit Program. Extending the timeline adds blank (rest-day,
 // no-meal) weeks; shortening removes weeks from the end, never past an assigned
@@ -27,8 +18,6 @@ export function EditProgramModal({
 }) {
   const [name, setName] = useState(p.name)
   const [desc, setDesc] = useState(p.description)
-  const [goal, setGoal] = useState<ProgramGoal>(p.goal)
-  const [difficulty, setDifficulty] = useState<ProgramDifficulty>(p.difficulty)
   const [weeks, setWeeks] = useState(String(p.durationWeeks))
 
   const save = () => {
@@ -39,8 +28,6 @@ export function EditProgramModal({
     }
     p.name = trimmed
     p.description = desc.trim() || p.description
-    p.goal = goal
-    p.difficulty = difficulty
 
     const maxMemberWeek = p.members.reduce(
       (a, m) => Math.max(a, m.currentWeek),
@@ -100,34 +87,6 @@ export function EditProgramModal({
           onChange={(e) => setDesc(e.target.value)}
         />
       </label>
-      <div className="modal-field-row">
-        <label className="modal-field">
-          <span>Goal</span>
-          <select
-            value={goal}
-            onChange={(e) => setGoal(e.target.value as ProgramGoal)}
-          >
-            {PROGRAM_GOALS.map((g) => (
-              <option key={g} value={g}>
-                {g}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="modal-field">
-          <span>Difficulty</span>
-          <select
-            value={difficulty}
-            onChange={(e) => setDifficulty(e.target.value as ProgramDifficulty)}
-          >
-            {PROGRAM_DIFFICULTIES.map((d) => (
-              <option key={d} value={d}>
-                {d}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
       <label className="modal-field">
         <span>Timeline (weeks)</span>
         <input

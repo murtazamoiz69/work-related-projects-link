@@ -7,7 +7,7 @@ import {
   useClientDietPlanQuery,
   useSaveClientDietPlanToWeeks,
 } from '../useDietPlan'
-import { CopyToWeeksDropdown } from './CopyToWeeksDropdown'
+import { SaveToWeeksModal } from './SaveToWeeksModal'
 
 /** One user's diet plan for a week — the master sheet for their category
  *  (calorie band), narrowed by their onboarding answers. Same shape as the
@@ -31,6 +31,7 @@ export function ClientDietPlanTab({
   const saveToWeeks = useSaveClientDietPlanToWeeks(client.id)
 
   const [draft, setDraft] = useState('')
+  const [saveOpen, setSaveOpen] = useState(false)
 
   const plan = planQuery.data
   const planBody = plan?.body
@@ -38,17 +39,6 @@ export function ClientDietPlanTab({
     if (planBody === undefined) return
     setDraft(planBody)
   }, [planBody, activeWeek])
-
-  // The weeks Save will write to for this user, defaulting back to just the
-  // week being viewed whenever it changes.
-  const [selectedWeeks, setSelectedWeeks] = useState<number[]>([activeWeek])
-  useEffect(() => {
-    setSelectedWeeks([activeWeek])
-  }, [activeWeek])
-  const toggleWeek = (week: number) =>
-    setSelectedWeeks((prev) =>
-      prev.includes(week) ? prev.filter((w) => w !== week) : [...prev, week],
-    )
 
   const profile = plan?.profile ?? client.dietProfile
   // Read off the plan, not the client: this workspace is opened with whatever
@@ -92,13 +82,6 @@ export function ClientDietPlanTab({
               narrowed to {firstName}. Edits here apply to this user only.
             </p>
           </div>
-          <CopyToWeeksDropdown
-            totalWeeks={totalWeeks}
-            currentWeek={activeWeek}
-            selected={selectedWeeks}
-            onToggle={toggleWeek}
-            onSelect={setSelectedWeeks}
-          />
         </div>
 
         {profile ? (
@@ -170,22 +153,41 @@ export function ClientDietPlanTab({
                 <b>
                   {firstName}&apos;s Week {activeWeek}
                 </b>{' '}
-                — Save writes it to the weeks picked in Copy to weeks.
+                — Save writes it to the weeks you pick.
               </p>
               <button
                 className="btn-primary"
-                disabled={!selectedWeeks.length || saveToWeeks.isPending}
-                onClick={() =>
-                  saveToWeeks.mutate({ body: draft, weeks: selectedWeeks })
-                }
+                onClick={() => setSaveOpen(true)}
+                disabled={saveToWeeks.isPending}
               >
                 <Icon name="check" />
-                {saveToWeeks.isPending ? 'Saving…' : 'Save Changes'}
+                Save
               </button>
             </div>
           </>
         )}
       </section>
+
+      {saveOpen ? (
+        <SaveToWeeksModal
+          currentWeek={activeWeek}
+          totalWeeks={totalWeeks}
+          pending={saveToWeeks.isPending}
+          intro={
+            <>
+              Save the week you just edited for <strong>{firstName}</strong>{' '}
+              into the weeks you pick. Only this user is affected.
+            </>
+          }
+          onClose={() => setSaveOpen(false)}
+          onConfirm={(weeks) =>
+            saveToWeeks.mutate(
+              { body: draft, weeks },
+              { onSuccess: () => setSaveOpen(false) },
+            )
+          }
+        />
+      ) : null}
     </>
   )
 }

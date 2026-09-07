@@ -4,11 +4,6 @@ import { LazyRichTextEditor } from '@/components/molecules/LazyRichTextEditor'
 import { apiErrorMessage } from '@/lib/api/errors'
 import type { Client } from '@/features/clients'
 import {
-  WORKOUT_DAY_TYPES,
-  WORKOUT_DAY_TYPE_LABEL,
-  type WorkoutDayType,
-} from '../workoutPlan.types'
-import {
   useClientWorkoutPlanQuery,
   useResetClientWorkoutDay,
   useSaveClientWorkoutDays,
@@ -32,14 +27,11 @@ export function ClientWorkoutPlanTab({ client }: { client: Client }) {
   const current = days.find((d) => d.dayNum === activeDay)
   const edited = current?.edited ?? false
   const [draft, setDraft] = useState('')
-  const [draftType, setDraftType] = useState<WorkoutDayType>('workout')
   const currentBody = current?.body
-  const currentType = current?.type
   useEffect(() => {
     if (currentBody === undefined) return
     setDraft(currentBody)
-    setDraftType(currentType ?? 'rest')
-  }, [currentBody, currentType, activeDay])
+  }, [currentBody, activeDay])
 
   const firstName = client.name.split(' ')[0]
 
@@ -69,23 +61,8 @@ export function ClientWorkoutPlanTab({ client }: { client: Client }) {
             </p>
           </div>
 
-          <div className="diet-sheet-actions">
-            <label className="wp-type-picker">
-              <span className="diet-band-label">Type</span>
-              <select
-                className="select-range"
-                aria-label="Day type"
-                value={draftType}
-                onChange={(e) => setDraftType(e.target.value as WorkoutDayType)}
-              >
-                {WORKOUT_DAY_TYPES.map((t) => (
-                  <option key={t} value={t}>
-                    {WORKOUT_DAY_TYPE_LABEL[t]}
-                  </option>
-                ))}
-              </select>
-            </label>
-            {edited ? (
+          {edited ? (
+            <div className="diet-sheet-actions">
               <button
                 className="btn-secondary diet-duplicate-btn"
                 disabled={resetDay.isPending}
@@ -94,8 +71,8 @@ export function ClientWorkoutPlanTab({ client }: { client: Client }) {
                 <Icon name="rotate-ccw" />
                 Reset to programme
               </button>
-            ) : null}
-          </div>
+            </div>
+          ) : null}
         </div>
 
         {planQuery.isPending ? (
@@ -167,7 +144,7 @@ export function ClientWorkoutPlanTab({ client }: { client: Client }) {
           onClose={() => setSaveOpen(false)}
           onConfirm={(chosen) =>
             saveDays.mutate(
-              { type: draftType, body: draft, days: chosen },
+              { body: draft, days: chosen },
               { onSuccess: () => setSaveOpen(false) },
             )
           }

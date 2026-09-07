@@ -5,7 +5,7 @@
 // for the same reason. Each day's coach-facing name ("Push Day") is folded into
 // the body as a heading, since the day itself is identified only by its number
 // now.
-import { type WorkoutDay, type WorkoutDayType } from './workoutPlan.types'
+import { type WorkoutDay } from './workoutPlan.types'
 
 type Movement = {
   name: string
@@ -17,7 +17,6 @@ type Movement = {
 
 type DaySpec = {
   label: string
-  type: WorkoutDayType
   /** One line under the title saying what the day is for. */
   intent: string
   warmup: string[]
@@ -71,7 +70,6 @@ function dayBody(spec: DaySpec): string {
 const WEEK_ONE: DaySpec[] = [
   {
     label: 'Push Day',
-    type: 'workout',
     intent:
       'Chest, shoulders and triceps. Leave one rep in reserve on the top set.',
     warmup: [
@@ -110,7 +108,6 @@ const WEEK_ONE: DaySpec[] = [
   },
   {
     label: 'Zone 2 Cardio',
-    type: 'cardio',
     intent:
       'Easy, conversational pace. This is recovery that happens to burn calories.',
     warmup: ['5 min walk, building pace'],
@@ -125,7 +122,6 @@ const WEEK_ONE: DaySpec[] = [
   },
   {
     label: 'Pull Day',
-    type: 'workout',
     intent: 'Back and biceps. Pull with the elbows, not the hands.',
     warmup: ['5 min rowing machine', 'Scapular pull-ups — 2 x 8'],
     main: [
@@ -159,7 +155,6 @@ const WEEK_ONE: DaySpec[] = [
   },
   {
     label: 'Rest Day',
-    type: 'rest',
     intent: 'Nothing structured. Movement is welcome, training is not.',
     warmup: [],
     main: [],
@@ -171,7 +166,6 @@ const WEEK_ONE: DaySpec[] = [
   },
   {
     label: 'Leg Day',
-    type: 'workout',
     intent: 'The hardest session of the week. Eat before it.',
     warmup: [
       '5 min bike',
@@ -209,7 +203,6 @@ const WEEK_ONE: DaySpec[] = [
   },
   {
     label: 'HIIT Cardio',
-    type: 'cardio',
     intent: 'Short and genuinely hard. Stop if form breaks down.',
     warmup: ['5 min easy row or bike'],
     main: [
@@ -228,7 +221,6 @@ const WEEK_ONE: DaySpec[] = [
   },
   {
     label: 'Rest Day',
-    type: 'rest',
     intent: 'Full day off. Prep meals for the week ahead.',
     warmup: [],
     main: [],
@@ -246,12 +238,12 @@ const AUTHORED_DAYS = 4
 export function buildSeedDays(): WorkoutDay[] {
   return WEEK_ONE.map((spec, i) =>
     i < AUTHORED_DAYS
-      ? { dayNum: i + 1, type: spec.type, body: dayBody(spec) }
-      : { dayNum: i + 1, type: 'rest' as WorkoutDayType, body: '' },
+      ? { dayNum: i + 1, body: dayBody(spec) }
+      : { dayNum: i + 1, body: '' },
   )
 }
 
-/** A freshly added day: a rest day with no session, ready to author. */
+/** A freshly added day: no session yet, ready to author. */
 export function buildBlankDay(dayNum: number): WorkoutDay {
-  return { dayNum, type: 'rest' as WorkoutDayType, body: '' }
+  return { dayNum, body: '' }
 }

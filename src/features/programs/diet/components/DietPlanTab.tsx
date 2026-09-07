@@ -4,14 +4,13 @@ import { LazyRichTextEditor } from '@/components/molecules/LazyRichTextEditor'
 import { apiErrorMessage } from '@/lib/api/errors'
 import { CALORIE_BANDS, type CalorieBand } from '../dietPlan.types'
 import { useMasterSheetQuery, useSaveMasterSheetToWeeks } from '../useDietPlan'
-import { CopyToWeeksDropdown } from './CopyToWeeksDropdown'
+import { SaveToWeeksModal } from './SaveToWeeksModal'
 
 /** The global diet plan. Pick the category first — nothing else shows until
  *  one is chosen, since every sheet belongs to exactly one band. Then pick the
- *  week to load (to see what's already there) and author the day slot by
- *  slot in a full-width editor. "Copy to weeks" (top right) is where you pick
- *  which weeks Save Changes writes to — collapsed by default so the editor
- *  keeps the room. */
+ *  week to load (to see what's already there) and author the sheet in a
+ *  full-width editor. Save opens a picker for the weeks to write it to — the
+ *  same single-Save model as the workout tab. */
 export function DietPlanTab({
   totalWeeks,
   activeWeek,
@@ -22,6 +21,7 @@ export function DietPlanTab({
   setActiveWeek: (n: number) => void
 }) {
   const [band, setBand] = useState<CalorieBand | null>(null)
+  const [saveOpen, setSaveOpen] = useState(false)
 
   const sheetQuery = useMasterSheetQuery(activeWeek, band)
   const saveToWeeks = useSaveMasterSheetToWeeks()
@@ -34,18 +34,6 @@ export function DietPlanTab({
     if (sheetBody === undefined) return
     setDraft(sheetBody)
   }, [sheetBody, activeWeek, band])
-
-  // The weeks Save will write to. Defaults back to "just the week you're
-  // looking at" whenever the band or that week changes, same default the old
-  // Save dialog used.
-  const [selectedWeeks, setSelectedWeeks] = useState<number[]>([activeWeek])
-  useEffect(() => {
-    setSelectedWeeks([activeWeek])
-  }, [activeWeek, band])
-  const toggleWeek = (week: number) =>
-    setSelectedWeeks((prev) =>
-      prev.includes(week) ? prev.filter((w) => w !== week) : [...prev, week],
-    )
 
   return (
     <>
@@ -102,13 +90,6 @@ export function DietPlanTab({
                   haves plus portion-based choices for each slot.
                 </p>
               </div>
-              <CopyToWeeksDropdown
-                totalWeeks={totalWeeks}
-                currentWeek={activeWeek}
-                selected={selectedWeeks}
-                onToggle={toggleWeek}
-                onSelect={setSelectedWeeks}
-              />
             </div>
 
             {sheetQuery.isPending ? (
@@ -134,8 +115,8 @@ export function DietPlanTab({
                 {!sheetBody?.trim() ? (
                   <p className="diet-sheet-empty-note">
                     <Icon name="info" />
-                    No plan for this week yet. Write it here, then pick which
-                    weeks to copy it to before saving.
+                    No plan for this week yet. Write it here, then Save it to
+                    the weeks it applies to.
                   </p>
                 ) : null}
 
@@ -152,26 +133,42 @@ export function DietPlanTab({
                     <b>
                       Week {activeWeek} · {band} kcal
                     </b>{' '}
-                    — Save writes it to the weeks picked in Copy to weeks.
+                    — Save writes it to the weeks you pick.
                   </p>
                   <button
                     className="btn-primary"
-                    disabled={!selectedWeeks.length || saveToWeeks.isPending}
-                    onClick={() =>
-                      saveToWeeks.mutate({
-                        band,
-                        body: draft,
-                        weeks: selectedWeeks,
-                      })
-                    }
+                    onClick={() => setSaveOpen(true)}
+                    disabled={saveToWeeks.isPending}
                   >
                     <Icon name="check" />
-                    {saveToWeeks.isPending ? 'Saving…' : 'Save Changes'}
+                    Save
                   </button>
                 </div>
               </>
             )}
           </section>
+
+          {saveOpen ? (
+            <SaveToWeeksModal
+              currentWeek={activeWeek}
+              totalWeeks={totalWeeks}
+              pending={saveToWeeks.isPending}
+              intro={
+                <>
+                  Save the <strong>Week {activeWeek}</strong> sheet you just
+                  edited into the weeks you pick. Anything already on those
+                  weeks is replaced.
+                </>
+              }
+              onClose={() => setSaveOpen(false)}
+              onConfirm={(weeks) =>
+                saveToWeeks.mutate(
+                  { band, body: draft, weeks },
+                  { onSuccess: () => setSaveOpen(false) },
+                )
+              }
+            />
+          ) : null}
         </>
       )}
     </>
