@@ -4,6 +4,31 @@ Covers the **Programs** page. There is a **single global program** (no
 list/create/delete) — this page views/edits it and toggles its availability.
 See [README.md](./README.md) for conventions.
 
+## Backend wiring status (updated 2026-09-07)
+
+> **This page is mock-only.** The real backend has **no program-content
+> resource**: no `GET /program`, no workout-plan or diet-plan endpoints, no
+> reference libraries. The only program data the real backend exposes is
+> `GET /clients/programs` → `{ "programs": string[] }` — a list of program
+> **names**, already live and used by the "Plan" dropdown in Add User.
+> Everything else specified below is **PROPOSED** for the backend to build; the
+> page runs entirely on MSW mocks today.
+>
+> **The dropdowns on this page are static code arrays, not backend values** —
+> `goal` (`PROGRAM_GOALS`), `difficulty` (`PROGRAM_DIFFICULTIES`), meal slots
+> (`MEAL_SLOTS`), the exercise library, and the workout-type chip all live in
+> `src/features/programs/data.ts`. They can only become backend-driven once the
+> backend adds the enum/library endpoints listed next.
+
+### Endpoints the backend must add for this page
+- `GET` + `PUT /program` — the single global program (overview + targets).
+- `PATCH /program/availability` (or a field on `PUT /program`) — enable/disable.
+- `GET` + `PUT /program/workout-plan`, `POST /program/workout-plan/add-day`.
+- `GET` + `PUT /program/diet-plan`.
+- `GET /libraries/exercises`, `GET /libraries/meals`, and option enums (goals,
+  difficulties, workout types, meal slots) — so the dropdowns above stop being
+  hardcoded.
+
 ## Page functionality
 - Load the program (overview + nutrition targets).
 - Edit program details (name, description, goal, difficulty, duration).

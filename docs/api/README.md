@@ -26,6 +26,29 @@ switches over by pointing `VITE_API_URL` at the real server and disabling mocks
 
 ---
 
+## Backend wiring status (updated 2026-09-07)
+
+The frontend now runs **per-feature** against the real backend: a feature named
+in `VITE_LIVE_APIS` skips its MSW mock and calls the real API through the dev
+proxy; the rest stay on the mocks in this folder. What's real **today**:
+
+| Feature | Status | Notes |
+| --- | --- | --- |
+| Auth | **Live** | `/auth/login`, `/auth/logout`, … |
+| Users (clients) | **Live** | incl. `/clients/programs` → the **Plan** dropdown is backend-driven |
+| Nutritionists | **Live** | |
+| Dashboard | **Live** | all `/dashboard/*` aggregates |
+| Settings › Profile | **Live** | `/me/settings/profile`, `/uploads` |
+| Client detail | Endpoint **real**, mock-locked | `GET /clients/:id/detail` exists and is wired, but kept on the mock locally — its only consumer (Plan Workspace) is still fed mock Chat clients. See [plan-workspace.md](./plan-workspace.md). |
+| **Program** (single global) | **Mock only** | The real backend has **no** program-content resource; `/clients/programs` returns only program *name* strings. See [programs.md](./programs.md). |
+| **Plan Workspace** | **Mock only** | The whole plan (and the At-a-glance metrics) is generated client-side. See [plan-workspace.md](./plan-workspace.md). |
+| Chat | **Mock only** | |
+
+Every endpoint below marked **PROPOSED** does **not** exist on the real backend
+yet — it is the spec for the backend team to build.
+
+---
+
 ## Conventions (apply to every endpoint)
 
 ### Base URL
