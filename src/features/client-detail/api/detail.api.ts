@@ -7,11 +7,14 @@ import type { ClientDetailDto } from './detail.types'
 export function toClientDetail(dto: ClientDetailDto): ClientDetail {
   return {
     ...dto,
-    programs: dto.programs.map((p) => ({
+    // Defensive against a backend that omits per-program weekly check-ins:
+    // the At-a-glance tracker rebuilds daily logs from a seed regardless, so an
+    // empty/absent `weeks` array must not crash the ISO→Date mapping.
+    programs: (dto.programs ?? []).map((p) => ({
       ...p,
       startDate: new Date(p.startDate),
       endDate: new Date(p.endDate),
-      weeks: p.weeks.map((w) => ({ ...w, date: new Date(w.date) })),
+      weeks: (p.weeks ?? []).map((w) => ({ ...w, date: new Date(w.date) })),
     })),
   }
 }
