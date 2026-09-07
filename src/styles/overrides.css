@@ -267,3 +267,24 @@
 .is-review .chat-handoff-icon {
   color: var(--amber-text);
 }
+
+/* ---- Add user: keep the Plan/Weeks row inside the modal ---- */
+/* The two fields in .modal-field-row are `flex: 1` but default to
+   `min-width: auto`, so neither can shrink below its content's intrinsic width.
+   A number input's intrinsic width is wide, so the "Weeks" field refused to
+   shrink and spilled past the modal's right edge. `min-width: 0` lets the flex
+   items shrink to their shared basis, giving two equal columns that fit. */
+.modal-field {
+  min-width: 0;
+}
+/* Chrome/Safari also render a tall, boxed inner-spin-button on the number
+   input; hide it so Weeks reads as a clean numeric field like its siblings. */
+.modal-field input[type='number'] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+.modal-field input[type='number']::-webkit-outer-spin-button,
+.modal-field input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
