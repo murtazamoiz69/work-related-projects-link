@@ -162,15 +162,6 @@ export function LoginPage({ redirect }: LoginPageProps) {
               {submitting ? 'Signing in…' : 'Sign In'}
             </button>
           </form>
-
-          {/* Two lines by construction rather than by wrapping, which used to
-              orphan the word "password" on its own line. */}
-          <p className="auth-hint">
-            <span className="auth-hint-label">Demo credentials</span>
-            <span>
-              <strong>sarah@nourishwithsim.com</strong> / any password
-            </span>
-          </p>
         </div>
       </div>
     </>
