@@ -20,7 +20,6 @@ import {
   dateKey,
   MEALS_PER_DAY,
   numericStat,
-  presenceStat,
   SESSIONS_PER_DAY,
   weightStat,
   type DailyLog,
@@ -152,6 +151,56 @@ function TrackerStatCard({
   )
 }
 
+/** Meals and workouts are a logging count, not an average against a target —
+ *  "4 / 4" answers "did they log today?" directly, where a percentage bar made
+ *  the reader do the division. Deliberately has no adherence track. */
+function TrackerCountCard({
+  icon,
+  label,
+  done,
+  planned,
+  color,
+  emptyNote,
+}: {
+  icon: string
+  label: string
+  done: number
+  planned: number
+  color: string
+  emptyNote: string
+}) {
+  const complete = planned > 0 && done >= planned
+  const tone: MetricStatus = complete ? 'good' : done > 0 ? 'warn' : 'none'
+  return (
+    <div className="tracker-stat-card">
+      <div className="tracker-stat-icon-row">
+        <span
+          className="tracker-stat-icon"
+          style={{ background: `${color}1f`, color }}
+        >
+          <Icon name={icon} size={14} />
+        </span>
+        <span className="tracker-stat-label">{label}</span>
+      </div>
+      <div className="tracker-stat-value tracker-stat-count">
+        {done}
+        <small>{` / ${planned}`}</small>
+      </div>
+      <div className={`tracker-stat-status tone-${tone}`}>
+        <span className="tracker-stat-status-dot" />
+        {planned === 0
+          ? emptyNote
+          : complete
+            ? 'All logged'
+            : `${planned - done} still to log`}
+      </div>
+      <div className="tracker-stat-foot">
+        <span className="tracker-stat-target">Logged today</span>
+      </div>
+    </div>
+  )
+}
+
 function TrackerStatRow({
   tracker,
   fallbackWeightKg,
@@ -179,8 +228,9 @@ function TrackerStatRow({
     targets.hydrationL,
   )
   const weight = weightStat(tracker, fallbackWeightKg)
-  const workout = presenceStat(days.map((d) => d.workout))
-  const cardio = presenceStat(days.map((d) => d.cardio))
+  // Meals and workouts are read for the most recent day that has data, which
+  // is what "4 / 4" is asking about — not an average over the whole window.
+  const latest = days[days.length - 1]
 
   return (
     <div className="tracker-stat-row">
@@ -255,29 +305,21 @@ function TrackerStatRow({
         daysText={`${weight.daysLogged} of ${weight.totalDays} days logged`}
         color={METRIC_COLOR.weight}
       />
-      <TrackerStatCard
+      <TrackerCountCard
+        icon="utensils"
+        label="Meals"
+        done={latest?.mealsLogged ?? 0}
+        planned={latest?.mealsPlanned ?? 0}
+        color={METRIC_COLOR.calEaten}
+        emptyNote="No meals planned"
+      />
+      <TrackerCountCard
         icon="dumbbell"
         label="Workouts"
-        value={`${workout.pct}`}
-        unit="%"
-        statusLabel={STATUS_LABEL[workout.status]}
-        tone={workout.status}
-        targetText="Target: every scheduled session"
-        adherencePct={workout.pct}
-        daysText={`${workout.daysLogged} of ${workout.totalDays} days logged`}
+        done={latest?.workoutsLogged ?? 0}
+        planned={latest?.workoutsPlanned ?? 0}
         color={METRIC_COLOR.workout}
-      />
-      <TrackerStatCard
-        icon="heart-pulse"
-        label="PW Cardio"
-        value={`${cardio.pct}`}
-        unit="%"
-        statusLabel={STATUS_LABEL[cardio.status]}
-        tone={cardio.status}
-        targetText="Target: every scheduled session"
-        adherencePct={cardio.pct}
-        daysText={`${cardio.daysLogged} of ${cardio.totalDays} days logged`}
-        color={METRIC_COLOR.cardio}
+        emptyNote="Rest day"
       />
     </div>
   )
@@ -797,35 +839,6 @@ function fmt(n: number, decimals: number): string {
   return decimals ? n.toFixed(decimals) : Math.round(n).toLocaleString()
 }
 
-/** Rows counted in whole sessions rather than measured — meals against the
- *  day's slots, workouts against what was scheduled. */
-function countStat(
-  input:
-    | false
-    | undefined
-    | null
-    | {
-        done: number
-        planned: number
-        unit: string
-        allDone: string
-        none?: string
-      },
-): { target?: string; delta?: string; tone?: string; pct: number } {
-  if (!input) return { pct: 0 }
-  const { done, planned, unit, allDone, none } = input
-  if (planned === 0) {
-    return { delta: none ?? 'nothing planned', tone: 'tone-good', pct: 0 }
-  }
-  const missed = Math.max(0, planned - done)
-  return {
-    target: `${planned} ${unit}`,
-    delta: missed === 0 ? allDone : `${missed} missed`,
-    tone: missed === 0 ? 'tone-good' : done > 0 ? 'tone-warn' : 'tone-bad',
-    pct: (done / planned) * 100,
-  }
-}
-
 /** The weight row's gap to goal, in whichever direction the goal sits. Named
  *  for the gap specifically — `weightStat` is already imported from ../tracker
  *  and answers a different question (adherence across the whole program). */
@@ -999,44 +1012,9 @@ function DailyLogDetail({
             overWord: 'past target',
           })}
         />
-        <LogRow
-          label="Meals"
-          value={day ? `${day.mealsLogged}` : 'Not logged'}
-          {...countStat(
-            day && {
-              done: day.mealsLogged,
-              planned: day.mealsPlanned,
-              unit: 'planned',
-              allDone: 'all meals logged',
-            },
-          )}
-          color={METRIC_COLOR.calEaten}
-          logged={!!day && day.mealsLogged > 0}
-        />
-        <LogRow
-          label="Workouts"
-          // The count, not a bare "Done": the day can schedule two sessions and
-          // have one of them logged, which "Done" flattened away.
-          value={day ? `${day.workoutsLogged}` : 'Not logged'}
-          {...countStat(
-            day && {
-              done: day.workoutsLogged,
-              planned: day.workoutsPlanned,
-              unit: 'scheduled',
-              allDone: 'all sessions done',
-              none: 'none scheduled',
-            },
-          )}
-          color={METRIC_COLOR.workout}
-          logged={!!day && day.workoutsLogged > 0}
-        />
-        <LogRow
-          label="PW Cardio"
-          value={day?.cardio ? 'Done' : 'Not logged'}
-          pct={day?.cardio ? 100 : 0}
-          color={METRIC_COLOR.cardio}
-          logged={!!day?.cardio}
-        />
+        {/* Meals and workouts are read off the count cards in the stat row
+            above ("4 / 4"), so they are not repeated as progress bars here.
+            PW Cardio came out with them. */}
         <LogRow
           label="Weight"
           value={
