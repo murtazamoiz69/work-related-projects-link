@@ -46,6 +46,54 @@ NWS ("Nourish with Sim") is a **nutritionist dashboard** (one role — every acc
 - **`src/styles/app.css` and `tokens.css` are ported verbatim and are prettier-ignored.** Don't reformat or casually restructure them.
 - **Use the `@/` path alias**, `useNavigate`/`<Link>` (never `window.location`), and the shared `cn()` util for class merging.
 
+## The FRD is a running document
+
+`NWS-FRD.html` is the signed-off description of what this product does. It is **not** a snapshot taken once at kickoff — it is a living document, and it is only true if it is updated in the same breath as the code.
+
+**Where it lives**
+
+| Thing | Path |
+| --- | --- |
+| The document | `<NWS working folder>/NWS-FRD.html` |
+| Front matter (§1–4.4) | `<NWS working folder>/frd/content_front.py` |
+| Web features (§4.5) | `<NWS working folder>/frd/content_web.py` |
+| Mobile features (§5) | `<NWS working folder>/frd/content_mobile.py` |
+| Renderer + styling | `<NWS working folder>/frd/render.py` |
+| Build script | `<NWS working folder>/frd/build.py` |
+| Snapshots | `<NWS working folder>/frd-shots/` (`web/`, `mobile/` raw; `opt/` embedded) |
+
+Never hand-edit `NWS-FRD.html`. Edit the content module, then rebuild.
+
+**When to update it — any change, however small**
+
+If you add a feature, change an existing one, alter a validation message, rename a button, reorder a list, change a default, add or remove a field, change a status, or change a design — the FRD must reflect it in the same change. "Too small to document" is not a category that exists here; a renamed button is a changed acceptance criterion.
+
+**What to update — all of it, not just the description**
+
+For every affected feature, walk the whole block:
+
+1. **Title, status badge and `roles`** — `built` / `partial` / `missing` must match reality. A feature you just finished moves to `built`.
+2. **`desc`** — what the feature now is.
+3. **`story`** — the `(as a, I want to, so that)` triple. If the reason a user wants it changed, the story changes.
+4. **`uac`** — the acceptance criteria. Add criteria for new behaviour, edit the ones whose wording no longer matches, and **delete the ones that no longer hold**. Keep the house format: `<Actor> <does something> → System <responds>.` Cite any business rule you depend on by ID (`BR-n`).
+5. **`note`** — the "Prototype note". Add one where the build now deviates from the spec; **remove it once the gap is closed**.
+6. **`shots`** — recapture the screens the change is visible on and update the captions.
+7. **Ripple outward** — if the change touches a rule, a status, a role or a count, update §4.4.6 (business rules), §4.4.7 (status reference), §4.1–4.3 (roles, module access, feature counts) and §6 (open points) to match. A new business rule gets a new `BR-n`; existing IDs are never renumbered.
+
+A new feature is a new dict in the right module's `features` list, with every key populated — an FR block with no user story or no acceptance criteria is not finished.
+
+**Snapshots**
+
+Snapshots are captured from the running prototype, never mocked up. Run the app (`npm run dev`), drive it to the state the feature describes, capture at 2×, then re-run the optimiser so the embedded copy is refreshed. Put web captures in `frd-shots/web/` and phone captures in `frd-shots/mobile/`, named for what they show. A feature with no snapshot must say so through `nopic`, giving the reason — never leave it silently empty.
+
+**Rebuild and verify**
+
+```bash
+python frd/build.py
+```
+
+The build prints the feature count, the snapshot count and the output size, and **fails loudly if a named snapshot file is missing**. Do not consider the change done until it builds clean and you have opened the result and looked at the section you changed.
+
 ## Before you call a change done
 
 Run and pass all of:
@@ -60,6 +108,8 @@ npm run build
 
 Never claim work is complete without the relevant commands passing. Report failures honestly with their output.
 
+And if the change altered anything a user or a stakeholder would notice — behaviour, copy, layout, a default, a status — update the FRD content module and re-run `python frd/build.py` before you call it done. See **The FRD is a running document** above.
+
 ---
 
 ## The rest of the rulebook
@@ -69,5 +119,6 @@ Never claim work is complete without the relevant commands passing. Report failu
 - `docs/api-guidelines.md` — the service layer, request/response/error types, React Query usage, mock strategy.
 - `docs/testing.md` — what to test and how.
 - `CONTRIBUTING.md` — branch/commit/PR workflow for humans.
+- `<NWS working folder>/frd/` — the FRD content modules and build script. Update alongside any user-visible change; see **The FRD is a running document** above.
 
 When unsure: choose **consistency with the surrounding code** over cleverness, and ask rather than assume.
