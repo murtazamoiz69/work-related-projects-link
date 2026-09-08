@@ -59,7 +59,11 @@ export const clientsRoute = createRoute({
     const page = Number(search.page)
     return {
       q: typeof search.q === 'string' && search.q ? search.q : undefined,
-      status: status === 'active' || status === 'disabled' ? status : undefined,
+      // Users carry three access states; nutritionists still only two.
+      status:
+        status === 'invited' || status === 'active' || status === 'disabled'
+          ? status
+          : undefined,
       expiry:
         expiry === 'expiring-soon' ||
         expiry === 'expired' ||

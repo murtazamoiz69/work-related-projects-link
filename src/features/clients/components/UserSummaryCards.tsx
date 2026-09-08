@@ -2,6 +2,7 @@ import type { ClientsSummaryDto } from '../api/clients.types'
 
 const EMPTY: ClientsSummaryDto = {
   total: 0,
+  invited: 0,
   active: 0,
   disabled: 0,
   expiringSoon: 0,
@@ -32,6 +33,10 @@ export function UserSummaryCards({
       <div className="users-summary-card accent-green">
         <span className="users-summary-value">{show(s.active)}</span>
         <span className="users-summary-label">Active</span>
+      </div>
+      <div className="users-summary-card accent-blue">
+        <span className="users-summary-value">{show(s.invited)}</span>
+        <span className="users-summary-label">Invited</span>
       </div>
       <div className="users-summary-card accent-amber">
         <span className="users-summary-value">{show(s.expiringSoon)}</span>

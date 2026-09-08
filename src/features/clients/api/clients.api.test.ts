@@ -76,7 +76,9 @@ describe('clients.api', () => {
 
   it('getClientsSummary counts add up to the roster size', async () => {
     const s = await getClientsSummary()
-    expect(s.active + s.disabled).toBe(s.total)
+    // Three access states now, not two: every user is invited, active or
+    // disabled, and the three must still partition the roster.
+    expect(s.invited + s.active + s.disabled).toBe(s.total)
     expect(s.total).toBe(CLIENT_FIXTURES.length)
   })
 

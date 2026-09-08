@@ -3,7 +3,7 @@
 // from UI-only types (filter unions used by the roster components). The `api.ts`
 // mapper is the single boundary that turns a `ClientDto` (ISO strings) into a
 // domain `Client` (Date objects).
-import type { ClientStatus } from '../types'
+import type { ClientAccessState, ClientStatus } from '../types'
 import type {
   DietProfile,
   PlanReviewStatus,
@@ -12,7 +12,7 @@ import type { Paginated } from '@/lib/api/types'
 
 // ---- Request types ----
 
-export type ClientStatusFilter = 'all' | 'active' | 'disabled'
+export type ClientStatusFilter = 'all' | 'invited' | 'active' | 'disabled'
 export type ClientExpiryFilter = 'all' | 'expiring-soon' | 'expired' | 'active'
 /** Diet-plan sign-off state, as a roster filter. */
 export type ClientReviewFilter = 'all' | 'in-review' | 'reviewed'
@@ -93,6 +93,12 @@ export type ClientDto = {
   plan: string
   status: ClientStatus
   accessEnabled: boolean
+  /** Three-state access. ASSUMPTION: not yet served by the real backend —
+   *  optional so a live response without it still maps, falling back to
+   *  `accessEnabled` (see toClient). */
+  accessState?: ClientAccessState
+  /** ISO timestamp of the user's first mobile sign-in; null while invited. */
+  signedInAt?: string | null
   expiryDate: string // ISO
   adherence: number | null
   checkInDays: number | null
@@ -132,6 +138,8 @@ export type ClientProgramsDto = {
 
 export type ClientsSummaryDto = {
   total: number
+  /** Enrolled and invited, but never signed in. */
+  invited: number
   active: number
   disabled: number
   expiringSoon: number

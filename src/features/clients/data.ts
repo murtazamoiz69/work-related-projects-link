@@ -3,7 +3,7 @@
 // person reads consistently everywhere in the prototype.
 import { daysAgo } from '@/lib/seed'
 import type { DietProfile } from '@/features/programs/diet/dietPlan.types'
-import type { Client, ClientStatus } from './types'
+import type { Client, ClientAccessState, ClientStatus } from './types'
 
 export const STATUS_LABEL: Record<ClientStatus, string> = {
   active: 'Active',
@@ -30,7 +30,12 @@ export const PROGRAM_PLAN: Record<string, string> = {
 // final map below, so the seed rows don't carry them.
 type NamedClient = Omit<
   Client,
-  'plan' | 'conversationId' | 'dietReview' | 'dietReviewedAt'
+  | 'plan'
+  | 'conversationId'
+  | 'dietReview'
+  | 'dietReviewedAt'
+  | 'accessState'
+  | 'signedInAt'
 >
 
 const NAMED_CLIENTS: NamedClient[] = [
@@ -428,7 +433,20 @@ export const CLIENTS_DATA: Client[] = COHORT_IDS.map((id) => {
     (Date.now() - c.joinDate.getTime()) / 86_400_000,
   )
   const inReview = c.status === 'new' || daysOnProgram <= REVIEW_GRACE_DAYS
+  // Three-state access. A user who has never opened the app is still Invited;
+  // 'new' clients that joined in the last few days stand in for that here.
+  const neverSignedIn = c.status === 'new' && daysOnProgram <= 3
+  const accessState: ClientAccessState = !c.accessEnabled
+    ? 'disabled'
+    : neverSignedIn
+      ? 'invited'
+      : 'active'
   return {
+    accessState,
+    // Their first mobile sign-in — null while the invitation is outstanding.
+    signedInAt: neverSignedIn
+      ? null
+      : new Date(c.joinDate.getTime() + 86_400_000),
     dietProfile: DIET_PROFILES[c.id],
     ...c,
     // A contact number for the roster's "Call" action. Fictional 555 range; a

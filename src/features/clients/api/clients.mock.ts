@@ -16,7 +16,7 @@ import type {
 } from '@/features/programs/diet/dietPlan.types'
 import type { ApiError } from '@/lib/api/types'
 import { CLIENTS_DATA, COLOR_POOL, PROGRAMS, PROGRAM_PLAN } from '../data'
-import type { Client } from '../types'
+import type { Client, ClientAccessState } from '../types'
 import type {
   BulkCreateClientsBody,
   BulkCreateClientsDto,
@@ -39,6 +39,7 @@ export function toClientDto(c: Client): ClientDto {
     expiryDate: c.expiryDate.toISOString(),
     joinDate: c.joinDate.toISOString(),
     dietReviewedAt: c.dietReviewedAt?.toISOString() ?? null,
+    signedInAt: c.signedInAt?.toISOString() ?? null,
     // Who a user is assigned to lives in the nutritionists mock (it owns
     // `memberIds`); the clients handlers join it on before responding.
     assignedNutritionist: c.assignedNutritionist ?? null,
@@ -117,6 +118,10 @@ function buildClientDto(body: CreateClientBody): ClientDto {
     plan: PROGRAM_PLAN[program] ?? program,
     status: 'new',
     accessEnabled: true,
+    // A user added here has been enrolled and invited, not onboarded: they
+    // stay Invited until their first mobile sign-in.
+    accessState: 'invited',
+    signedInAt: null,
     expiryDate: addWeeks(new Date(), body.weeks).toISOString(),
     adherence: null,
     checkInDays: null,
@@ -272,13 +277,29 @@ function haystack(c: ClientDto): string {
 /** Apply the roster's search/status/expiry filters + default expiry sort to the
  *  fixtures — the same semantics the current ClientsPage computes client-side,
  *  moved to the (mock) server boundary. */
+/** The stored access state, falling back to the boolean for any fixture that
+ *  predates the three-state model. */
+function accessStateOf(c: ClientDto): ClientAccessState {
+  return c.accessState ?? (c.accessEnabled ? 'active' : 'disabled')
+}
+
+/** Enable or disable a user's access. Disabling parks the state; enabling
+ *  restores what they were before — a user who has never signed in goes back
+ *  to Invited, not straight to Active. */
+export function setClientAccessDto(id: string, enabled: boolean): ClientDto {
+  const c = store.find((x) => x.id === id)
+  if (!c) throw new Error(`Unknown client ${id}`)
+  c.accessEnabled = enabled
+  c.accessState = !enabled ? 'disabled' : c.signedInAt ? 'active' : 'invited'
+  return c
+}
+
 export function filterClientFixtures(params: ListClientsParams): ClientDto[] {
   const { search, status = 'all', expiry = 'all', review = 'all' } = params
   const q = search?.trim().toLowerCase() ?? ''
 
   const filtered = store.filter((c) => {
-    if (status === 'active' && !c.accessEnabled) return false
-    if (status === 'disabled' && c.accessEnabled) return false
+    if (status !== 'all' && accessStateOf(c) !== status) return false
     if (expiry !== 'all') {
       const d = daysUntilIso(c.expiryDate)
       if (expiry === 'expiring-soon' && !(d >= 0 && d <= 14)) return false
@@ -297,12 +318,15 @@ export function filterClientFixtures(params: ListClientsParams): ClientDto[] {
 }
 
 export function summarizeClientFixtures(): ClientsSummaryDto {
+  let invited = 0
   let active = 0
   let disabled = 0
   let expiringSoon = 0
   let expired = 0
   for (const c of store) {
-    if (c.accessEnabled) active += 1
+    const state = accessStateOf(c)
+    if (state === 'invited') invited += 1
+    else if (state === 'active') active += 1
     else disabled += 1
     const d = daysUntilIso(c.expiryDate)
     if (d < 0) expired += 1
@@ -310,6 +334,7 @@ export function summarizeClientFixtures(): ClientsSummaryDto {
   }
   return {
     total: store.length,
+    invited,
     active,
     disabled,
     expiringSoon,

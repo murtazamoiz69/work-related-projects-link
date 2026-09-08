@@ -160,7 +160,7 @@ export function ClientsPage({ search }: { search: ClientsSearch }) {
     if (!toggleTarget) return
     updateAccess.mutate({
       id: toggleTarget.id,
-      enabled: !toggleTarget.accessEnabled,
+      enabled: toggleTarget.accessState === 'disabled',
     })
     setToggleTarget(null)
   }
@@ -212,6 +212,7 @@ export function ClientsPage({ search }: { search: ClientsSearch }) {
                 }
               >
                 <option value="all">All</option>
+                <option value="invited">Invited</option>
                 <option value="active">Active</option>
                 <option value="disabled">Disabled</option>
               </select>
@@ -381,16 +382,27 @@ export function ClientsPage({ search }: { search: ClientsSearch }) {
 
       {toggleTarget ? (
         <ConfirmDialog
-          title={toggleTarget.accessEnabled ? 'Disable user?' : 'Enable user?'}
+          title={
+            toggleTarget.accessState === 'disabled'
+              ? 'Enable user?'
+              : 'Disable user?'
+          }
           message={
-            toggleTarget.accessEnabled
-              ? 'This will prevent the user from accessing the program. Their data and progress will be preserved.'
-              : 'This user will regain access to the program.'
+            toggleTarget.accessState === 'disabled'
+              ? // Re-enabling restores the state they were in, so say which.
+                toggleTarget.signedInAt
+                ? 'This user will regain access to the program.'
+                : 'This user will go back to Invited — they still have to sign in for the first time.'
+              : toggleTarget.accessState === 'invited'
+                ? 'This will withdraw the invitation. They will not be able to sign in until access is switched back on.'
+                : 'This will prevent the user from accessing the program. Their data and progress will be preserved.'
           }
           confirmText={
-            toggleTarget.accessEnabled ? 'Disable user' : 'Enable user'
+            toggleTarget.accessState === 'disabled'
+              ? 'Enable user'
+              : 'Disable user'
           }
-          danger={toggleTarget.accessEnabled}
+          danger={toggleTarget.accessState !== 'disabled'}
           onConfirm={confirmToggle}
           onClose={() => setToggleTarget(null)}
         />

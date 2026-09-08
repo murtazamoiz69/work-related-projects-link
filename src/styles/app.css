@@ -2332,6 +2332,11 @@ svg {
 .users-summary-card.accent-red .users-summary-value {
   color: var(--red-text);
 }
+/* Invited — enrolled and invited, not yet signed in. Blue rather than green:
+   it is a pending state, not a healthy one. */
+.users-summary-card.accent-blue .users-summary-value {
+  color: var(--blue-text);
+}
 
 
 /* ---- Plan expiry column: date + urgency subtext, no row-level color ---- */
@@ -10555,4 +10560,64 @@ body.pw-open {
 .pw-updated-as.pw-updated-warn {
   color: var(--amber-text);
   font-style: normal;
+}
+
+/* Phone field with a fixed +91 prefix — the code is shown, not typed. */
+.phone-field {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--surface-alt);
+  overflow: hidden;
+}
+.phone-field:focus-within {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-muted);
+}
+.phone-prefix {
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--border-soft);
+  border-right: 1px solid var(--border);
+}
+.phone-field input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+}
+.phone-field input:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+/* Review Plan — the sign-off gate, sitting with Manage Plan and At a glance.
+   Two states in one control: pending (the user cannot see the plan) and done
+   (they can, click to reopen). Amber for pending rather than red — it is work
+   outstanding, not an error. */
+.review-cta.is-pending {
+  border-color: var(--amber);
+  color: var(--amber-text);
+}
+.review-cta.is-pending .chat-header-action-icon {
+  background: var(--amber-light);
+  color: var(--amber-text);
+}
+.review-cta.is-done {
+  border-color: var(--green);
+  color: var(--green-text);
+}
+.review-cta.is-done .chat-header-action-icon {
+  background: var(--green);
+  color: #fff;
+}
+.review-cta:disabled {
+  opacity: 0.6;
+  cursor: default;
 }

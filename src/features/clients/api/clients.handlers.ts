@@ -23,6 +23,7 @@ import {
   setClientAssignment,
   summarizeClientFixtures,
   validateNewClient,
+  setClientAccessDto,
 } from './clients.mock'
 
 const base = env.apiUrl
@@ -168,7 +169,9 @@ export const clientsHandlers = [
       return HttpResponse.json({ message: 'User not found.' }, { status: 404 })
     }
     const body = (await request.json()) as UpdateClientAccessBody
-    return HttpResponse.json({ ...dto, accessEnabled: body.enabled })
+    return HttpResponse.json(
+      setClientAccessDto(String(params.id), body.enabled),
+    )
   }),
 
   // PATCH /clients/:id/expiry — extend program (with validation).

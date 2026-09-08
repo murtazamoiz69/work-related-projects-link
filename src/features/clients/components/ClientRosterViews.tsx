@@ -2,7 +2,7 @@ import { Avatar } from '@/components/atoms/Avatar'
 import { Icon } from '@/components/atoms/Icon'
 import { ToggleSwitch } from '@/components/atoms/ToggleSwitch'
 import { PLAN_REVIEW_LABEL } from '@/features/programs/diet/dietPlan.types'
-import type { Client } from '../types'
+import type { Client, ClientAccessState } from '../types'
 import {
   adherenceTier,
   daysUntil,
@@ -79,6 +79,17 @@ function AssignedCell({ client }: { client: Client }) {
   )
 }
 
+const ACCESS_LABEL: Record<ClientAccessState, string> = {
+  invited: 'Invited',
+  active: 'Active',
+  disabled: 'Disabled',
+}
+const ACCESS_PILL: Record<ClientAccessState, string> = {
+  invited: 'status-new',
+  active: 'status-active',
+  disabled: 'status-paused',
+}
+
 export function ClientTableRow({
   client,
   onOpenChat,
@@ -118,9 +129,14 @@ export function ClientTableRow({
       </td>
       <td>
         <span
-          className={`status-pill ${client.accessEnabled ? 'status-active' : 'status-paused'}`}
+          className={`status-pill ${ACCESS_PILL[client.accessState]}`}
+          title={
+            client.accessState === 'invited'
+              ? 'Invitation sent — this user has not signed in yet'
+              : undefined
+          }
         >
-          {client.accessEnabled ? 'Active' : 'Disabled'}
+          {ACCESS_LABEL[client.accessState]}
         </span>
       </td>
       <td>
@@ -186,10 +202,15 @@ export function ClientTableRow({
           >
             <Icon name="mail" />
           </a>
+          {/* The toggle governs access, not onboarding: switching a disabled
+              user back on returns them to Invited if they never signed in,
+              never straight to Active. */}
           <ToggleSwitch
-            checked={client.accessEnabled}
+            checked={client.accessState !== 'disabled'}
             onChange={() => onRequestToggle(client)}
-            ariaLabel={`${client.accessEnabled ? 'Disable' : 'Enable'} ${client.name}'s access`}
+            ariaLabel={`${
+              client.accessState === 'disabled' ? 'Enable' : 'Disable'
+            } ${client.name}'s access`}
           />
         </div>
       </td>

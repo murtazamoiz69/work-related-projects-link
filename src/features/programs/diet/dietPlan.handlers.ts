@@ -130,15 +130,20 @@ export const clientDietPlanHandlers = [
     }
     const weekNum = Number(new URL(request.url).searchParams.get('week')) || 1
     const body = (await request.json()) as SaveClientPlanBody
-    return HttpResponse.json(
-      saveClientPlan(
-        clientId,
-        weekNum,
-        dto.dietProfile,
-        body.body ?? '',
-        signOff(dto),
-      ),
+    const saved = saveClientPlan(
+      clientId,
+      weekNum,
+      dto.dietProfile,
+      body.body ?? '',
+      signOff(dto),
     )
+    // Editing the plan invalidates the sign-off: what was reviewed is no
+    // longer what this user is on, so it goes back into review and the user
+    // stops being served it until a nutritionist reads it again.
+    const { setClientDietReview } =
+      await import('@/features/clients/api/clients.mock')
+    setClientDietReview(clientId, 'in-review')
+    return HttpResponse.json(saved)
   }),
 
   // PATCH /clients/:id/diet-band — move a user to a different daily target.

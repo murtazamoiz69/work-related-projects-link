@@ -8,7 +8,11 @@ import { useClientProgramsQuery } from '../hooks/useClientsQuery'
 import { useCreateClient } from '../hooks/useClientMutations'
 import {
   DEFAULT_PROGRAM_WEEKS,
+  NAME_MAX_LENGTH,
+  PHONE_COUNTRY_CODE,
+  PHONE_NATIONAL_DIGITS,
   addClientSchema,
+  formatPhone,
   type AddClientValues,
 } from '../schemas/addClient.schema'
 
@@ -56,10 +60,15 @@ export function ClientFormModal({ onClose }: { onClose: () => void }) {
   }
 
   const onSubmit = (values: AddClientValues) => {
-    create.mutate(values, {
-      onSuccess: () => onClose(),
-      onError: applyServerError,
-    })
+    // Normalise the number to one canonical +91 form before it is stored,
+    // whatever spacing was typed.
+    create.mutate(
+      { ...values, phone: formatPhone(values.phone) },
+      {
+        onSuccess: () => onClose(),
+        onError: applyServerError,
+      },
+    )
   }
 
   return (
@@ -83,9 +92,12 @@ export function ClientFormModal({ onClose }: { onClose: () => void }) {
     >
       <label className="modal-field">
         <span>Full name</span>
+        {/* Capped in the field as well as the schema, so the limit is felt
+            while typing rather than only on submit. Same 50 as the app. */}
         <input
           type="text"
           autoFocus
+          maxLength={NAME_MAX_LENGTH}
           placeholder="e.g. Jordan Lee"
           {...register('name')}
         />
@@ -110,11 +122,21 @@ export function ClientFormModal({ onClose }: { onClose: () => void }) {
       </label>
       <label className="modal-field">
         <span>Phone number</span>
-        <input
-          type="tel"
-          placeholder="+1 555 123 4567"
-          {...register('phone')}
-        />
+        {/* The country code is fixed, not typed: users are Indian, so the
+            field asks only for the 10 national digits. */}
+        <div className="phone-field">
+          <span className="phone-prefix" aria-hidden="true">
+            {PHONE_COUNTRY_CODE}
+          </span>
+          <input
+            type="tel"
+            inputMode="numeric"
+            maxLength={PHONE_NATIONAL_DIGITS}
+            placeholder="98765 43210"
+            aria-label={`Phone number, ${PHONE_COUNTRY_CODE}`}
+            {...register('phone')}
+          />
+        </div>
         {errors.phone ? (
           <span className="settings-hint is-error" role="alert">
             {errors.phone.message}

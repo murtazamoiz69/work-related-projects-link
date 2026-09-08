@@ -8,6 +8,13 @@ import type {
 
 export type ClientStatus = 'active' | 'attention' | 'paused' | 'new'
 
+/** Access to the programme, in three states rather than a boolean.
+ *  `invited` — enrolled and the invitation has gone out, but the user has not
+ *  signed in yet. `active` — signed in and using the app. `disabled` — access
+ *  withdrawn. A user cannot go straight from invited to active from the panel;
+ *  only their first sign-in does that. */
+export type ClientAccessState = 'invited' | 'active' | 'disabled'
+
 export type Client = {
   id: string
   /** The client's chat thread — used to open their conversation. Supplied by
@@ -25,6 +32,11 @@ export type Client = {
   /** Program access — the single-program Users page's Active/Disabled toggle.
    *  Independent of `status`, which tracks engagement, not access. */
   accessEnabled: boolean
+  /** The three-state access model. `accessEnabled` is kept as the derived
+   *  boolean (`accessState !== 'disabled'`) so existing call sites still read. */
+  accessState: ClientAccessState
+  /** When the user first signed in to the mobile app; null while invited. */
+  signedInAt: Date | null
   /** When this user's program access expires. Drives the Users page's Plan
    *  expiry column and urgency tiering. */
   expiryDate: Date

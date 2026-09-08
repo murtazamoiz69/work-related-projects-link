@@ -76,15 +76,18 @@ export function NutritionistsPage({ search }: { search: NutritionistsSearch }) {
     const t = setTimeout(() => {
       navigate({
         to: '/nutritionists',
-        search: (prev) => ({
-          ...prev,
+        // Built from this route's own typed search rather than the reducer's
+        // `prev`, which is the union across every route and carries a wider
+        // `status` than this one accepts.
+        search: {
+          status: search.status,
           q: trimmed || undefined,
           page: undefined,
-        }),
+        },
       })
     }, 250)
     return () => clearTimeout(t)
-  }, [searchInput, q, navigate])
+  }, [searchInput, q, navigate, search.status])
 
   const params: ListNutritionistsParams = useMemo(
     () => ({ search: q || undefined, status, page, pageSize: PAGE_SIZE }),
@@ -113,10 +116,15 @@ export function NutritionistsPage({ search }: { search: NutritionistsSearch }) {
       }`
 
   const updateSearch = (patch: Partial<NutritionistsSearch>) => {
-    navigate({
-      to: '/nutritionists',
-      search: (prev) => ({ ...prev, ...patch }),
-    })
+    // Built from this route's own search rather than the reducer's `prev`,
+    // which is the union across every route and carries a wider `status`.
+    const next: NutritionistsSearch = {
+      q: search.q,
+      status: search.status,
+      page: search.page,
+      ...patch,
+    }
+    navigate({ to: '/nutritionists', search: next })
   }
 
   const goToPage = (n: number) => updateSearch({ page: n > 1 ? n : undefined })

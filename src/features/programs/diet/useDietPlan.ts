@@ -146,6 +146,11 @@ export function useSaveClientDietPlan(clientId: string) {
       queryClient.invalidateQueries({
         queryKey: dietPlanKeys.client(clientId, plan.weekNum),
       })
+      // Editing a user's plan sends it back into review server-side, so the
+      // roster chip and the chat header's Review Plan control both have to be
+      // refetched — otherwise the sign-off looks like it survived the edit.
+      queryClient.invalidateQueries({ queryKey: ['clients'] })
+      queryClient.invalidateQueries({ queryKey: ['conversations'] })
     },
     onError: (error) => showToast(apiErrorMessage(error)),
   })
@@ -166,6 +171,11 @@ export function useSaveClientDietPlanToWeeks(clientId: string) {
       queryClient.invalidateQueries({
         queryKey: dietPlanKeys.clientAll(clientId),
       })
+      // Editing a user's plan sends it back into review server-side, so the
+      // roster chip and the chat header's Review Plan control both have to be
+      // refetched — otherwise the sign-off looks like it survived the edit.
+      queryClient.invalidateQueries({ queryKey: ['clients'] })
+      queryClient.invalidateQueries({ queryKey: ['conversations'] })
       const n = weeks.length
       showToast(`Saved this plan to ${n} week${n === 1 ? '' : 's'}`)
     },
@@ -200,8 +210,14 @@ export function useUpdateClientReview(clientId: string) {
     mutationFn: (status: PlanReviewStatus) =>
       updateClientReview(clientId, { status }),
     onSuccess: (client) => {
-      // The roster chip and the plan itself both report the sign-off.
+      // The roster chip, the plan itself and the chat header's Review Plan
+      // control all report the sign-off. The conversation embeds its own copy
+      // of the client record, so it has to be refetched too or the header
+      // keeps showing the state it had before the click. Invalidated by root
+      // key rather than importing chatKeys, which would tie the programs
+      // feature to the chat feature.
       queryClient.invalidateQueries({ queryKey: ['clients'] })
+      queryClient.invalidateQueries({ queryKey: ['conversations'] })
       queryClient.invalidateQueries({
         queryKey: dietPlanKeys.clientAll(clientId),
       })

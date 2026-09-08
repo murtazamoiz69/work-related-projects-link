@@ -4,6 +4,7 @@
 // don't mutate the shared seed the not-yet-migrated Plan Workspace still reads.
 // Reset with resetChatStore() in tests.
 import { toClient, toClientDto } from '@/features/clients'
+import { findClientDto } from '@/features/clients/api/clients.mock'
 import type { ClientDto } from '@/features/clients'
 import { CONVERSATIONS, buildConversation } from '../data'
 import type { Conversation, EscalationSeverity, HandledBy } from '../types'
@@ -95,7 +96,7 @@ function summaryOf(c: ConversationDto): ConversationSummaryDto {
 }
 
 export function listConversationSummaries(): ConversationSummaryDto[] {
-  return [...store.values()].map(summaryOf)
+  return [...store.values()].map(withCurrentClient).map(summaryOf)
 }
 
 // Server-computed conversation-list tabs + badge counts, over the whole store.
@@ -131,8 +132,19 @@ export function conversationTabs(): ConversationTab[] {
   }
 }
 
+/** The chat store keeps its own copy of the client record so chat mutations
+ *  don't write into the clients seed. That copy goes stale the moment the
+ *  clients store changes — a diet-plan sign-off, an access change — so refresh
+ *  it on read. A real backend joins the current user row server-side; this is
+ *  the mock standing in for that. */
+function withCurrentClient(c: ConversationDto): ConversationDto {
+  const current = findClientDto(c.client.id)
+  return current ? { ...c, client: current } : c
+}
+
 export function getConversationDto(id: string): ConversationDto | undefined {
-  return store.get(id)
+  const c = store.get(id)
+  return c ? withCurrentClient(c) : undefined
 }
 
 /** Open a thread for a user the clients mock just created, so their row's

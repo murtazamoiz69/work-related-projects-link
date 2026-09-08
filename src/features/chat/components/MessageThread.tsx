@@ -209,6 +209,10 @@ export function MessageThread({
 }) {
   const c = convo.client
   const firstName = c.name.split(' ')[0]
+  // The plan's sign-off state, read from the roster record the conversation
+  // carries — the same field the Users roster shows as a chip.
+  const inReview = c.dietReview !== 'reviewed'
+  const reviewPlan = useUpdateClientReview(c.id)
 
   const [input, setInput] = useState('')
   const [pendingAttachment, setPendingAttachment] =
@@ -348,6 +352,29 @@ export function MessageThread({
               <Icon name="activity" size={15} />
             </span>
             At a glance
+          </button>
+          {/* The review gate, where the nutritionist actually is. A user is not
+              served their plan until this is marked — and any edit to the plan
+              sends it back here. Reads as the state, not just the action, so a
+              plan already signed off says so. */}
+          <button
+            className={`btn-secondary sm review-cta${inReview ? ' is-pending' : ' is-done'}`}
+            onClick={() =>
+              reviewPlan.mutate(inReview ? 'reviewed' : 'in-review')
+            }
+            disabled={reviewPlan.isPending}
+            title={
+              inReview
+                ? `${firstName} can't see this plan until it's reviewed`
+                : `Reviewed — ${firstName} can see this plan. Click to reopen.`
+            }
+          >
+            <span
+              className={`chat-header-action-icon ${inReview ? 'is-soft' : 'is-solid'}`}
+            >
+              <Icon name={inReview ? 'clipboard-check' : 'check'} size={15} />
+            </span>
+            {inReview ? 'Review Plan' : 'Reviewed'}
           </button>
         </div>
       </div>

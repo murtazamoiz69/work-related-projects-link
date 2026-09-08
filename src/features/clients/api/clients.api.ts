@@ -35,6 +35,10 @@ export function toClient(dto: ClientDto): Client {
     expiryDate: new Date(dto.expiryDate),
     joinDate: new Date(dto.joinDate),
     dietReviewedAt: dto.dietReviewedAt ? new Date(dto.dietReviewedAt) : null,
+    // A backend that does not yet serve the three-state model still maps: fall
+    // back to the boolean, which can only distinguish active from disabled.
+    accessState: dto.accessState ?? (dto.accessEnabled ? 'active' : 'disabled'),
+    signedInAt: dto.signedInAt ? new Date(dto.signedInAt) : null,
   }
 }
 
