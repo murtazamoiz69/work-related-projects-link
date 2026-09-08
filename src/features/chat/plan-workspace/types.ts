@@ -1,6 +1,14 @@
 import type { ClientStatus } from '@/features/clients'
 import type { InternalNote } from '@/features/client-detail'
 import type { Meal, MealEntry, Workout } from '@/features/programs'
+import type {
+  ExerciseFrequency,
+  Intensity,
+  Lifestyle,
+  Pal,
+  StepBand,
+  WeightLossOutcome,
+} from './onboarding'
 
 // The Plan Workspace works on richer week/day shapes than the shared Programs
 // model: a workout carries a scheduled time, a day can stack extra workouts,
@@ -39,6 +47,52 @@ export type WsTargets = {
   fat: number
   water: number
   phase: string
+}
+
+/** What the user answered during onboarding, plus the energy figures derived
+ *  from it. See ./onboarding.ts for the calculation chain. */
+export type OnboardingAnswers = {
+  stepBand: StepBand
+  lifestyle: Lifestyle
+  exerciseFrequency: ExerciseFrequency
+  intensity: Intensity
+  pal: Pal
+  bmr: number
+  tdee: number
+  weightLoss: WeightLossOutcome
+  dietaryPreference: string
+  healthIssues: string[]
+}
+
+/** Where the user started, kept alongside the current figures so progress is
+ *  readable without opening the trend charts. */
+export type StartingPoint = {
+  heightCm: number
+  weightKg: number
+  recordedAt: Date
+}
+
+/** When each card of the User Context rail last changed. Every card shows its
+ *  own "updated as of" line, because a weight logged today and an allergy
+ *  noted in March are not the same age. */
+export type ContextUpdatedAt = {
+  profile: Date
+  onboarding: Date
+  diet: Date
+  medical: Date
+}
+
+/** Everything the User Context rail shows that the plan's wire profile does
+ *  not carry. Derived client-side from the client record and deliberately kept
+ *  off `ClinicalProfile`, which is serialised through the plan API — adding
+ *  these there would change an existing contract. */
+export type UserContext = {
+  email: string
+  onboarding: OnboardingAnswers
+  startingPoint: StartingPoint
+  updatedAt: ContextUpdatedAt
+  /** Symptom or acute episode the user reported, if any. */
+  episode: string | null
 }
 
 export type ClinicalProfile = {

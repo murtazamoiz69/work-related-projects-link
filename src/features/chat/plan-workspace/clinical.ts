@@ -10,7 +10,18 @@ import {
   mealsByCategory,
 } from '@/features/programs/data'
 import type { Exercise, Meal, MealSlot } from '@/features/programs'
-import type { ClinicalProfile, Conflict, WsTargets } from './types'
+import {
+  EXERCISE_FREQUENCIES,
+  HEALTH_ISSUES,
+  INTENSITIES,
+  LIFESTYLES,
+  STEP_BANDS,
+  WEIGHT_LOSS_PLANS,
+  bmrFor,
+  palFor,
+  resolveWeightLoss,
+} from './onboarding'
+import type { ClinicalProfile, Conflict, UserContext, WsTargets } from './types'
 
 // ===================== Constant pools =====================
 const CUISINES = [
@@ -207,6 +218,16 @@ function mealHasKeyword(meal: Meal, keywords: string[]): boolean {
 }
 
 // ===================== Clinical profile derivation =====================
+// Short-lived symptoms the user reported, distinct from a standing medical
+// condition — "acute" in the sense of the questionnaire.
+const EPISODE_POOL = [
+  'Migraine flare-up (reported this week)',
+  'Acid reflux after evening meals',
+  'Post-viral fatigue',
+  'Lower back spasm',
+  'Disturbed sleep for several nights',
+] as const
+
 export function deriveClinicalProfile(client: Client): ClinicalProfile {
   const idNum = parseInt(String(client.id).replace('c-', ''), 10) || 1
   const seed = idNum * 7.13 + 3
@@ -513,5 +534,85 @@ export function computeTargets(profile: ClinicalProfile): WsTargets {
         : profile.goal === 'Muscle Gain'
           ? 'Muscle Gain'
           : 'General',
+  }
+}
+
+/** The extra User Context the rail shows: the onboarding answers, the energy
+ *  figures they drive, where the user started, and how fresh each card is.
+ *
+ *  Kept separate from `deriveClinicalProfile` on purpose — that profile is
+ *  serialised through the Plan Workspace API, and this is not on that wire.
+ *  ASSUMPTION: derived from the seeded client record until a real onboarding
+ *  payload exists. */
+export function deriveUserContext(client: Client): UserContext {
+  const idNum = parseInt(String(client.id).replace('c-', ''), 10) || 1
+  const seed = idNum * 7.13 + 3
+
+  // Same derivation as the clinical profile so the two never disagree about
+  // the client's height and weight.
+  const heightCm = 150 + Math.floor(seededRandom(seed * 1.7 + 1) * 45)
+  const weightKg =
+    client.gender === 'Male'
+      ? 68 + Math.floor(seededRandom(seed * 2.3 + 2) * 35)
+      : 54 + Math.floor(seededRandom(seed * 2.3 + 2) * 32)
+  const wantsLoseFat = client.goals.includes('Lose fat')
+  const wantsBuildMuscle = client.goals.includes('Build muscle')
+  const startWeight = wantsLoseFat
+    ? weightKg + 4
+    : wantsBuildMuscle
+      ? weightKg - 3
+      : weightKg + 1
+
+  const stepBand = pick([...STEP_BANDS], seed * 15.3)
+  const lifestyle = pick([...LIFESTYLES], seed * 15.9)
+  const exerciseFrequency = pick([...EXERCISE_FREQUENCIES], seed * 16.5)
+  const intensity = pick([...INTENSITIES], seed * 17.1)
+  const pal = palFor(stepBand, lifestyle, exerciseFrequency)
+  const bmr = bmrFor({
+    gender: client.gender,
+    weightKg,
+    heightCm,
+    age: client.age,
+  })
+  const tdee = Math.round(bmr * pal)
+  const requestedKg =
+    WEIGHT_LOSS_PLANS[Math.floor(seededRandom(seed * 17.7) * 4)].kg
+  const weightLoss = resolveWeightLoss(tdee, requestedKg)
+
+  // Each card ages independently: identity changes rarely, weight is logged
+  // often, and a medical note can be months old.
+  const daysAgoDate = (d: number) => new Date(Date.now() - d * 24 * 3600 * 1000)
+
+  return {
+    email: client.email,
+    onboarding: {
+      stepBand,
+      lifestyle,
+      exerciseFrequency,
+      intensity,
+      pal,
+      bmr,
+      tdee,
+      weightLoss,
+      dietaryPreference: client.diet,
+      healthIssues: subset([...HEALTH_ISSUES], seed * 18.3, 0.55, 2),
+    },
+    startingPoint: {
+      // The height and weight captured at sign-up — the reference point the
+      // current figures are read against.
+      heightCm,
+      weightKg: startWeight,
+      recordedAt: client.joinDate,
+    },
+    updatedAt: {
+      profile: daysAgoDate(20 + Math.floor(seededRandom(seed * 19.1) * 40)),
+      onboarding: daysAgoDate(Math.floor(seededRandom(seed * 19.7) * 6)),
+      diet: daysAgoDate(2 + Math.floor(seededRandom(seed * 20.3) * 25)),
+      medical: daysAgoDate(5 + Math.floor(seededRandom(seed * 20.9) * 60)),
+    },
+    episode:
+      seededRandom(seed * 21.5) < 0.3
+        ? pick([...EPISODE_POOL], seed * 22.1)
+        : null,
   }
 }

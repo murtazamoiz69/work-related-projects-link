@@ -1,4 +1,6 @@
 // Integration tests for the Plan Workspace shell — it loads a client's plan,
+// NOTE: the client's name appears twice now (workspace header + the Profile
+// card of the User Context rail), so name lookups are anchored on the heading.
 // shows the tab surface, and closes. The individual tab/modal edit flows are a
 // much larger surface left for follow-up; the plan.api layer (load/save/publish)
 // is already covered by plan.api.test. Routing/toast mocked; jsdom observers
@@ -80,7 +82,9 @@ describe('PlanWorkspaceOverlay — load states', () => {
 
     server.resetHandlers()
     await user.click(screen.getByRole('button', { name: /try again/i }))
-    expect(await screen.findByText(client().name)).toBeInTheDocument()
+    expect(
+      await screen.findByRole('heading', { name: client().name }),
+    ).toBeInTheDocument()
   })
 })
 
@@ -90,7 +94,9 @@ describe('PlanWorkspaceOverlay — loaded shell', () => {
       <PlanWorkspaceOverlay client={client()} onClose={vi.fn()} />,
     )
     // The topbar names the client.
-    expect(await screen.findByText(client().name)).toBeInTheDocument()
+    expect(
+      await screen.findByRole('heading', { name: client().name }),
+    ).toBeInTheDocument()
     for (const label of [
       'At a glance',
       'Workout Plan',
@@ -110,21 +116,23 @@ describe('PlanWorkspaceOverlay — loaded shell', () => {
     const { user } = renderWithProviders(
       <PlanWorkspaceOverlay client={client()} onClose={vi.fn()} />,
     )
-    await screen.findByText(client().name)
+    await screen.findByRole('heading', { name: client().name })
     await user.click(screen.getByRole('tab', { name: 'Workout Plan' }))
     expect(screen.getByRole('tab', { name: 'Workout Plan' })).toHaveAttribute(
       'aria-selected',
       'true',
     )
     // The workout tab shows the plan-duration summary.
-    expect(screen.getByText(/weeks ·/)).toBeInTheDocument()
+    // The Onboarding card's weight-loss line also reads "… weeks · …", so
+    // match the plan-duration pill specifically.
+    expect(screen.getByText(/^\d+ weeks · \d+ days$/)).toBeInTheDocument()
   })
 
   it('switches to the Activity tab (its own search)', async () => {
     const { user } = renderWithProviders(
       <PlanWorkspaceOverlay client={client()} onClose={vi.fn()} />,
     )
-    await screen.findByText(client().name)
+    await screen.findByRole('heading', { name: client().name })
     await user.click(screen.getByRole('tab', { name: 'Activity' }))
     expect(screen.getByPlaceholderText(/search activity/i)).toBeInTheDocument()
   })
@@ -133,7 +141,7 @@ describe('PlanWorkspaceOverlay — loaded shell', () => {
     const { user } = renderWithProviders(
       <PlanWorkspaceOverlay client={client()} onClose={vi.fn()} />,
     )
-    await screen.findByText(client().name)
+    await screen.findByRole('heading', { name: client().name })
     await user.click(screen.getByRole('tab', { name: 'Diet Plan' }))
     expect(screen.getByRole('tab', { name: 'Diet Plan' })).toHaveAttribute(
       'aria-selected',
@@ -148,7 +156,7 @@ describe('PlanWorkspaceOverlay — closing', () => {
     const { user } = renderWithProviders(
       <PlanWorkspaceOverlay client={client()} onClose={onClose} />,
     )
-    await screen.findByText(client().name)
+    await screen.findByRole('heading', { name: client().name })
     await user.click(
       screen.getByRole('button', { name: /close plan workspace/i }),
     )
@@ -160,7 +168,7 @@ describe('PlanWorkspaceOverlay — closing', () => {
     const { user } = renderWithProviders(
       <PlanWorkspaceOverlay client={client()} onClose={onClose} />,
     )
-    await screen.findByText(client().name)
+    await screen.findByRole('heading', { name: client().name })
     await user.keyboard('{Escape}')
     await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1))
   })

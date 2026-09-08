@@ -16,6 +16,7 @@ import { useActivityFilters } from '../hooks/useActivityFilters'
 import { apiErrorMessage } from '@/lib/api/errors'
 import { usePlanQuery, useSavePlan } from './hooks/usePlan'
 import { addDays } from './schedule'
+import { deriveUserContext } from './clinical'
 import { PwContext } from './components/PwContext'
 import { ClientDietPlanTab } from '@/features/programs/diet/components/ClientDietPlanTab'
 import { ClientWorkoutPlanTab } from '@/features/programs/workout/components/ClientWorkoutPlanTab'
@@ -64,7 +65,9 @@ export function PlanWorkspaceOverlay({
     null,
   )
   const [openSections, setOpenSections] = useState<Set<string>>(
-    () => new Set(['profile', 'medical']),
+    // Profile and Onboarding open by default: identity plus the energy
+    // figures the plan is built from are what a nutritionist checks first.
+    () => new Set(['profile', 'onboarding']),
   )
   const [, bump] = useReducer((x: number) => x + 1, 0)
 
@@ -125,6 +128,9 @@ export function PlanWorkspaceOverlay({
   }
 
   const profile = ws.profile
+  // Not on the plan's wire shape — derived from the client record so the
+  // Plan Workspace API contract is untouched.
+  const userContext = deriveUserContext(client)
   // Autosave: re-render now (the edit is already applied in place), then persist
   // the whole workspace. The cache object identity is preserved (savePlan does
   // not write back), so open editor modals holding refs into `ws` stay valid.
@@ -165,8 +171,8 @@ export function PlanWorkspaceOverlay({
           <aside className="pw-context" id="pwContext">
             <PwContext
               profile={profile}
-              detail={detail}
-              goals={client.goals}
+              context={userContext}
+              durationWeeks={durationWeeks}
               openSections={openSections}
               onToggle={(key) =>
                 setOpenSections((prev) => {
