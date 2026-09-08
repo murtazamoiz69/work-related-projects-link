@@ -19,6 +19,27 @@ export type ChatMessage = {
   attachment: ChatAttachment | null
 }
 
+/** Escalations are raised to the nutritionist from the user's side. Three
+ *  weights, worked highest-first (see ./escalations.ts).
+ *  ASSUMPTION: no backend contract exists for escalations yet. This is a mock
+ *  contract served only by the chat MSW handlers (chat is never switched to the
+ *  live backend); reconcile the shape when the real endpoint lands. */
+export type EscalationSeverity = 'soft' | 'medium' | 'high'
+
+export type Escalation = {
+  id: string
+  severity: EscalationSeverity
+  /** One line naming what was raised, e.g. "Reported chest tightness". */
+  title: string
+  /** The user's own words, or the detector's reason. */
+  detail: string
+  raisedAt: Date
+  resolved: boolean
+  resolvedAt: Date | null
+  /** Display name of whoever resolved it. */
+  resolvedBy: string | null
+}
+
 export type ConversationInsights = {
   mealPct: number
   workoutDone: boolean
@@ -75,6 +96,7 @@ export type Conversation = {
   uploads: ChatUpload[]
   activity: ChatActivityItem[]
   chatSummary: string[]
+  escalations: Escalation[]
   liveSimulated: boolean
 }
 

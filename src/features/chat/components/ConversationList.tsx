@@ -1,6 +1,7 @@
 import { Icon } from '@/components/atoms/Icon'
 import { Avatar } from '@/components/atoms/Avatar'
 import { timeAgoShort } from '../data'
+import { ESCALATION_TAG_LABEL } from '../escalations'
 import type { ConversationSummary, ConversationTab } from '../api/chat.types'
 import type { ChatTab } from '../types'
 
@@ -97,21 +98,33 @@ function ConvoCard({
           </span>
           <span className="convo-preview">{preview}</span>
           <span className="convo-row3">
-            <span
-              className={`convo-tag ${needsNutritionist ? 'convo-tag-needs' : 'convo-tag-ai'}`}
-            >
-              {needsNutritionist ? (
-                <>
-                  <Icon name="user-round" />
-                  Needs nutritionist
-                </>
-              ) : (
-                <>
-                  <Icon name="bot" />
-                  AI is talking
-                </>
-              )}
-            </span>
+            {/* An open escalation outranks the handler tag: "needs
+                nutritionist" says someone should look, the escalation says how
+                urgently. Falls back to the handler tag when nothing is open. */}
+            {c.topEscalation ? (
+              <span
+                className={`convo-tag convo-tag-esc esc-${c.topEscalation.severity}`}
+              >
+                <Icon name="alert-triangle" />
+                {ESCALATION_TAG_LABEL[c.topEscalation.severity]}
+              </span>
+            ) : (
+              <span
+                className={`convo-tag ${needsNutritionist ? 'convo-tag-needs' : 'convo-tag-ai'}`}
+              >
+                {needsNutritionist ? (
+                  <>
+                    <Icon name="user-round" />
+                    Needs nutritionist
+                  </>
+                ) : (
+                  <>
+                    <Icon name="bot" />
+                    AI is talking
+                  </>
+                )}
+              </span>
+            )}
           </span>
         </span>
       </div>

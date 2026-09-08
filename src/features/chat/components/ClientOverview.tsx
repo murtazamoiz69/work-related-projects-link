@@ -2,9 +2,10 @@ import { useRef, useState } from 'react'
 import { Icon } from '@/components/atoms/Icon'
 import { formatCheckIn, formatJoinDate } from '@/features/clients'
 import { getInitials } from '@/lib/utils'
-import { useAddNote } from '../hooks/useConversations'
+import { useAddNote, useResolveEscalation } from '../hooks/useConversations'
+import { ESCALATION_LABEL, countActive, sortEscalations } from '../escalations'
 import { deriveClinicalProfile } from '../plan-workspace'
-import { formatTime, isToday, summarizeNotes } from '../data'
+import { formatTime, isToday, summarizeNotes, timeAgoShort } from '../data'
 import { ActivityLogModal } from './ActivityLogModal'
 import type {
   ChatNoteAttachment,
@@ -42,6 +43,12 @@ export function ClientOverview({ convo }: { convo: Conversation }) {
     useState<ChatNoteAttachment | null>(null)
   const noteFileRef = useRef<HTMLInputElement>(null)
   const addNoteMutation = useAddNote()
+  const resolveEscalation = useResolveEscalation()
+
+  // Highest severity first, oldest-first within a severity, resolved last —
+  // so the top row here is the same escalation the conversation list tags.
+  const sortedEscalations = sortEscalations(convo.escalations)
+  const openCount = countActive(convo.escalations)
 
   const addNote = () => {
     const text = noteText.trim()
@@ -63,13 +70,80 @@ export function ClientOverview({ convo }: { convo: Conversation }) {
               the weekly-progress row came out, so the rail opens on the one
               thing it uniquely offers. Tabs and their bodies follow. */}
           <div className="profile-summary-block">
-            <span className="detail-chip-label">Nourish AI Insights</span>
-            <div className="profile-chat-summary">
-              <ul>
-                {convo.chatSummary.map((point, i) => (
-                  <li key={i}>{point}</li>
-                ))}
-              </ul>
+            {/* Escalations sit above the AI's read of the conversation: they
+                are the thing that needs a decision, the summary is context for
+                it. Both share one scroll area so a busy client can't push the
+                tabs below the fold. */}
+            <div className="insights-scroll">
+              {sortedEscalations.length ? (
+                <div className="escalation-block">
+                  <span className="detail-chip-label">
+                    Escalations
+                    {openCount ? (
+                      <span className="escalation-count">{openCount} open</span>
+                    ) : (
+                      <span className="escalation-count all-clear">
+                        All resolved
+                      </span>
+                    )}
+                  </span>
+                  <ul className="escalation-list">
+                    {sortedEscalations.map((e) => (
+                      <li
+                        key={e.id}
+                        className={`escalation-item esc-${e.severity}${e.resolved ? ' is-resolved' : ''}`}
+                      >
+                        <label className="escalation-check">
+                          <input
+                            type="checkbox"
+                            checked={e.resolved}
+                            disabled={resolveEscalation.isPending}
+                            aria-label={`Mark "${e.title}" as resolved`}
+                            onChange={(ev) =>
+                              resolveEscalation.mutate({
+                                id: convo.id,
+                                escalationId: e.id,
+                                resolved: ev.target.checked,
+                              })
+                            }
+                          />
+                          <span className="escalation-body">
+                            <span className="escalation-head">
+                              <span
+                                className={`escalation-sev esc-${e.severity}`}
+                              >
+                                {ESCALATION_LABEL[e.severity]}
+                              </span>
+                              <span className="escalation-time">
+                                {timeAgoShort(e.raisedAt)}
+                              </span>
+                            </span>
+                            <span className="escalation-title">{e.title}</span>
+                            <span className="escalation-detail">
+                              {e.detail}
+                            </span>
+                            {e.resolved ? (
+                              <span className="escalation-resolved-by">
+                                Resolved
+                                {e.resolvedBy ? ` by ${e.resolvedBy}` : ''}
+                              </span>
+                            ) : null}
+                          </span>
+                        </label>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+
+              <span className="detail-chip-label">Nourish AI Insights</span>
+              <div className="profile-chat-summary">
+                <ul>
+                  {convo.chatSummary.map((point, i) => (
+                    <li key={i}>{point}</li>
+                  ))}
+                </ul>
+              </div>
             </div>
           </div>
 

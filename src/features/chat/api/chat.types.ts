@@ -11,6 +11,8 @@ import type {
   ChatTab,
   ConversationInsights,
   ConversationStatus,
+  Escalation,
+  EscalationSeverity,
   HandledBy,
 } from '../types'
 
@@ -18,6 +20,10 @@ import type {
 export type ChatMessageDto = Omit<ChatMessage, 'time'> & { time: string }
 export type ChatActivityItemDto = Omit<ChatActivityItem, 'time'> & {
   time: string
+}
+export type EscalationDto = Omit<Escalation, 'raisedAt' | 'resolvedAt'> & {
+  raisedAt: string
+  resolvedAt: string | null
 }
 
 export type ConversationDto = {
@@ -34,6 +40,7 @@ export type ConversationDto = {
   uploads: { date: string }[]
   activity: ChatActivityItemDto[]
   chatSummary: string[]
+  escalations: EscalationDto[]
 }
 
 export type ConversationSummaryDto = {
@@ -44,6 +51,10 @@ export type ConversationSummaryDto = {
   unread: number
   starred: boolean
   lastMessage: { text: string; time: string; hasAttachment: boolean }
+  /** Highest-priority unresolved escalation, or null when there are none. The
+   *  list row's tag is driven by this so it always matches the first row of the
+   *  Insights rail. */
+  topEscalation: { id: string; severity: EscalationSeverity } | null
 }
 
 // ---- Domain (after mapping) ----
@@ -55,6 +66,7 @@ export type ConversationSummary = {
   unread: number
   starred: boolean
   lastMessage: { text: string; time: Date; hasAttachment: boolean }
+  topEscalation: { id: string; severity: EscalationSeverity } | null
 }
 
 // Conversation-list tab, server-computed: which tabs to show (Pinned only when

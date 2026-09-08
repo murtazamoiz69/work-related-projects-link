@@ -6,7 +6,7 @@
 import { toClient, toClientDto } from '@/features/clients'
 import type { ClientDto } from '@/features/clients'
 import { CONVERSATIONS, buildConversation } from '../data'
-import type { Conversation, HandledBy } from '../types'
+import type { Conversation, EscalationSeverity, HandledBy } from '../types'
 import type {
   AddNoteBody,
   ConversationDto,
@@ -30,6 +30,11 @@ function toConversationDto(c: Conversation): ConversationDto {
     uploads: c.uploads.map((u) => ({ date: u.date.toISOString() })),
     activity: c.activity.map((a) => ({ ...a, time: a.time.toISOString() })),
     chatSummary: c.chatSummary,
+    escalations: c.escalations.map((e) => ({
+      ...e,
+      raisedAt: e.raisedAt.toISOString(),
+      resolvedAt: e.resolvedAt ? e.resolvedAt.toISOString() : null,
+    })),
   }
 }
 
@@ -49,6 +54,28 @@ export function resetChatStore(): void {
   seed()
 }
 
+/** Highest-severity unresolved escalation, oldest-first within a severity —
+ *  the same ordering ../escalations.ts applies on the domain side, computed
+ *  here so the list row never has to fetch a whole conversation to render its
+ *  tag. */
+function topEscalationOf(
+  c: ConversationDto,
+): ConversationSummaryDto['topEscalation'] {
+  const rank: Record<EscalationSeverity, number> = {
+    high: 3,
+    medium: 2,
+    soft: 1,
+  }
+  const open = c.escalations.filter((e) => !e.resolved)
+  if (!open.length) return null
+  const top = [...open].sort((a, b) => {
+    const bySeverity = (rank[b.severity] ?? 0) - (rank[a.severity] ?? 0)
+    if (bySeverity !== 0) return bySeverity
+    return Date.parse(a.raisedAt) - Date.parse(b.raisedAt)
+  })[0]
+  return { id: top.id, severity: top.severity }
+}
+
 function summaryOf(c: ConversationDto): ConversationSummaryDto {
   const last = c.messages[c.messages.length - 1]
   return {
@@ -63,6 +90,7 @@ function summaryOf(c: ConversationDto): ConversationSummaryDto {
       time: last?.time ?? new Date(0).toISOString(),
       hasAttachment: Boolean(last?.attachment),
     },
+    topEscalation: topEscalationOf(c),
   }
 }
 
@@ -161,6 +189,21 @@ export function setHandoffDto(
     time: new Date().toISOString(),
     attachment: null,
   })
+  return c
+}
+
+export function resolveEscalationDto(
+  id: string,
+  escalationId: string,
+  resolved: boolean,
+): ConversationDto | undefined {
+  const c = store.get(id)
+  if (!c) return undefined
+  const e = c.escalations.find((x) => x.id === escalationId)
+  if (!e) return undefined
+  e.resolved = resolved
+  e.resolvedAt = resolved ? new Date().toISOString() : null
+  e.resolvedBy = resolved ? 'Sarah Nolan' : null
   return c
 }
 

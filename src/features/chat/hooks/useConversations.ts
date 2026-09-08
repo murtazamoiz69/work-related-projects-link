@@ -13,9 +13,11 @@ import {
   getConversations,
   getConversationTabs,
   patchConversation,
+  resolveEscalation,
   sendMessage,
   setHandoff,
 } from '../api/chat.api'
+import { topActiveEscalation } from '../escalations'
 import { chatKeys } from '../api/chat.keys'
 import type {
   AddNoteBody,
@@ -37,6 +39,12 @@ function summaryFromConversation(c: Conversation): ConversationSummary {
       time: last?.time ?? new Date(0),
       hasAttachment: Boolean(last?.attachment),
     },
+    // Keep the list row's tag in step with the detail we just received, so
+    // resolving an escalation updates the tag without a refetch.
+    topEscalation: (() => {
+      const top = topActiveEscalation(c.escalations)
+      return top ? { id: top.id, severity: top.severity } : null
+    })(),
   }
 }
 
@@ -140,6 +148,31 @@ export function useHandoff() {
     mutationFn: ({ id, handledBy }: { id: string; handledBy: HandledBy }) =>
       setHandoff(id, handledBy),
     onSuccess: (conversation) => writeConversation(queryClient, conversation),
+    onError: (error) => showToast(apiErrorMessage(error)),
+  })
+}
+
+/** Mark one escalation reviewed (or reopen it). Writes the returned
+ *  conversation back into the cache, which also refreshes the list row's tag
+ *  via summaryFromConversation. */
+export function useResolveEscalation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({
+      id,
+      escalationId,
+      resolved,
+    }: {
+      id: string
+      escalationId: string
+      resolved: boolean
+    }) => resolveEscalation(id, escalationId, resolved),
+    onSuccess: (conversation, variables) => {
+      writeConversation(queryClient, conversation)
+      showToast(
+        variables.resolved ? 'Escalation resolved' : 'Escalation reopened',
+      )
+    },
     onError: (error) => showToast(apiErrorMessage(error)),
   })
 }

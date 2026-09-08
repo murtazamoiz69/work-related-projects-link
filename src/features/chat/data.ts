@@ -22,6 +22,8 @@ import type {
   ChatTab,
   Conversation,
   ConversationStatus,
+  Escalation,
+  EscalationSeverity,
 } from './types'
 
 const PROGRAM_OPENER: Record<string, string> = {
@@ -373,6 +375,98 @@ function buildActivityLog(
 /** Exported so the chat mock backend can open a thread for a user created
  *  through "Add User" — `client.status === 'new'` already drives the "just
  *  signed up" opener below and the conversation list's "New" tab. */
+// Escalations the user raised from the app. Seeded per client so the same
+// person always shows the same set. Volume and weight track the client's
+// status: a client flagged for attention carries more, and carries the only
+// High ones. See ../escalations.ts for how they are ordered and consumed.
+const ESCALATION_POOL: Record<
+  EscalationSeverity,
+  { title: string; detail: string }[]
+> = {
+  high: [
+    {
+      title: 'Reported chest tightness after cardio',
+      detail:
+        'Felt tightness in my chest during the treadmill session and had to stop early.',
+    },
+    {
+      title: 'Possible allergic reaction to a plan meal',
+      detail:
+        'I came out in a rash about an hour after the paneer dish on today’s plan.',
+    },
+    {
+      title: 'Dizzy and lightheaded on the new calorie target',
+      detail:
+        'I have felt faint twice since the plan changed — is the target too low for me?',
+    },
+  ],
+  medium: [
+    {
+      title: 'Sharp knee pain during squats',
+      detail: 'Left knee has been sore since Monday’s session.',
+    },
+    {
+      title: 'Plan meal conflicts with a stated intolerance',
+      detail: 'Wednesday’s lunch has dairy in it and I am lactose intolerant.',
+    },
+    {
+      title: 'Weight has not moved in three weeks',
+      detail: 'Sticking to the plan but the scale has not shifted at all.',
+    },
+  ],
+  soft: [
+    {
+      title: 'Wants a swap for the evening snack',
+      detail:
+        'Could I have something other than the almonds in the evening slot?',
+    },
+    {
+      title: 'Asking about travel week adjustments',
+      detail: 'I am away next week — how should I handle the gym sessions?',
+    },
+    {
+      title: 'Struggling with the early workout slot',
+      detail: 'The 6am sessions are hard to keep up with alongside work.',
+    },
+  ],
+}
+
+function buildEscalations(client: Client, seed: number): Escalation[] {
+  // How many, and how heavy, follows the client's state — an "attention"
+  // client is precisely the one a nutritionist should find escalations on.
+  const plan: EscalationSeverity[] =
+    client.status === 'attention'
+      ? ['high', 'medium', 'soft']
+      : client.status === 'paused'
+        ? ['medium', 'soft']
+        : seededRandom(seed * 41) < 0.45
+          ? ['medium']
+          : seededRandom(seed * 43) < 0.5
+            ? ['soft']
+            : []
+
+  return plan.map((severity, i) => {
+    const pool = ESCALATION_POOL[severity]
+    const entry = pick(pool, seed * (47 + i * 3))
+    // Oldest first in the array; the sort in ../escalations.ts is what orders
+    // them for display, so the raw order here only has to be stable.
+    const hours = 3 + i * 9 + seededRandom(seed * (53 + i)) * 14
+    // A handful of already-resolved ones so the resolved state is visible in
+    // the prototype without the nutritionist having to click first.
+    const resolved = i > 0 && seededRandom(seed * (59 + i)) < 0.35
+    return {
+      id: `${client.id}-esc-${i + 1}`,
+      severity,
+      title: entry.title,
+      detail: entry.detail,
+      raisedAt: hoursAgo(hours),
+      resolved,
+      resolvedAt: resolved ? hoursAgo(hours - 2) : null,
+      resolvedBy: resolved ? 'Sarah Nolan' : null,
+    }
+  })
+}
+
 export function buildConversation(client: Client, index: number): Conversation {
   const seed = (index + 1) * 17.23 + 5
   const status = conversationStatus(client)
@@ -564,6 +658,7 @@ export function buildConversation(client: Client, index: number): Conversation {
     uploads,
     activity,
     chatSummary,
+    escalations: buildEscalations(client, seed),
     liveSimulated: false,
   }
 }

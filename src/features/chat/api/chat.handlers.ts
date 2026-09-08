@@ -14,6 +14,7 @@ import {
   getConversationDto,
   listConversationSummaries,
   patchConversationDto,
+  resolveEscalationDto,
   setHandoffDto,
 } from './chat.mock'
 
@@ -59,6 +60,19 @@ export const chatHandlers = [
     async ({ params, request }) => {
       const body = (await request.json()) as HandoffBody
       const dto = setHandoffDto(String(params.id), body.handledBy)
+      return dto ? HttpResponse.json(dto) : notFound()
+    },
+  ),
+
+  http.post(
+    `${base}/conversations/:id/escalations/:escalationId/resolve`,
+    async ({ params, request }) => {
+      const body = (await request.json()) as { resolved: boolean }
+      const dto = resolveEscalationDto(
+        String(params.id),
+        String(params.escalationId),
+        body.resolved,
+      )
       return dto ? HttpResponse.json(dto) : notFound()
     },
   ),

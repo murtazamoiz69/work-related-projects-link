@@ -3,16 +3,25 @@
 // ClientDto) to domain shapes (Date, Client).
 import { get, patch, post } from '@/lib/api/client'
 import { toClient } from '@/features/clients'
-import type { Conversation, HandledBy } from '../types'
+import type { Conversation, Escalation, HandledBy } from '../types'
 import type {
   AddNoteBody,
   ConversationDto,
   ConversationSummary,
   ConversationSummaryDto,
   ConversationTab,
+  EscalationDto,
   PatchConversationBody,
   SendMessageBody,
 } from './chat.types'
+
+function toEscalation(dto: EscalationDto): Escalation {
+  return {
+    ...dto,
+    raisedAt: new Date(dto.raisedAt),
+    resolvedAt: dto.resolvedAt ? new Date(dto.resolvedAt) : null,
+  }
+}
 
 export function toConversation(dto: ConversationDto): Conversation {
   return {
@@ -29,6 +38,7 @@ export function toConversation(dto: ConversationDto): Conversation {
     uploads: dto.uploads.map((u) => ({ date: new Date(u.date) })),
     activity: dto.activity.map((a) => ({ ...a, time: new Date(a.time) })),
     chatSummary: dto.chatSummary,
+    escalations: dto.escalations.map(toEscalation),
     // Client-side realtime-sim bookkeeping — not backend state.
     liveSimulated: false,
   }
@@ -91,6 +101,20 @@ export async function setHandoff(
   const dto = await patch<ConversationDto>(`/conversations/${id}/handoff`, {
     handledBy,
   })
+  return toConversation(dto)
+}
+
+/** `POST /conversations/:id/escalations/:escalationId/resolve` — mark one
+ *  escalation reviewed. Returns the updated conversation. */
+export async function resolveEscalation(
+  id: string,
+  escalationId: string,
+  resolved: boolean,
+): Promise<Conversation> {
+  const dto = await post<ConversationDto>(
+    `/conversations/${id}/escalations/${escalationId}/resolve`,
+    { resolved },
+  )
   return toConversation(dto)
 }
 
