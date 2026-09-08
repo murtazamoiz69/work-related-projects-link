@@ -68,7 +68,7 @@ Return the current global program.
 | id | string | Stable id of the one program. |
 | name | string | Shown as the page title; required (see `PUT`). |
 | description | string | Free text under the title. |
-| durationWeeks | number | Programme length. Drives the **diet** tab's week rail. The **workout** plan is a flat run of days and does **not** derive its length from this. |
+| durationWeeks | number | Programme length. Drives the **diet** tab's week rail and the Plan Workspace header's date range (`programStart` → `programStart + durationWeeks·7d`). The **workout** plan is a flat run of days and does **not** derive its length from this. |
 | enabled | boolean | Availability — the Active/Disabled toggle. |
 | enrolledCount | number | Users enrolled — the overview's "N users enrolled". **Server-computed**; the client must not count another resource for it. |
 | createdAt / updatedAt | ISO date | The only date fields. |

@@ -19,8 +19,8 @@ import { addDays } from './schedule'
 import { PwContext } from './components/PwContext'
 import { ClientDietPlanTab } from '@/features/programs/diet/components/ClientDietPlanTab'
 import { ClientWorkoutPlanTab } from '@/features/programs/workout/components/ClientWorkoutPlanTab'
-import { PROGRAM_DURATION_WEEKS } from '@/features/programs'
-import type { ClinicalProfile, Workspace } from './types'
+import { PROGRAM_DURATION_WEEKS, useProgramQuery } from '@/features/programs'
+import type { ClinicalProfile } from './types'
 
 type PwTab = 'glance' | 'workout' | 'diet' | 'activity' | 'notes'
 
@@ -47,6 +47,13 @@ export function PlanWorkspaceOverlay({
   // client-detail API (derived server-side), not the plan.
   const detailQuery = useClientDetailQuery(client.id)
   const detail = detailQuery.data
+  // The programme's length comes from `GET /program`, not from how many weeks
+  // the plan's own arrays happen to hold — those trail the programme (a real
+  // backend only returns the weeks written so far). Falls back to the constant
+  // until the query resolves; the workspace doesn't block on it.
+  const programQuery = useProgramQuery()
+  const durationWeeks =
+    programQuery.data?.durationWeeks ?? PROGRAM_DURATION_WEEKS
 
   const [activeTab, setActiveTab] = useState<PwTab>('glance')
   // The Activity feed comes from the client's conversation — a separate fetch
@@ -126,27 +133,25 @@ export function PlanWorkspaceOverlay({
     savePlan.mutate(ws)
   }
 
-  const totalWeeks = ws.workoutWeeks.length
-  const currentWeek = Math.min(Math.max(profile.currentWeek, 1), totalWeeks)
-  const weekExists = (n: number | null): boolean =>
-    n != null && ws.workoutWeeks.some((w) => w.weekNum === n)
-  const activeWeek = weekExists(activeWeekOverride)
-    ? (activeWeekOverride as number)
-    : currentWeek
-
   const activitySubtitle = activityFilters.filterActive
     ? `${activityFilters.filtered.length} of ${activityFilters.total} ${activityFilters.total === 1 ? 'entry' : 'entries'}`
     : `${activityFilters.total} ${activityFilters.total === 1 ? 'entry' : 'entries'} logged for ${activityFirstName}, newest first`
 
-  // The week the plan tabs are on, clamped to the programme's six.
-  const programWeek = Math.min(Math.max(activeWeek, 1), PROGRAM_DURATION_WEEKS)
+  // The week the Diet tab is on. Both plan tabs are authored per programme
+  // week — clamp the picked week to the programme's length, NOT to
+  // `ws.workoutWeeks.length` (which trails it), or weeks past that array are
+  // unselectable.
+  const programWeek = Math.min(
+    Math.max(activeWeekOverride ?? profile.currentWeek, 1),
+    durationWeeks,
+  )
 
   return (
     <div className="pw-overlay" id="planWorkspaceOverlay">
       <div className="pw-shell">
         <PwTopbar
           profile={profile}
-          ws={ws}
+          durationWeeks={durationWeeks}
           onClose={onClose}
           programLabel={
             // Only on At a glance — the other tabs show the current plan
@@ -193,8 +198,7 @@ export function PlanWorkspaceOverlay({
               {activeTab === 'workout' || activeTab === 'diet' ? (
                 <span className="pw-plan-duration">
                   <Icon name="calendar-range" />
-                  {PROGRAM_DURATION_WEEKS} weeks · {PROGRAM_DURATION_WEEKS * 7}{' '}
-                  days
+                  {durationWeeks} weeks · {durationWeeks * 7} days
                 </span>
               ) : null}
             </div>
@@ -209,10 +213,9 @@ export function PlanWorkspaceOverlay({
                   />
                 </div>
               ) : null}
-              {/* Both plans are authored per programme week, and the
-                  programme runs six. The workspace's own `workoutWeeks` array
-                  is longer, so bound these to the programme rather than
-                  inheriting that count. */}
+              {/* Both plans are authored per programme week; the count comes
+                  from `GET /program` (`durationWeeks`), not from the
+                  workspace's own `workoutWeeks` array, which trails it. */}
               {activeTab === 'workout' ? (
                 <div className="pw-panel-scroll">
                   <ClientWorkoutPlanTab client={client} />
@@ -222,7 +225,7 @@ export function PlanWorkspaceOverlay({
                 <div className="pw-panel-scroll">
                   <ClientDietPlanTab
                     client={client}
-                    totalWeeks={PROGRAM_DURATION_WEEKS}
+                    totalWeeks={durationWeeks}
                     activeWeek={programWeek}
                     setActiveWeek={setActiveWeekOverride}
                   />
@@ -356,21 +359,22 @@ function PwStatus({
  *  separate title bar above it. */
 function PwTopbar({
   profile,
-  ws,
+  durationWeeks,
   onClose,
   programLabel,
 }: {
   profile: ClinicalProfile
-  ws: Workspace
+  /** Programme length from `GET /program` — the header's date range spans this,
+   *  not the plan's own (shorter) week arrays. */
+  durationWeeks: number
   onClose: () => void
   /** Rendered at the far right, beside the close button. */
   programLabel?: ReactNode
 }) {
-  const totalWeeks = ws.workoutWeeks.length
-  const totalDays = totalWeeks * 7
+  const totalDays = durationWeeks * 7
   const currentWeekClamped = Math.min(
     Math.max(profile.currentWeek, 1),
-    totalWeeks,
+    durationWeeks,
   )
   return (
     <header className="pw-topbar">
