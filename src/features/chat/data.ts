@@ -646,7 +646,9 @@ export function buildConversation(client: Client, index: number): Conversation {
     handledBy,
     messages,
     unread,
-    starred: false,
+    // A couple of pinned threads in the seed, so the Pinned tab has something
+    // in it the first time it is opened.
+    starred: client.status === 'attention' && seededRandom(seed * 61) < 0.4,
     insights: {
       mealPct,
       workoutDone,

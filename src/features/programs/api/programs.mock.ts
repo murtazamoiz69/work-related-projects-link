@@ -17,6 +17,7 @@ function seed(): ProgramDto {
     name: p.name,
     description: p.description,
     durationWeeks: p.durationWeeks,
+    startDate: p.createdDate.toISOString(),
     enabled: p.enabled,
     enrolledCount: p.enrolledCount,
     createdAt: p.createdDate.toISOString(),
@@ -97,6 +98,7 @@ export function setProgramDto(body: UpdateProgramBody): ProgramDto {
     name: body.name,
     description: body.description,
     durationWeeks: body.durationWeeks,
+    startDate: body.startDate,
     updatedAt: new Date().toISOString(),
   }
   persist(program)

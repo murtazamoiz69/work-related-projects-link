@@ -23,6 +23,7 @@ import { clientDetailHandlers } from '@/features/client-detail/api/detail.handle
 import { dashboardHandlers } from '@/features/dashboard/api/dashboard.handlers'
 import { authHandlers } from '@/features/auth/api/auth.handlers'
 import { chatHandlers } from '@/features/chat/api/chat.handlers'
+import { settingsHandlers } from '@/features/settings/api/settings.handlers'
 import { planHandlers } from '@/features/chat/plan-workspace/api/plan.handlers'
 import {
   masterDietPlanHandlers,
@@ -51,4 +52,5 @@ export const handlers = [
   ...forFeature('client-detail', clientDetailHandlers),
   ...forFeature('dashboard', dashboardHandlers),
   ...chatHandlers,
+  ...forFeature('settings', settingsHandlers),
 ]

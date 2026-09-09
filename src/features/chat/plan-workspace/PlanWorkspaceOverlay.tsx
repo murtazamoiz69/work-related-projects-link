@@ -17,6 +17,12 @@ import { apiErrorMessage } from '@/lib/api/errors'
 import { usePlanQuery, useSavePlan } from './hooks/usePlan'
 import { addDays } from './schedule'
 import { deriveUserContext } from './clinical'
+import { ConfirmDialog } from '@/components/molecules/ConfirmDialog'
+import {
+  clearUnsavedEdits,
+  hasUnsavedEdits,
+  unsavedEditLabels,
+} from '@/store/useUnsavedEdits'
 import { PwContext } from './components/PwContext'
 import { ClientDietPlanTab } from '@/features/programs/diet/components/ClientDietPlanTab'
 import { ClientWorkoutPlanTab } from '@/features/programs/workout/components/ClientWorkoutPlanTab'
@@ -57,6 +63,14 @@ export function PlanWorkspaceOverlay({
     programQuery.data?.durationWeeks ?? PROGRAM_DURATION_WEEKS
 
   const [activeTab, setActiveTab] = useState<PwTab>('glance')
+  // Plan content autosaves on a debounce (BR-15), which leaves a window where
+  // a keystroke is on screen but not yet persisted. Closing inside that window
+  // used to discard it silently — ask instead (OP-4).
+  const [confirmClose, setConfirmClose] = useState(false)
+  const requestClose = () => {
+    if (hasUnsavedEdits()) setConfirmClose(true)
+    else onClose()
+  }
   // The Activity feed comes from the client's conversation — a separate fetch
   // we only want once the Activity tab is actually opened, not on every plan
   // open. Latches on so switching away doesn't drop the loaded feed.
@@ -83,7 +97,9 @@ export function PlanWorkspaceOverlay({
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return
       if (document.querySelector('.modal-overlay, .pw-modal-overlay')) return
-      onClose()
+      // Escape is the primary way out, so it takes the same guard as the
+      // close button rather than slipping past it.
+      requestClose()
     }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
@@ -154,11 +170,27 @@ export function PlanWorkspaceOverlay({
 
   return (
     <div className="pw-overlay" id="planWorkspaceOverlay">
+      {confirmClose ? (
+        <ConfirmDialog
+          title="Discard unsaved changes?"
+          message={`${unsavedEditLabels().join(' and ')} ${
+            unsavedEditLabels().length === 1 ? 'has' : 'have'
+          } changes that haven't saved yet. Closing now discards them.`}
+          confirmText="Discard and close"
+          danger
+          onConfirm={() => {
+            clearUnsavedEdits()
+            setConfirmClose(false)
+            onClose()
+          }}
+          onClose={() => setConfirmClose(false)}
+        />
+      ) : null}
       <div className="pw-shell">
         <PwTopbar
           profile={profile}
           durationWeeks={durationWeeks}
-          onClose={onClose}
+          onClose={requestClose}
           programLabel={
             // Only on At a glance — the other tabs show the current plan
             // regardless, so the label would be out of place there.

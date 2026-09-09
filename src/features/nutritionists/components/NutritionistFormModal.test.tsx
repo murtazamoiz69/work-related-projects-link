@@ -23,6 +23,9 @@ const UPDATE = `${API}/nutritionists/:id`
 
 const name = () => screen.getByLabelText('Full name')
 const emailField = () => screen.getByLabelText('Email')
+// The phone field is labelled with its country code, since the code is shown
+// rather than typed.
+const phoneField = () => screen.getByLabelText(/^Phone number, \+91/)
 const qualification = () => screen.getByLabelText('Qualification')
 const experience = () => screen.getByLabelText('Experience (years)')
 
@@ -33,6 +36,7 @@ function existingNutritionist(): Nutritionist {
     initials: 'PS',
     color: '#2F5D50',
     email: 'priya@nourishwithsim.com',
+    phone: '+91 9876543210',
     qualification: 'Registered Dietitian',
     experienceYears: 8,
     joinDate: new Date('2023-06-01'),
@@ -106,6 +110,7 @@ describe('NutritionistFormModal — validation', () => {
     )
     await user.type(name(), 'Test Person')
     await user.type(emailField(), 'not-an-email')
+    await user.type(phoneField(), '9876543210')
     await user.type(qualification(), 'RD')
     await user.click(screen.getByRole('button', { name: 'Add nutritionist' }))
 
@@ -118,6 +123,7 @@ describe('NutritionistFormModal — validation', () => {
     )
     await user.type(name(), 'Test Person')
     await user.type(emailField(), 'test@nourishwithsim.com')
+    await user.type(phoneField(), '9876543210')
     await user.type(qualification(), 'RD')
     await user.clear(experience())
     await user.type(experience(), '-1')
@@ -132,6 +138,7 @@ describe('NutritionistFormModal — validation', () => {
     )
     await user.type(name(), 'Test Person')
     await user.type(emailField(), 'test@nourishwithsim.com')
+    await user.type(phoneField(), '9876543210')
     await user.type(qualification(), 'RD')
     await user.clear(experience())
     await user.click(screen.getByRole('button', { name: 'Add nutritionist' }))
@@ -171,6 +178,7 @@ describe('NutritionistFormModal — create', () => {
     )
     await user.type(name(), 'Test Person')
     await user.type(emailField(), 'test.person@nourishwithsim.com')
+    await user.type(phoneField(), '9876543210')
     await user.type(qualification(), 'Registered Dietitian')
     await user.clear(experience())
     await user.type(experience(), '3')
@@ -180,6 +188,8 @@ describe('NutritionistFormModal — create', () => {
     expect(onRequest).toHaveBeenCalledWith({
       name: 'Test Person',
       email: 'test.person@nourishwithsim.com',
+      // Normalised to one canonical +91 form on submit, whatever was typed.
+      phone: '+91 9876543210',
       qualification: 'Registered Dietitian',
       experienceYears: 3,
     })
@@ -199,6 +209,7 @@ describe('NutritionistFormModal — create', () => {
     )
     await user.type(name(), 'Test Person')
     await user.type(emailField(), 'test@nourishwithsim.com')
+    await user.type(phoneField(), '9876543210')
     await user.type(qualification(), 'RD')
     const submit = screen.getByRole('button', { name: 'Add nutritionist' })
     await user.click(submit)
@@ -257,6 +268,7 @@ describe('NutritionistFormModal — server errors', () => {
     )
     await user.type(name(), 'Test Person')
     await user.type(emailField(), 'dupe@nourishwithsim.com')
+    await user.type(phoneField(), '9876543210')
     await user.type(qualification(), 'RD')
     await user.click(screen.getByRole('button', { name: 'Add nutritionist' }))
 
@@ -278,6 +290,7 @@ describe('NutritionistFormModal — server errors', () => {
     )
     await user.type(name(), 'Test Person')
     await user.type(emailField(), 'test@nourishwithsim.com')
+    await user.type(phoneField(), '9876543210')
     await user.type(qualification(), 'RD')
     await user.click(screen.getByRole('button', { name: 'Add nutritionist' }))
 

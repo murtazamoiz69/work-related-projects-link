@@ -49,15 +49,26 @@ export function NutritionistTableRow({
       </td>
       <td>
         <div className="ct-actions">
-          <button
-            type="button"
-            className="icon-btn sm"
-            disabled
-            title="No phone number on file"
-            aria-label={`No phone number for ${n.name}`}
-          >
-            <Icon name="phone" />
-          </button>
+          {n.phone ? (
+            <a
+              className="icon-btn sm"
+              href={`tel:${n.phone}`}
+              title={`Call ${n.phone}`}
+              aria-label={`Call ${n.name}`}
+            >
+              <Icon name="phone" />
+            </a>
+          ) : (
+            <button
+              type="button"
+              className="icon-btn sm"
+              disabled
+              title="No phone number on file"
+              aria-label={`No phone number for ${n.name}`}
+            >
+              <Icon name="phone" />
+            </button>
+          )}
           <a
             className="icon-btn sm"
             href={`mailto:${n.email}`}

@@ -57,6 +57,7 @@ export function createNutritionist(
     initials: getInitials(body.name, 'N'),
     color: AVATAR_COLORS[store.length % AVATAR_COLORS.length] ?? '#2F5D50',
     email: body.email,
+    phone: body.phone,
     qualification: body.qualification,
     experienceYears: body.experienceYears,
     joinDate: new Date().toISOString(),

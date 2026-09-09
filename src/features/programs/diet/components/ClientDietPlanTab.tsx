@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { Icon } from '@/components/atoms/Icon'
 import { LazyRichTextEditor } from '@/components/molecules/LazyRichTextEditor'
 import { apiErrorMessage } from '@/lib/api/errors'
+import { useUnsavedEdits } from '@/store/useUnsavedEdits'
+import { ReviewTag } from '../../components/ReviewTag'
 import { isApiError } from '@/lib/api/types'
 import type { Client } from '@/features/clients'
 import {
@@ -33,6 +35,7 @@ export function ClientDietPlanTab({
 
   const [draft, setDraft] = useState('')
   const [saveOpen, setSaveOpen] = useState(false)
+  const setDirty = useUnsavedEdits((s) => s.setDirty)
 
   const plan = planQuery.data
   const planBody = plan?.body
@@ -47,6 +50,17 @@ export function ClientDietPlanTab({
   // doesn't refetch when the sign-off (or the band) changes.
   const currentBand = profile?.band ?? 1600
   const firstName = client.name.split(' ')[0]
+
+  // Flag the draft while it differs from what was loaded, so closing the
+  // workspace or logging out inside the autosave window asks first (OP-4).
+  useEffect(() => {
+    const isDirty = planBody !== undefined && draft !== planBody
+    setDirty(
+      'client-diet',
+      isDirty ? `${firstName}'s Week ${activeWeek} diet plan` : null,
+    )
+    return () => setDirty('client-diet', null)
+  }, [draft, planBody, activeWeek, firstName, setDirty])
 
   return (
     <>
@@ -77,7 +91,10 @@ export function ClientDietPlanTab({
       <section className="pw-section diet-sheet-panel">
         <div className="panel-head diet-sheet-head">
           <div>
-            <h2>Week {activeWeek} diet plan</h2>
+            <h2>
+              Week {activeWeek} diet plan
+              <ReviewTag status={client.dietReview} />
+            </h2>
             <p className="panel-sub">
               Drawn from the {profile?.band ?? '—'} kcal master sheet and
               narrowed to {firstName}. Edits here apply to this user only.
@@ -85,32 +102,16 @@ export function ClientDietPlanTab({
           </div>
         </div>
 
-        {profile ? (
+        {/* The life stage, dietary preference and medical conditions used to
+            repeat here as chips. They are already on the User Context rail to
+            the left, so the row was the same facts twice. Only the
+            edited-for-this-user state is genuinely about the sheet. */}
+        {plan?.edited ? (
           <div className="diet-filter-row">
-            <span className="diet-filter-chip">
-              <Icon name="user-round" />
-              {profile.lifeStage === 'lactating'
-                ? 'Lactating'
-                : profile.lifeStage === 'male'
-                  ? 'Male'
-                  : 'Female'}
+            <span className="diet-filter-chip is-edited">
+              <Icon name="pencil" />
+              Edited for this user
             </span>
-            <span className="diet-filter-chip">
-              <Icon name="salad" />
-              {profile.preference}
-            </span>
-            {profile.conditions.map((c) => (
-              <span key={c} className="diet-filter-chip is-medical">
-                <Icon name="heart-pulse" />
-                {c}
-              </span>
-            ))}
-            {plan?.edited ? (
-              <span className="diet-filter-chip is-edited">
-                <Icon name="pencil" />
-                Edited for this user
-              </span>
-            ) : null}
           </div>
         ) : null}
 

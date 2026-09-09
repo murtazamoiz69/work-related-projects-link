@@ -82,15 +82,21 @@ describe('chat.api', () => {
     ])
   })
 
-  it('adds the Pinned tab once something is pinned', async () => {
-    const list = await getConversations()
-    expect((await getConversationTabs()).some((t) => t.id === 'starred')).toBe(
-      false,
-    )
+  it('always offers the Pinned tab, and counts what is pinned', async () => {
+    // The tab is permanent rather than appearing only once something is
+    // pinned, so the star always has somewhere to point (OP-7).
+    const before = (await getConversationTabs()).find((t) => t.id === 'starred')
+    expect(before).toBeDefined()
 
-    await patchConversation(list[0].id, { starred: true })
-    const pinned = (await getConversationTabs()).find((t) => t.id === 'starred')
-    expect(pinned?.total).toBe(1)
+    const list = await getConversations()
+    const unpinned = list.find((c) => !c.starred)
+    if (!unpinned)
+      throw new Error('expected an unpinned conversation in the seed')
+    const startingTotal = before?.total ?? 0
+
+    await patchConversation(unpinned.id, { starred: true })
+    const after = (await getConversationTabs()).find((t) => t.id === 'starred')
+    expect(after?.total).toBe(startingTotal + 1)
   })
 
   it('rejects an unknown conversation id (404)', async () => {

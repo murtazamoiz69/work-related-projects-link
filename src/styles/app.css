@@ -10621,3 +10621,39 @@ body.pw-open {
   opacity: 0.6;
   cursor: default;
 }
+
+/* Plan sign-off tag beside a plan heading in Manage Plan. Small on purpose —
+   it labels the heading, it is not a control. Blue = outstanding,
+   green = signed off, matching the roster chip. */
+.plan-review-tag {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+.plan-review-tag.is-pending {
+  background: var(--blue-light);
+  color: var(--blue-text);
+}
+.plan-review-tag.is-reviewed {
+  background: var(--green-light);
+  color: var(--green-text);
+}
+
+/* The chat header carries three controls now; keep Review Plan on the same
+   line as Manage Plan and At a glance rather than wrapping to a second row. */
+.chat-header-actions .review-cta {
+  padding-left: 8px;
+  padding-right: 10px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.chat-header-actions .review-cta .chat-header-action-icon {
+  width: 20px;
+  height: 20px;
+}

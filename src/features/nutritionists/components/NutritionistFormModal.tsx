@@ -4,6 +4,11 @@ import { Modal } from '@/components/molecules/Modal'
 import { apiErrorMessage } from '@/lib/api/errors'
 import { isApiError } from '@/lib/api/types'
 import { showToast } from '@/lib/toast'
+import {
+  PHONE_COUNTRY_CODE,
+  PHONE_NATIONAL_DIGITS,
+  formatPhone,
+} from '@/features/clients/schemas/addClient.schema'
 import type { Nutritionist } from '../types'
 import {
   useCreateNutritionist,
@@ -36,6 +41,7 @@ export function NutritionistFormModal({
     defaultValues: {
       name: nutritionist?.name ?? '',
       email: nutritionist?.email ?? '',
+      phone: nutritionist?.phone ?? '',
       qualification: nutritionist?.qualification ?? '',
       experienceYears: nutritionist?.experienceYears ?? 0,
     },
@@ -68,7 +74,9 @@ export function NutritionistFormModal({
     }
   }
 
-  const onSubmit = (values: NutritionistFormValues) => {
+  const onSubmit = (raw: NutritionistFormValues) => {
+    // One canonical +91 form, whatever spacing was typed.
+    const values = { ...raw, phone: formatPhone(raw.phone) }
     if (isEdit && nutritionist) {
       update.mutate(
         { id: nutritionist.id, body: values },
@@ -116,6 +124,29 @@ export function NutritionistFormModal({
         {errors.email ? (
           <span className="settings-hint is-error" role="alert">
             {errors.email.message}
+          </span>
+        ) : null}
+      </label>
+      <label className="modal-field">
+        <span>Phone number</span>
+        {/* Same fixed +91 prefix as the user form, so one number format is
+            stored across the platform. */}
+        <div className="phone-field">
+          <span className="phone-prefix" aria-hidden="true">
+            {PHONE_COUNTRY_CODE}
+          </span>
+          <input
+            type="tel"
+            inputMode="numeric"
+            maxLength={PHONE_NATIONAL_DIGITS}
+            placeholder="98765 43210"
+            aria-label={`Phone number, ${PHONE_COUNTRY_CODE}`}
+            {...register('phone')}
+          />
+        </div>
+        {errors.phone ? (
+          <span className="settings-hint is-error" role="alert">
+            {errors.phone.message}
           </span>
         ) : null}
       </label>

@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { Icon } from '@/components/atoms/Icon'
 import { LazyRichTextEditor } from '@/components/molecules/LazyRichTextEditor'
 import { apiErrorMessage } from '@/lib/api/errors'
+import { useUnsavedEdits } from '@/store/useUnsavedEdits'
+import { ReviewTag } from '../../components/ReviewTag'
 import { isApiError } from '@/lib/api/types'
 import type { Client } from '@/features/clients'
 import {
@@ -28,6 +30,7 @@ export function ClientWorkoutPlanTab({ client }: { client: Client }) {
   const current = days.find((d) => d.dayNum === activeDay)
   const edited = current?.edited ?? false
   const [draft, setDraft] = useState('')
+  const setDirty = useUnsavedEdits((s) => s.setDirty)
   const currentBody = current?.body
   useEffect(() => {
     if (currentBody === undefined) return
@@ -35,6 +38,16 @@ export function ClientWorkoutPlanTab({ client }: { client: Client }) {
   }, [currentBody, activeDay])
 
   const firstName = client.name.split(' ')[0]
+
+  // Same unsaved-edit flag as the diet tab (OP-4).
+  useEffect(() => {
+    const isDirty = currentBody !== undefined && draft !== currentBody
+    setDirty(
+      'client-workout',
+      isDirty ? `${firstName}'s Day ${activeDay} workout` : null,
+    )
+    return () => setDirty('client-workout', null)
+  }, [draft, currentBody, activeDay, firstName, setDirty])
 
   return (
     <>
@@ -54,7 +67,10 @@ export function ClientWorkoutPlanTab({ client }: { client: Client }) {
       <section className="pw-section diet-sheet-panel">
         <div className="panel-head diet-sheet-head">
           <div>
-            <h2>Day {activeDay} workout</h2>
+            <h2>
+              Day {activeDay} workout
+              <ReviewTag status={client.dietReview} />
+            </h2>
             <p className="panel-sub">
               {edited
                 ? `Edited for ${firstName} — this day no longer follows the programme.`

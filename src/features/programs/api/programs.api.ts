@@ -11,6 +11,9 @@ export function toProgram(dto: ProgramDto): Program {
     name: dto.name,
     description: dto.description,
     durationWeeks: dto.durationWeeks,
+    // A backend that does not serve a start date yet falls back to the
+    // programme's creation date, so the run is never undefined.
+    startDate: new Date(dto.startDate ?? dto.createdAt),
     enabled: dto.enabled,
     enrolledCount: dto.enrolledCount,
     createdAt: new Date(dto.createdAt),
@@ -30,6 +33,7 @@ export async function updateProgram(program: Program): Promise<Program> {
     name: program.name,
     description: program.description,
     durationWeeks: program.durationWeeks,
+    startDate: program.startDate.toISOString(),
   }
   const dto = await put<ProgramDto>('/program', body)
   return toProgram(dto)

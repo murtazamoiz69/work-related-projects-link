@@ -114,10 +114,10 @@ export function conversationTabs(): ConversationTab[] {
   const defs: { tab: ConversationTab; when?: boolean }[] = [
     { tab: mkTab('inbox', 'All', () => true) },
     { tab: mkTab('waiting', 'Needs Attention', (c) => c.status === 'waiting') },
-    {
-      tab: mkTab('starred', 'Pinned', (c) => c.starred),
-      when: all.some((c) => c.starred),
-    },
+    // Always present, even at zero. A tab that appears only once something is
+    // pinned leaves the star with nowhere to point, and the destination
+    // shifting position as the count changes is worse than an empty tab.
+    { tab: mkTab('starred', 'Pinned', (c) => c.starred) },
     { tab: mkTab('new', 'New', (c) => c.client.status === 'new') },
     { tab: mkTab('active', 'Active', (c) => c.status === 'active') },
   ]

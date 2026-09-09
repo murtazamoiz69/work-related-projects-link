@@ -12,6 +12,9 @@ export type ProgramDto = {
   name: string
   description: string
   durationWeeks: number
+  /** ISO date the programme runs from. ASSUMPTION: not yet served by the real
+   *  backend — optional so a live response without it still maps. */
+  startDate?: string
   enabled: boolean
   /** Server-computed; the client must not count another resource for it. */
   enrolledCount: number
@@ -24,6 +27,7 @@ export type UpdateProgramBody = {
   name: string
   description: string
   durationWeeks: number
+  startDate: string
 }
 
 /** `PATCH /program/availability` body. */

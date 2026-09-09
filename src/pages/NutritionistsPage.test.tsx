@@ -179,15 +179,16 @@ describe('NutritionistsPage — interactions', () => {
     ).toBeVisible()
   })
 
-  it('row Email action is a mailto: link; Call is disabled without a phone', async () => {
+  it('row Email and Call actions are real handoff links', async () => {
     renderPage()
     await screen.findByText(new RegExp(`of ${TEAM}`))
 
     const email = screen.getAllByRole('link', { name: /^Email / })[0]
     expect(email.getAttribute('href')).toMatch(/^mailto:.+@/)
-    expect(
-      screen.getAllByRole('button', { name: /^No phone number for / })[0],
-    ).toBeDisabled()
+    // Nutritionist records carry a phone number now (OP-21), so Call is a
+    // tel: handoff rather than a permanently disabled control.
+    const call = screen.getAllByRole('link', { name: /^Call / })[0]
+    expect(call.getAttribute('href')).toMatch(/^tel:/)
   })
 
   it('toggling access confirms, then sends the PATCH', async () => {
@@ -285,10 +286,7 @@ describe('NutritionistsPage — accessibility', () => {
     await screen.findByText(new RegExp(`of ${TEAM}`))
     const firstRow = screen.getAllByRole('row')[1]
     const utils = within(firstRow)
-    // No phone on file for nutritionists — Call is present but disabled.
-    expect(
-      utils.getByRole('button', { name: /^No phone number for / }),
-    ).toBeInTheDocument()
+    expect(utils.getByRole('link', { name: /^Call / })).toBeInTheDocument()
     expect(utils.getByRole('link', { name: /^Email / })).toBeInTheDocument()
     expect(utils.getByRole('button', { name: /^Edit / })).toBeInTheDocument()
   })

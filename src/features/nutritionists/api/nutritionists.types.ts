@@ -17,6 +17,7 @@ export type ListNutritionistsParams = {
 export type NutritionistFormBody = {
   name: string
   email: string
+  phone?: string
   qualification: string
   experienceYears: number
 }
@@ -40,6 +41,7 @@ export type NutritionistDto = {
   initials: string
   color: string
   email: string
+  phone?: string
   qualification: string
   experienceYears: number
   joinDate: string // ISO

@@ -150,12 +150,26 @@ export type MealTotals = {
  * its identity, timeline, availability, and enrolled count. See
  * `docs/api/programs.md`.
  */
+/** The programme's end date is never stored: it is the start plus the length,
+ *  so the two can never drift apart. */
+export function programEndDate(p: {
+  startDate: Date
+  durationWeeks: number
+}): Date {
+  const end = new Date(p.startDate)
+  end.setDate(end.getDate() + p.durationWeeks * 7 - 1)
+  return end
+}
+
 export type Program = {
   id: string
   name: string
   description: string
   /** Programme length in weeks — the diet tab's week rail, and the Edit modal. */
   durationWeeks: number
+  /** When the programme runs from. The end date is derived from this plus
+   *  `durationWeeks` rather than stored, so the two can never disagree. */
+  startDate: Date
   /** Program availability — the Active/Disabled toggle. */
   enabled: boolean
   /** How many users are enrolled on this program (server-computed). */

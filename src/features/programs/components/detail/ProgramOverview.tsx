@@ -1,5 +1,6 @@
 import { Icon } from '@/components/atoms/Icon'
 import { formatJoinDate } from '@/features/clients'
+import { programEndDate } from '../../types'
 import type { Program } from '../../types'
 
 // Read-only summary of the single global program — name, description,
@@ -24,6 +25,11 @@ export function ProgramOverview({
         <span>
           <Icon name="calendar-range" />
           Duration: {p.durationWeeks} weeks
+        </span>
+        <span>
+          <Icon name="calendar-range" />
+          {formatJoinDate(p.startDate)} &ndash;{' '}
+          {formatJoinDate(programEndDate(p))}
         </span>
         <span>
           <Icon name="calendar-clock" />

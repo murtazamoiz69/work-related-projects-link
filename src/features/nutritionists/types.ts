@@ -4,6 +4,9 @@ export type Nutritionist = {
   initials: string
   color: string
   email: string
+  /** Contact number in +91 form. Optional so records that predate the field
+   *  still map; the roster's Call action is disabled without one. */
+  phone?: string
   qualification: string
   experienceYears: number
   joinDate: Date
