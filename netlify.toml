@@ -1,0 +1,16 @@
+# The journey map, with shared editing.
+#   site/                      the page (built by proactive-sim/build_netlify_site.py)
+#   netlify/functions/edits/   /api/edits, which stores saved edits in Netlify Blobs
+[build]
+  publish = "site"
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "no-referrer"

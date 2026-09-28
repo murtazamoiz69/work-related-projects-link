@@ -1,0 +1,9 @@
+{
+  "name": "heal-proactive-messages",
+  "private": true,
+  "description": "HEAL journey map with shared editing: static page plus a Netlify Function over Netlify Blobs.",
+  "type": "module",
+  "dependencies": {
+    "@netlify/blobs": "^11.1.1"
+  }
+}
