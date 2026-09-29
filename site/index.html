@@ -214,6 +214,9 @@ ol.steps::before{content:"";position:absolute;left:7px;top:6px;bottom:18px;width
 .edbar button:disabled{opacity:.6;cursor:default}
 .edbar .edreset{margin-left:auto}
 .edmsg{flex-basis:100%;font:600 12px 'Inter',sans-serif;color:var(--muted)}
+.edlink{margin-top:8px;border:1px dashed var(--edge);background:transparent;color:var(--crimson);
+  border-radius:8px;padding:5px 10px;font:700 11.5px 'Inter',sans-serif;cursor:pointer}
+.edlink:hover{border-color:var(--crimson)}
 
 
 
@@ -274,10 +277,21 @@ document.getElementById('reopen').onclick = openPanel;
 
 const lines = s => `<ul>${s.split('\n').filter(Boolean).map(l => `<li>${esc(l)}</li>`).join('')}</ul>`;
 /* one message's detail, compact: shared by both views */
-function notifHTML(n){
-  return n ? `<h3>Notification</h3><div class="push"><span class="ic">H</span>
-      <div><b>${esc(n[0])}</b><span>${esc(n[1])}</span></div></div>`
-    : `<h3>Notification</h3><p class="chatonly">None. It arrives in the chat only.</p>`;
+function notifHTML(n, tools){
+  return `<h3 class="exh">Notification ${tools || ''}</h3>` + (n
+    ? `<div class="push"><span class="ic">H</span><div><b>${esc(n[0])}</b><span>${esc(n[1])}</span></div></div>`
+    : `<p class="chatonly">None. It arrives in the chat only.</p>`);
+}
+/* editing the notification: a header and a body, or none (chat only). Both
+   blocks are drawn and one is hidden, so switching keeps what was typed. */
+function notifEditHTML(n){
+  return `<h3>Notification</h3>
+      <div id="ed-notif-on"${n ? '' : ' hidden'}><div class="edf">
+        <label>Header<input type="text" id="ed-nt" value="${esc(n ? n[0] : '')}" maxlength="60"></label>
+        <label>Body<input type="text" id="ed-nb" value="${esc(n ? n[1] : '')}" maxlength="140"></label></div>
+        <button type="button" class="edlink" data-notif="off">Remove the notification (chat only)</button></div>
+      <div id="ed-notif-off"${n ? ' hidden' : ''}><p class="chatonly">None. It arrives in the chat only.</p>
+        <button type="button" class="edlink" data-notif="on">+ Add a notification</button></div>`;
 }
 /* key: the message's edit key. Given only in the first-week view, where the
    message and its notification can be edited and saved. */
@@ -286,12 +300,9 @@ function msgBody(m, label, lead, key){
   const tools = ed && !open ? `<span class="edtools">
       ${EDITS[key] ? '<span class="chip edited">Edited</span>' : ''}
       <button type="button" class="edbtn" data-edit="${key}">Edit</button></span>` : '';
-  const notif = open
-    ? `<h3>Notification</h3>${n ? `<div class="edf">
-        <label>Title<input type="text" id="ed-nt" value="${esc(n[0])}" maxlength="60"></label>
-        <label>Body<input type="text" id="ed-nb" value="${esc(n[1])}" maxlength="140"></label></div>`
-        : '<p class="chatonly">None. It arrives in the chat only.</p>'}`
-    : notifHTML(n);
+  const ntools = ed && !open ? `<span class="edtools">
+      <button type="button" class="edbtn" data-edit="${key}" data-focus="ed-nt">Edit</button></span>` : '';
+  const notif = open ? notifEditHTML(n) : notifHTML(n, ntools);
   const example = open
     ? `<textarea id="ed-ex" class="edta" rows="${m.many ? 14 : 7}">${esc(m.ex)}</textarea>${editBar(key)}`
     : `<div class="bub">${esc(m.ex)}</div>`;
@@ -457,7 +468,9 @@ function applyEdits(){
     const t = editTarget(k), o = ORIG[k], e = EDITS[k] || {};
     if (k === 'welcome'){ t.message = typeof e.message === 'string' ? e.message : o.message; return; }
     t.ex = typeof e.ex === 'string' ? e.ex : o.ex;
-    t.notif = o.notif ? (Array.isArray(e.notif) ? e.notif.slice(0, 2) : o.notif.slice()) : null;
+    // an edit can change, add or remove the notification
+    t.notif = 'notif' in e ? (Array.isArray(e.notif) ? e.notif.slice(0, 2) : null)
+                           : (o.notif ? o.notif.slice() : null);
   });
 }
 /* the server's records -> EDITS and REV; an edit equal to the original is no edit */
@@ -495,15 +508,21 @@ function refreshPanel(){
   else if (d){
     const set = (id, v) => { const f = document.getElementById(id); if (f && typeof v === 'string') f.value = v; };
     if (d.key === 'welcome') set('ed-wm', d.val.message);
-    else { set('ed-ex', d.val.ex); if (d.val.notif){ set('ed-nt', d.val.notif[0]); set('ed-nb', d.val.notif[1]); } }
+    else {
+      set('ed-ex', d.val.ex);
+      const on = document.getElementById('ed-notif-on'), off = document.getElementById('ed-notif-off');
+      if (on && off){ on.hidden = !d.val.notif; off.hidden = !!d.val.notif; }
+      if (d.val.notif){ set('ed-nt', d.val.notif[0]); set('ed-nb', d.val.notif[1]); }
+    }
   }
 }
 
 function readForm(key){
   if (key === 'welcome') return {message: document.getElementById('ed-wm').value.trim()};
   const out = {ex: document.getElementById('ed-ex').value.trim(), notif: ORIG[key].notif};
-  const nt = document.getElementById('ed-nt'), nb = document.getElementById('ed-nb');
-  if (nt && nb) out.notif = [nt.value.trim(), nb.value.trim()];
+  const on = document.getElementById('ed-notif-on');
+  if (on) out.notif = on.hidden ? null
+    : [document.getElementById('ed-nt').value.trim(), document.getElementById('ed-nb').value.trim()];
   return out;
 }
 
@@ -534,7 +553,7 @@ function saveEdit(key){
   const val = readForm(key);
   if (key !== 'welcome' && !val.ex){ EDIT.msg = 'The example message cannot be empty.'; refreshPanel(); return; }
   if (key === 'welcome' && !val.message){ EDIT.msg = 'The message cannot be empty.'; refreshPanel(); return; }
-  if (val.notif && (!val.notif[0] || !val.notif[1])){ EDIT.msg = 'The notification needs a title and a body.'; refreshPanel(); return; }
+  if (val.notif && (!val.notif[0] || !val.notif[1])){ EDIT.msg = 'The notification needs a header and a body.'; refreshPanel(); return; }
   const now = EDITS[key] || ORIG[key];
   if (same(val, now) && !EDIT.draft){ EDIT.open = null; EDIT.msg = ''; refreshPanel(); return; }
   saveKey(key, same(val, ORIG[key]) ? null : val);
@@ -542,10 +561,18 @@ function saveEdit(key){
 function resetEdit(key){ saveKey(key, null); }
 
 panel.addEventListener('click', e => {
-  const t = e.target.closest('[data-edit],[data-save],[data-cancel],[data-reset]');
+  const t = e.target.closest('[data-edit],[data-save],[data-cancel],[data-reset],[data-notif]');
   if (!t || EDIT.busy) return;
+  if (t.dataset.notif){                          // add or remove the notification
+    const on = t.dataset.notif === 'on';
+    document.getElementById('ed-notif-on').hidden = !on;
+    document.getElementById('ed-notif-off').hidden = on;
+    if (on) document.getElementById('ed-nt').focus();
+    return;
+  }
   if (t.dataset.edit){ EDIT.open = t.dataset.edit; EDIT.msg = ''; refreshPanel();
-    const f = document.getElementById(t.dataset.edit === 'welcome' ? 'ed-wm' : 'ed-ex'); if (f) f.focus(); }
+    const f = document.getElementById(t.dataset.focus || (t.dataset.edit === 'welcome' ? 'ed-wm' : 'ed-ex'));
+    if (f && !f.closest('[hidden]')) f.focus(); else { const x = document.getElementById('ed-ex'); if (x) x.focus(); } }
   else if (t.dataset.save) saveEdit(t.dataset.save);
   else if (t.dataset.reset) resetEdit(t.dataset.reset);
   else { EDIT.open = null; EDIT.msg = ''; refreshPanel(); }

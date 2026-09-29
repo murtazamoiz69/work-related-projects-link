@@ -55,7 +55,7 @@ function clean(key, v) {
   let notif = null;
   if (v.notif != null) {
     if (!Array.isArray(v.notif) || v.notif.length !== 2 || !text(v.notif[0]) || !text(v.notif[1])) {
-      return { error: 'The notification needs a title and a body.' };
+      return { error: 'The notification needs a header and a body.' };
     }
     if (v.notif[0].length > MAX.title || v.notif[1].length > MAX.body) {
       return { error: 'The notification is too long to save.' };
