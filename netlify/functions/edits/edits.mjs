@@ -13,7 +13,7 @@
 import { getStore } from '@netlify/blobs';
 import { KEYS } from './keys.mjs';
 
-const MAX = { ex: 6000, message: 8000, title: 80, body: 200, request: 40000 };
+const MAX = { ex: 6000, message: 8000, title: 160, body: 200, request: 40000 };
 
 const store = () => getStore({ name: 'journey-edits', consistency: 'strong' });
 
@@ -54,8 +54,10 @@ function clean(key, v) {
   if (v.ex.length > MAX.ex) return { error: 'That example is too long to save.' };
   let notif = null;
   if (v.notif != null) {
-    if (!Array.isArray(v.notif) || v.notif.length !== 2 || !text(v.notif[0]) || !text(v.notif[1])) {
-      return { error: 'The notification needs a header and a body.' };
+    // a header is required; the body is optional (blank since 29 Sep)
+    if (!Array.isArray(v.notif) || v.notif.length !== 2 || !text(v.notif[0])
+        || typeof v.notif[1] !== 'string') {
+      return { error: 'The notification needs a header.' };
     }
     if (v.notif[0].length > MAX.title || v.notif[1].length > MAX.body) {
       return { error: 'The notification is too long to save.' };
