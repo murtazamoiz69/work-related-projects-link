@@ -19,22 +19,30 @@ const { port: blobsPort } = await blobs.start();
 const edge = `http://localhost:${blobsPort}`;
 setEnvironmentContext({ siteID: 'local', token: TOKEN, edgeURL: edge, uncachedEdgeURL: edge });
 
-const { default: edits } = await import('../netlify/functions/edits/edits.mjs');
+// every function in netlify/functions, mounted at the path its own config declares
+const FUNCTIONS = await Promise.all(
+  ['edits/edits.mjs', 'field-edits/field-edits.mjs'].map(async (f) => {
+    const m = await import(`../netlify/functions/${f}`);
+    return [m.config.path, m.default];
+  }),
+).then((pairs) => new Map(pairs));
 const TYPES = { '.html': 'text/html; charset=utf-8', '.txt': 'text/plain; charset=utf-8' };
 
 createServer(async (req, res) => {
   const url = new URL(req.url, `http://localhost:${PORT}`);
   try {
-    if (url.pathname === '/api/edits') {
+    const fn = FUNCTIONS.get(url.pathname);
+    if (fn) {
       const body = req.method === 'POST'
         ? await new Promise((ok) => { let b = ''; req.on('data', (c) => { b += c; }); req.on('end', () => ok(b)); })
         : undefined;
-      const r = await edits(new Request(url, { method: req.method, headers: req.headers, body }));
+      const r = await fn(new Request(url, { method: req.method, headers: req.headers, body }));
       res.writeHead(r.status, Object.fromEntries(r.headers));
       res.end(await r.text());
       return;
     }
-    const file = url.pathname === '/' ? 'index.html' : url.pathname.slice(1);
+    const path = url.pathname.endsWith('/') ? `${url.pathname}index.html` : url.pathname;
+    const file = path === '/index.html' ? 'index.html' : path.slice(1);
     if (file.includes('..')) throw new Error('bad path');
     const data = await readFile(join(ROOT, 'site', file));
     res.writeHead(200, { 'content-type': TYPES[extname(file)] || 'application/octet-stream' });
@@ -43,4 +51,7 @@ createServer(async (req, res) => {
     res.writeHead(e.code === 'ENOENT' ? 404 : 500, { 'content-type': 'text/plain' });
     res.end(e.code === 'ENOENT' ? 'Not found' : String(e));
   }
-}).listen(PORT, () => console.log(`journey map on http://localhost:${PORT}  (blobs on ${edge})`));
+}).listen(PORT, () => console.log(
+  `journey map on http://localhost:${PORT}\n`
+  + `health-data document on http://localhost:${PORT}/health-integration/\n`
+  + `(blobs on ${edge}; functions: ${[...FUNCTIONS.keys()].join(', ')})`));

@@ -1,12 +1,19 @@
-# The journey map, with shared editing.
-#   site/                      the page (built by proactive-sim/build_netlify_site.py)
-#   netlify/functions/edits/   /api/edits, which stores saved edits in Netlify Blobs
+# This branch is the health-data document's own site.
+#   site/health-integration/        the page (built by health-integration/build_doc_site.py)
+#   netlify/functions/field-edits/  /api/field-edits, which stores the saved Useful for values
+# The journey map and its /api/edits ride along from the proactive-messages branch; the rewrite
+# below serves the document at the site root, so the path does not have to be typed.
 [build]
   publish = "site"
   functions = "netlify/functions"
 
 [functions]
   node_bundler = "esbuild"
+
+[[redirects]]
+  from = "/"
+  to = "/health-integration/"
+  status = 200
 
 [[headers]]
   for = "/*"
