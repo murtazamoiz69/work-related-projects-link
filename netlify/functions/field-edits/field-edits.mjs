@@ -3,12 +3,16 @@
 //   GET  /api/field-edits              -> {edits: {id: {value, at}}}
 //   GET  /api/field-edits?history=1    -> {history: [{id, at, before, after}]}, newest first
 //   POST /api/field-edits  {id, value, base}
-//        value: one of the four labels, or null to go back to the value the page was built with
+//        value: one of the labels in keys.mjs, or null to go back to the value the page was built with
 //        base:  the "at" of the value the editor started from (null if none);
 //               if someone saved that row since, the answer is 409 with everyone's current values
 //
 // Storage is Netlify Blobs: one record per row ("row/<id>"), so two people editing different rows
 // never overwrite each other, and one record per save ("history/<time>-<id>"), never rewritten.
+//
+// Since 7 October 2026 the page lists only the rows marked for HEAL, and keys.mjs holds only those
+// rows and their two values. Records saved earlier for the other rows are left in the store: GET
+// still returns them, the page ignores any row or value it does not have, and nothing here deletes them.
 import { getStore } from '@netlify/blobs';
 import { IDS, LABELS } from './keys.mjs';
 
@@ -56,7 +60,7 @@ export default async (req) => {
   const { id, value, base } = body || {};
   if (!IDS.has(id)) return json(400, { error: 'That row cannot be edited.' });
   if (value !== null && !LABELS.includes(value)) {
-    return json(400, { error: 'Useful for has to be one of the four values.' });
+    return json(400, { error: 'Useful for has to be one of the values in the list.' });
   }
 
   const cur = await s.get('row/' + id, { type: 'json' });

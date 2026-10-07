@@ -6,8 +6,10 @@ Two pages, each with its own save endpoint, deployed together:
   with the link can edit a message (the example and its notification, or the Context
   setting message) and save it.
 - `/health-integration/` the **Apple Health and Health Connect document**: the whole
-  proposal, with a 345-row appendix of every field the two platforms offer. Anyone with
-  the link can change the "Useful for" value on any row and save it.
+  proposal, with an appendix of the data fields marked for HEAL. Anyone with the link can
+  change the "Useful for" value on any row and save it. The full 345-row list of every
+  field the two platforms offer is kept in `health-integration-data/`, which sits outside
+  `site/` and is never served.
 
 A saved edit is what everyone sees from then on.
 
@@ -16,7 +18,7 @@ A saved edit is what everyone sees from then on.
 The two pages work the same way, against their own endpoint and their own Blobs store:
 `/api/edits` with store `journey-edits` for the journey map, `/api/field-edits` with
 store `health-field-edits` for the health-data document. The health document's rows are
-keyed by section and field name, its value must be one of the four "Useful for" labels,
+keyed by section and field name, its value must be one of the two "Useful for" values the page offers,
 and choosing the value the page was built with deletes the saved edit rather than
 storing it, so an untouched row stays untouched.
 

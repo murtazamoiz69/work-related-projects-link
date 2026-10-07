@@ -1,0 +1,346 @@
+﻿Section,Data,"iOS, Apple HealthKit","Android, Health Connect",Useful for,On the page,Why
+Carried on every record,Record ID,HKObject.uuid,Metadata.id,Undecided,No,Lets an edit or a deletion update the same row.
+Carried on every record,Data type,HKSample.sampleType,The record class,Undecided,No,
+Carried on every record,Value,"HKQuantitySample.quantity (number and unit), HKCategorySample.value",The value field named in each row below,Undecided,No,
+Carried on every record,Start time,HKSample.startDate,"startTime (interval records), time (instant records)",Undecided,No,
+Carried on every record,End time,HKSample.endDate,endTime,Undecided,No,
+Carried on every record,Time zone,HKMetadataKeyTimeZone (optional),"startZoneOffset, endZoneOffset, zoneOffset",Undecided,No,Needed for the member's local day.
+Carried on every record,Source app,"HKObject.sourceRevision.source: name, bundleIdentifier",Metadata.dataOrigin.packageName,Undecided,No,"The source label, and the overlap check."
+Carried on every record,Device maker and model,"HKDevice.manufacturer, model","Device.manufacturer, model",Undecided,No,"Shown as the source, for example a watch."
+Carried on every record,Device type,No equivalent (inferred from HKSourceRevision.productType),"Device.type: watch, phone, scale, ring, fitness band, chest strap, head mounted, smart display, hearable, glasses, meter, fitness equipment, fitness machine, portable computer, consumer medical device, unknown",Undecided,No,"Tells a wearable from a phone, which D1 depends on."
+Carried on every record,Entered by hand or recorded,HKMetadataKeyWasUserEntered,"Metadata.recordingMethod: manual entry, actively recorded, automatically recorded, unknown",Undecided,No,How far to trust a figure.
+Carried on every record,Last modified,No equivalent (changes arrive through anchored queries),Metadata.lastModifiedTime,Undecided,No,Change-based sync.
+Carried on every record,"Source app version, OS version, product type","HKSourceRevision.version, operatingSystemVersion, productType",No equivalent,Undecided,No,Provenance detail.
+Carried on every record,Other device detail,"HKDevice.name, hardwareVersion, firmwareVersion, softwareVersion, localIdentifier, udiDeviceIdentifier",No equivalent,Undecided,No,Provenance detail.
+Carried on every record,The writing app's own record ID and version,"HKMetadataKeySyncIdentifier, HKMetadataKeySyncVersion, HKMetadataKeyExternalUUID","Metadata.clientRecordId, clientRecordVersion",Undecided,No,Set by the app that wrote the record.
+Carried on every record,Free-form metadata,HKObject.metadata (keys are listed in the last section),No equivalent,Undecided,No,
+Carried on every record,Sample count inside one record,HKQuantitySample.count,The samples list on series records,Undecided,No,
+Carried on every record,Undetermined duration flag,HKSample.hasUndeterminedDuration,No equivalent,Undecided,No,
+Activity and energy,Steps,stepCount,StepsRecord.count,HEAL Current,Yes,Replaces assumed or typed steps.
+Activity and energy,Active calories,activeEnergyBurned,ActiveCaloriesBurnedRecord.energy,HEAL Current,Yes,Active Burned for members with a wearable (D1).
+Activity and energy,Resting calories,basalEnergyBurned,BasalMetabolicRateRecord.basalMetabolicRate,HEAL Current,Yes,"Could replace HEAL's own resting-burn formula. Android gives a rate, iOS an amount."
+Activity and energy,Total calories burned,No equivalent (active and resting are separate types),TotalCaloriesBurnedRecord.energy,Additional,Yes,"D1: never used, because it includes resting burn."
+Activity and energy,"Distance, walking and running",distanceWalkingRunning,DistanceRecord.distance (one record type covers every activity),HEAL Current,Yes,Detail for the workout log.
+Activity and energy,"Distance, cycling",distanceCycling,DistanceRecord.distance,Additional,Yes,Detail for the workout log.
+Activity and energy,"Distance, swimming",distanceSwimming,DistanceRecord.distance,Additional,Yes,Detail for the workout log.
+Activity and energy,"Distance, wheelchair",distanceWheelchair,DistanceRecord.distance,Undecided,No,
+Activity and energy,Distance downhill snow sports,distanceDownhillSnowSports,DistanceRecord.distance,Undecided,No,
+Activity and energy,Distance cross country skiing,distanceCrossCountrySkiing,DistanceRecord.distance,Undecided,No,
+Activity and energy,Distance paddle sports,distancePaddleSports,DistanceRecord.distance,Undecided,No,
+Activity and energy,Distance rowing,distanceRowing,DistanceRecord.distance,Undecided,No,
+Activity and energy,Distance skating sports,distanceSkatingSports,DistanceRecord.distance,Undecided,No,
+Activity and energy,Floors climbed,flightsClimbed,FloorsClimbedRecord.floors,Undecided,No,
+Activity and energy,Elevation gained,HKMetadataKeyElevationAscended (on a workout),ElevationGainedRecord.elevation,Undecided,No,
+Activity and energy,Exercise minutes,appleExerciseTime,No record of its own; total from ExerciseSessionRecord (EXERCISE_DURATION_TOTAL),HEAL Current,Yes,A weekly activity view.
+Activity and energy,Moderate and vigorous activity,No equivalent,"ActivityIntensityRecord.activityIntensityType: moderate, vigorous",HEAL Current,Yes,Intensity without heart rate.
+Activity and energy,Physical effort (MET),physicalEffort,No equivalent,HEAL Current,Yes,Real intensity for a burn estimate.
+Activity and energy,Workout effort score,"workoutEffortScore, estimatedWorkoutEffortScore",ExerciseSessionRecord.rateOfPerceivedExertion,Additional,Yes,Addresses the workout intensity gap.
+Activity and energy,"Daily activity summary, totals","HKActivitySummary: activeEnergyBurned, appleMoveTime, appleExerciseTime, appleStandHours, activityMoveMode, isPaused",No equivalent,Additional,Yes,A ready daily total from the Apple activity rings.
+Activity and energy,"Daily activity summary, the member's own goals","HKActivitySummary: activeEnergyBurnedGoal, appleMoveTimeGoal, exerciseTimeGoal, standHoursGoal",No equivalent,Additional,Yes,HEAL sets its own targets.
+Activity and energy,Move time,appleMoveTime,No equivalent,Undecided,No,
+Activity and energy,Stand time,appleStandTime,No equivalent,Undecided,No,
+Activity and energy,Stand hour,appleStandHour,No equivalent,Undecided,No,
+Activity and energy,Step cadence,No equivalent,"StepsCadenceRecord.samples: rate, time",Undecided,No,
+Activity and energy,Wheelchair pushes,pushCount,WheelchairPushesRecord.count,Undecided,No,The step equivalent for wheelchair users.
+Activity and energy,VO2 max,vo2Max,"Vo2MaxRecord.vo2MillilitersPerMinuteKilogram, measurementMethod",Undecided,No,
+Activity and energy,Low cardio fitness event,lowCardioFitnessEvent,No equivalent,Undecided,No,
+Activity and energy,NikeFuel points,nikeFuel,No equivalent,Undecided,No,
+Workouts,Workout,HKWorkout,ExerciseSessionRecord,HEAL Current,Yes,"The workout log, the Activity Logged grid and plan progress."
+Workouts,Workout type,HKWorkout.workoutActivityType (values in the appendix),ExerciseSessionRecord.exerciseType (values in the appendix),HEAL Current,Yes,"The two lists do not match one to one, so HEAL needs a mapping."
+Workouts,Start and end,"HKWorkout.startDate, endDate","ExerciseSessionRecord.startTime, endTime",HEAL Current,Yes,
+Workouts,Duration,HKWorkout.duration,"Not a field: end minus start, or EXERCISE_DURATION_TOTAL",HEAL Current,Yes,
+Workouts,Calories for the workout,HKWorkout.statistics(for: activeEnergyBurned); totalEnergyBurned is deprecated,Not on the session: read ActiveCaloriesBurnedRecord for the session's time range and source,HEAL Current,Yes,On Android a workout carries no calorie figure of its own.
+Workouts,Distance for the workout,HKWorkout.statistics(for: a distance type); totalDistance is deprecated,Not on the session: read DistanceRecord for the session's time range and source,HEAL Current,Yes,Same point as calories.
+Workouts,Title and notes,HKMetadataKeyWorkoutBrandName,"ExerciseSessionRecord.title, notes",Additional,Yes,A readable name in the log.
+Workouts,"Segments, sets and reps","HKWorkout.workoutActivities: uuid, startDate, endDate, duration, workoutConfiguration, statistics, workoutEvents, metadata","ExerciseSessionRecord.segments: segmentType, startTime, endTime, repetitions, setIndex, weight, rateOfPerceivedExertion",HEAL Current,Yes,"Sets, reps and weight for strength work, against the plan."
+Workouts,Heart rate and zones in the workout,"HKWorkout.statistics(for: heartRate), zoneGroupsByType, zoneGroup(for:)",HeartRateRecord for the session's time range,Additional,Yes,Real workout intensity.
+Workouts,Any other total for the workout,HKWorkout.allStatistics,An aggregate request over the session's time range,Additional,Yes,
+Workouts,Average MET,HKMetadataKeyAverageMETs,No equivalent,HEAL Current,Yes,Real workout intensity.
+Workouts,Laps,HKWorkout.workoutEvents of type lap,"ExerciseSessionRecord.laps: startTime, endTime, length",Undecided,No,
+Workouts,Pauses and other events,"HKWorkout.workoutEvents: type, dateInterval, metadata (pause, resume, lap, marker, segment, motion paused, motion resumed, pause or resume request)",Segments of type PAUSE or REST,Undecided,No,
+Workouts,Route (GPS),HKWorkoutRoute: the list of locations,"ExerciseSessionRecord.exerciseRouteResult, then ExerciseRoute.route: time, latitude, longitude, altitude, horizontalAccuracy, verticalAccuracy",Undecided,No,"Location data, behind a separate permission on both platforms."
+Workouts,Workout configuration,"HKWorkoutConfiguration: activityType, locationType, swimmingLocationType, lapLength","Carried by the exercise type (for example RUNNING_TREADMILL, SWIMMING_POOL)",Undecided,No,
+Workouts,Deprecated workout totals,"HKWorkout.totalFlightsClimbed, totalSwimmingStrokeCount",No equivalent,Undecided,No,
+Workouts,Link to a planned workout,HKWorkout.workoutPlan,ExerciseSessionRecord.plannedExerciseSessionId,Additional,Yes,"Only matters if HEAL ever writes its plan to the phone, which the first release does not."
+Workouts,Planned workout,No equivalent in HealthKit (WorkoutKit holds plans),"PlannedExerciseSessionRecord: title, notes, exerciseType, startTime, endTime, hasExplicitTime, completedExerciseSessionId, blocks",Additional,Yes,Same condition as the row above.
+Workouts,"Planned workout, blocks and steps",No equivalent,"PlannedExerciseBlock: description, repetitions, steps. PlannedExerciseStep: exerciseType, exercisePhase (warmup, active, recovery, rest, cooldown, unknown), completionGoal, performanceTargets, description",Additional,Yes,Same condition.
+Workouts,"Planned workout, completion goals",No equivalent,"ExerciseCompletionGoal: DistanceGoal.distance, DistanceAndDurationGoal.distance and duration, DurationGoal.duration, RepetitionsGoal.repetitions, StepsGoal.steps, TotalCaloriesBurnedGoal.totalCalories, ActiveCaloriesBurnedGoal.activeCalories, ManualCompletion, UnknownGoal",Additional,Yes,Same condition.
+Workouts,"Planned workout, performance targets",No equivalent,"ExercisePerformanceTarget: CadenceTarget (minCadence, maxCadence), HeartRateTarget (minHeartRate, maxHeartRate), PowerTarget (minPower, maxPower), RateOfPerceivedExertionTarget.rpe, SpeedTarget (minSpeed, maxSpeed), WeightTarget.mass, AmrapTarget, UnknownTarget",Additional,Yes,Same condition.
+Sport performance detail,Running speed,runningSpeed,"SpeedRecord.samples: speed, time",Undecided,No,
+Sport performance detail,Running power,runningPower,"PowerRecord.samples: power, time",Undecided,No,
+Sport performance detail,Running stride length,runningStrideLength,No equivalent,Undecided,No,
+Sport performance detail,Running ground contact time,runningGroundContactTime,No equivalent,Undecided,No,
+Sport performance detail,Running vertical oscillation,runningVerticalOscillation,No equivalent,Undecided,No,
+Sport performance detail,Cycling speed,cyclingSpeed,"SpeedRecord.samples: speed, time",Undecided,No,
+Sport performance detail,Cycling power,cyclingPower,"PowerRecord.samples: power, time",Undecided,No,
+Sport performance detail,Cycling cadence,cyclingCadence,"CyclingPedalingCadenceRecord.samples: revolutionsPerMinute, time",Undecided,No,
+Sport performance detail,Cycling functional threshold power,cyclingFunctionalThresholdPower,No equivalent,Undecided,No,
+Sport performance detail,Swimming stroke count,swimmingStrokeCount,No equivalent (stroke style is a segment type),Undecided,No,
+Sport performance detail,Cross country skiing speed,crossCountrySkiingSpeed,"SpeedRecord.samples: speed, time",Undecided,No,
+Sport performance detail,Paddle sports speed,paddleSportsSpeed,"SpeedRecord.samples: speed, time",Undecided,No,
+Sport performance detail,Rowing speed,rowingSpeed,"SpeedRecord.samples: speed, time",Undecided,No,
+Sport performance detail,Underwater depth,underwaterDepth,No equivalent,Undecided,No,
+Sport performance detail,Water temperature,waterTemperature,No equivalent,Undecided,No,
+Body measurements,Weight,bodyMass,WeightRecord.weight,HEAL Current,Yes,"The weekly check-in weight, from a smart scale."
+Body measurements,Height,height,HeightRecord.height,HEAL Current,Yes,Prefill at onboarding.
+Body measurements,Waist,waistCircumference,No equivalent (not in Health Connect),HEAL Current,Yes,A check-in measurement. Stays manual on Android.
+Body measurements,Body fat percentage,bodyFatPercentage,BodyFatRecord.percentage,Additional,Yes,"Progress beyond weight, from a smart scale."
+Body measurements,Lean body mass,leanBodyMass,LeanBodyMassRecord.mass,Additional,Yes,
+Body measurements,Body mass index,bodyMassIndex,No equivalent,HEAL Current,Yes,HEAL can calculate it from weight and height.
+Body measurements,Bone mass,No equivalent,BoneMassRecord.mass,"PLR, Later",No,
+Body measurements,Body water mass,No equivalent,BodyWaterMassRecord.mass,"PLR, Later",No,
+Body measurements,Skin or wrist temperature,appleSleepingWristTemperature,"SkinTemperatureRecord: baseline, deltas (delta, time), measurementLocation (finger, toe, wrist, unknown)","PLR, Later",No,
+Heart and vitals,Heart rate,heartRate,"HeartRateRecord.samples: beatsPerMinute, time",Additional,Yes,Real workout intensity.
+Heart and vitals,Resting heart rate,restingHeartRate,RestingHeartRateRecord.beatsPerMinute,Additional,Yes,A fitness trend for the weekly check-in.
+Heart and vitals,Blood pressure,"bloodPressure (correlation), bloodPressureSystolic, bloodPressureDiastolic","BloodPressureRecord: systolic, diastolic, bodyPosition (standing, sitting, lying down, reclining, unknown), measurementLocation (left or right wrist, left or right upper arm, unknown)",Additional,Yes,"The agent already records this in chat, and PLR is where it is kept."
+Heart and vitals,Walking heart rate average,walkingHeartRateAverage,No equivalent,"PLR, Later",No,
+Heart and vitals,"Heart rate variability, SDNN",heartRateVariabilitySDNN,No equivalent,"PLR, Later",No,Apple's long-standing measure. Not comparable with RMSSD.
+Heart and vitals,"Heart rate variability, RMSSD",heartRateVariabilityRMSSD (iOS 27 and later),HeartRateVariabilityRmssdRecord.heartRateVariabilityMillis,"PLR, Later",No,
+Heart and vitals,"Heart rate recovery, one minute",heartRateRecoveryOneMinute,No equivalent,"PLR, Later",No,
+Heart and vitals,Atrial fibrillation burden,atrialFibrillationBurden,No equivalent,"PLR, Later",No,
+Heart and vitals,High heart rate event,highHeartRateEvent,No equivalent,"PLR, Later",No,
+Heart and vitals,Low heart rate event,lowHeartRateEvent,No equivalent,"PLR, Later",No,
+Heart and vitals,Irregular heart rhythm event,irregularHeartRhythmEvent,No equivalent,"PLR, Later",No,
+Heart and vitals,Hypertension event,hypertensionEvent (iOS 26.2 and later),No equivalent,"PLR, Later",No,Relevant to members with hypertension.
+Heart and vitals,Heartbeat series,HKHeartbeatSeriesSample (beat-to-beat intervals),No equivalent,"PLR, Later",No,
+Heart and vitals,Electrocardiogram,"HKElectrocardiogram: classification, averageHeartRate, symptomsStatus, numberOfVoltageMeasurements, samplingFrequency, voltage measurements, lead",No equivalent,"PLR, Later",No,
+Heart and vitals,Blood oxygen,oxygenSaturation,OxygenSaturationRecord.percentage,"PLR, Later",No,
+Heart and vitals,Body temperature,bodyTemperature,"BodyTemperatureRecord: temperature, measurementLocation (armpit, ear, finger, forehead, mouth, rectum, temporal artery, toe, vagina, wrist, unknown)","PLR, Later",No,
+Heart and vitals,Respiratory rate,respiratoryRate,RespiratoryRateRecord.rate,"PLR, Later",No,
+Heart and vitals,Sleep apnea event,sleepApneaEvent,No equivalent,"PLR, Later",No,
+Heart and vitals,Breathing disturbances during sleep,appleSleepingBreathingDisturbances,No equivalent,"PLR, Later",No,
+"Glucose, lungs and other readings",Blood glucose,bloodGlucose,"BloodGlucoseRecord: level, relationToMeal (before meal, after meal, fasting, general, unknown), mealType, specimenSource (capillary blood, interstitial fluid, plasma, serum, tears, whole blood, unknown)","PLR, Later",No,The agent already records sugar in chat. Matters for members with diabetes.
+"Glucose, lungs and other readings",Insulin delivery,insulinDelivery,No equivalent,"PLR, Later",No,
+"Glucose, lungs and other readings",Number of alcoholic drinks,numberOfAlcoholicBeverages,No equivalent,Undecided,No,Alcohol calories and off-plan days.
+"Glucose, lungs and other readings",Blood alcohol content,bloodAlcoholContent,No equivalent,"PLR, Later",No,
+"Glucose, lungs and other readings","Forced expiratory volume, 1 second",forcedExpiratoryVolume1,No equivalent,"PLR, Later",No,
+"Glucose, lungs and other readings",Forced vital capacity,forcedVitalCapacity,No equivalent,"PLR, Later",No,
+"Glucose, lungs and other readings",Peak expiratory flow rate,peakExpiratoryFlowRate,No equivalent,"PLR, Later",No,
+"Glucose, lungs and other readings",Inhaler usage,inhalerUsage,No equivalent,"PLR, Later",No,
+"Glucose, lungs and other readings",Number of times fallen,numberOfTimesFallen,No equivalent,Undecided,No,
+"Glucose, lungs and other readings",Peripheral perfusion index,peripheralPerfusionIndex,No equivalent,"PLR, Later",No,
+"Glucose, lungs and other readings",Electrodermal activity,electrodermalActivity,No equivalent,"PLR, Later",No,
+Sleep and mind,Sleep,"sleepAnalysis: inBed, awake, asleepCore, asleepDeep, asleepREM, asleepUnspecified","SleepSessionRecord: startTime, endTime, title, notes, stages (stage, startTime, endTime). Stage types: awake, awake in bed, out of bed, light, deep, REM, sleeping, unknown",Additional,Yes,Bedtime and wake time could replace the routine questions that time the morning and evening messages.
+Sleep and mind,Mindfulness session,mindfulSession,"MindfulnessSessionRecord: mindfulnessSessionType (breathing, meditation, movement, music, unguided, unknown), title, notes, startTime, endTime",Undecided,No,
+Sleep and mind,State of mind,"HKStateOfMind: kind, valence, valenceClassification, labels (38 values), associations (18 values)",No equivalent,"PLR, Later",No,
+Sleep and mind,Anxiety questionnaire (GAD-7),"HKGAD7Assessment: answers, risk, score",No equivalent,"PLR, Later",No,
+Sleep and mind,Depression questionnaire (PHQ-9),"HKPHQ9Assessment: answers, risk, score",No equivalent,"PLR, Later",No,
+Sleep and mind,Time in daylight,timeInDaylight,No equivalent,Undecided,No,
+Sleep and mind,UV exposure,uvExposure,No equivalent,Undecided,No,
+Nutrition and water,A food or meal entry,"food (correlation that groups the nutrient samples), HKMetadataKeyFoodType","NutritionRecord: name, mealType (breakfast, lunch, dinner, snack, unknown), startTime, endTime",HEAL Current,Yes,"Meals logged in another app, for example MyFitnessPal. Needs the same overlap question as workouts."
+Nutrition and water,Water,dietaryWater,HydrationRecord.volume,HEAL Current,Yes,The agent already tracks water.
+Nutrition and water,Energy (calories eaten),dietaryEnergyConsumed,NutritionRecord.energy,HEAL Current,Yes,HEAL counts calories and the main nutrients today.
+Nutrition and water,Protein,dietaryProtein,NutritionRecord.protein,HEAL Current,Yes,HEAL counts calories and the main nutrients today.
+Nutrition and water,Carbohydrates,dietaryCarbohydrates,NutritionRecord.totalCarbohydrate,HEAL Current,Yes,HEAL counts calories and the main nutrients today.
+Nutrition and water,"Fat, total",dietaryFatTotal,NutritionRecord.totalFat,HEAL Current,Yes,HEAL counts calories and the main nutrients today.
+Nutrition and water,Fibre,dietaryFiber,NutritionRecord.dietaryFiber,Additional,Yes,HEAL counts calories and the main nutrients today.
+Nutrition and water,Sugar,dietarySugar,NutritionRecord.sugar,Additional,Yes,HEAL counts calories and the main nutrients today.
+Nutrition and water,Sodium,dietarySodium,NutritionRecord.sodium,Additional,Yes,HEAL counts calories and the main nutrients today.
+Nutrition and water,Energy from fat,No equivalent,NutritionRecord.energyFromFat,Additional,Yes,
+Nutrition and water,"Fat, saturated",dietaryFatSaturated,NutritionRecord.saturatedFat,Additional,Yes,
+Nutrition and water,"Fat, monounsaturated",dietaryFatMonounsaturated,NutritionRecord.monounsaturatedFat,Additional,Yes,
+Nutrition and water,"Fat, polyunsaturated",dietaryFatPolyunsaturated,NutritionRecord.polyunsaturatedFat,Additional,Yes,
+Nutrition and water,"Fat, unsaturated",No equivalent,NutritionRecord.unsaturatedFat,Additional,Yes,
+Nutrition and water,"Fat, trans",No equivalent,NutritionRecord.transFat,Additional,Yes,
+Nutrition and water,Cholesterol,dietaryCholesterol,NutritionRecord.cholesterol,Additional,Yes,
+Nutrition and water,Potassium,dietaryPotassium,NutritionRecord.potassium,Additional,Yes,
+Nutrition and water,Calcium,dietaryCalcium,NutritionRecord.calcium,Additional,Yes,
+Nutrition and water,Iron,dietaryIron,NutritionRecord.iron,Additional,Yes,
+Nutrition and water,Magnesium,dietaryMagnesium,NutritionRecord.magnesium,Additional,Yes,
+Nutrition and water,Zinc,dietaryZinc,NutritionRecord.zinc,Additional,Yes,
+Nutrition and water,Phosphorus,dietaryPhosphorus,NutritionRecord.phosphorus,Additional,Yes,
+Nutrition and water,Chloride,dietaryChloride,NutritionRecord.chloride,Additional,Yes,
+Nutrition and water,Chromium,dietaryChromium,NutritionRecord.chromium,Additional,Yes,
+Nutrition and water,Copper,dietaryCopper,NutritionRecord.copper,Additional,Yes,
+Nutrition and water,Iodine,dietaryIodine,NutritionRecord.iodine,Additional,Yes,
+Nutrition and water,Manganese,dietaryManganese,NutritionRecord.manganese,Additional,Yes,
+Nutrition and water,Molybdenum,dietaryMolybdenum,NutritionRecord.molybdenum,Additional,Yes,
+Nutrition and water,Selenium,dietarySelenium,NutritionRecord.selenium,Additional,Yes,
+Nutrition and water,Vitamin A,dietaryVitaminA,NutritionRecord.vitaminA,Additional,Yes,
+Nutrition and water,Vitamin B6,dietaryVitaminB6,NutritionRecord.vitaminB6,Additional,Yes,
+Nutrition and water,Vitamin B12,dietaryVitaminB12,NutritionRecord.vitaminB12,Additional,Yes,
+Nutrition and water,Vitamin C,dietaryVitaminC,NutritionRecord.vitaminC,Additional,Yes,
+Nutrition and water,Vitamin D,dietaryVitaminD,NutritionRecord.vitaminD,Additional,Yes,
+Nutrition and water,Vitamin E,dietaryVitaminE,NutritionRecord.vitaminE,Additional,Yes,
+Nutrition and water,Vitamin K,dietaryVitaminK,NutritionRecord.vitaminK,Additional,Yes,
+Nutrition and water,Thiamin (B1),dietaryThiamin,NutritionRecord.thiamin,Undecided,No,
+Nutrition and water,Riboflavin (B2),dietaryRiboflavin,NutritionRecord.riboflavin,Undecided,No,
+Nutrition and water,Niacin (B3),dietaryNiacin,NutritionRecord.niacin,Undecided,No,
+Nutrition and water,Pantothenic acid (B5),dietaryPantothenicAcid,NutritionRecord.pantothenicAcid,Undecided,No,
+Nutrition and water,Biotin (B7),dietaryBiotin,NutritionRecord.biotin,Undecided,No,
+Nutrition and water,Folate,dietaryFolate,NutritionRecord.folate,Undecided,No,
+Nutrition and water,Folic acid,No equivalent,NutritionRecord.folicAcid,Undecided,No,
+Nutrition and water,Caffeine,dietaryCaffeine,NutritionRecord.caffeine,Additional,Yes,
+Cycle and reproductive health,Menstrual flow,menstrualFlow (with HKMetadataKeyMenstrualCycleStart),"MenstruationFlowRecord.flow: light, medium, heavy, unknown",Additional,Yes,Relevant for members with PCOS. Highly sensitive.
+Cycle and reproductive health,"Period, start and end",No equivalent as its own type (derived from menstrualFlow),"MenstruationPeriodRecord: startTime, endTime",Additional,Yes,Same.
+Cycle and reproductive health,Irregular menstrual cycles,irregularMenstrualCycles,No equivalent,Undecided,No,A cycle pattern flagged by the phone. A PCOS signal.
+Cycle and reproductive health,Infrequent menstrual cycles,infrequentMenstrualCycles,No equivalent,Undecided,No,A cycle pattern flagged by the phone. A PCOS signal.
+Cycle and reproductive health,Prolonged menstrual periods,prolongedMenstrualPeriods,No equivalent,Undecided,No,A cycle pattern flagged by the phone. A PCOS signal.
+Cycle and reproductive health,Persistent intermenstrual bleeding,persistentIntermenstrualBleeding,No equivalent,Undecided,No,A cycle pattern flagged by the phone. A PCOS signal.
+Cycle and reproductive health,Pregnancy,pregnancy,"No equivalent as a record (see medical records, pregnancy)",HEAL Current,Yes,"The plan must change, and it is a safety matter."
+Cycle and reproductive health,Lactation,lactation,No equivalent,HEAL Current,Yes,HEAL already treats lactating as a life stage.
+Cycle and reproductive health,Bleeding between periods,intermenstrualBleeding,IntermenstrualBleedingRecord,Additional,Yes,
+Cycle and reproductive health,Basal body temperature,basalBodyTemperature,"BasalBodyTemperatureRecord: temperature, measurementLocation",Additional,Yes,
+Cycle and reproductive health,Cervical mucus,cervicalMucusQuality,"CervicalMucusRecord: appearance (dry, sticky, creamy, watery, egg white, unusual, unknown), sensation (light, medium, heavy, unknown)",Undecided,No,
+Cycle and reproductive health,Ovulation test,ovulationTestResult,"OvulationTestRecord.result: positive, high, negative, inconclusive","PLR, Later",No,
+Cycle and reproductive health,Progesterone test result,progesteroneTestResult,No equivalent,"PLR, Later",No,
+Cycle and reproductive health,Pregnancy test result,pregnancyTestResult,No equivalent,HEAL Current,Yes,
+Cycle and reproductive health,Contraceptive,contraceptive,No equivalent,"PLR, Later",No,
+Cycle and reproductive health,Menopausal state,menopausalState,No equivalent,"PLR, Later",No,
+Cycle and reproductive health,Bleeding after menopause,bleedingAfterMenopause,No equivalent,"PLR, Later",No,
+Cycle and reproductive health,Bleeding during pregnancy,bleedingDuringPregnancy,No equivalent,"PLR, Later",No,
+Cycle and reproductive health,Bleeding after pregnancy,bleedingAfterPregnancy,No equivalent,"PLR, Later",No,
+Cycle and reproductive health,Sexual activity,sexualActivity,"SexualActivityRecord.protectionUsed: protected, unprotected, unknown",Undecided,No,
+Symptoms,Abdominal cramps,abdominalCramps,No equivalent,HEAL Current,Yes,Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Bloating,bloating,No equivalent,HEAL Current,Yes,Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Constipation,constipation,No equivalent,HEAL Current,Yes,Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Diarrhea,diarrhea,No equivalent,HEAL Current,Yes,Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Heartburn,heartburn,No equivalent,HEAL Current,Yes,Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Nausea,nausea,No equivalent,HEAL Current,Yes,Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Vomiting,vomiting,No equivalent,HEAL Current,Yes,Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Appetite changes,appetiteChanges,No equivalent,HEAL Current,Yes,Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Chills,chills,No equivalent,HEAL Current,Yes,Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Dizziness,dizziness,No equivalent,HEAL Current,Yes,Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Fainting,fainting,No equivalent,HEAL Current,Yes,Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Fatigue,fatigue,No equivalent,HEAL Current,Yes,Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Fever,fever,No equivalent,HEAL Current,Yes,Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Generalized body ache,generalizedBodyAche,No equivalent,HEAL Current,Yes,Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Hot flashes,hotFlashes,No equivalent,HEAL Current,Yes,Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Chest tightness or pain,chestTightnessOrPain,No equivalent,HEAL Current,Yes,Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Coughing,coughing,No equivalent,HEAL Current,Yes,Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Rapid pounding or fluttering heartbeat,rapidPoundingOrFlutteringHeartbeat,No equivalent,HEAL Current,Yes,Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Shortness of breath,shortnessOfBreath,No equivalent,HEAL Current,Yes,Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Skipped heartbeat,skippedHeartbeat,No equivalent,HEAL Current,Yes,Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Wheezing,wheezing,No equivalent,HEAL Current,Yes,Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Lower back pain,lowerBackPain,No equivalent,HEAL Current,Yes,Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Headache,headache,No equivalent,HEAL Current,Yes,Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Memory lapse,memoryLapse,No equivalent,HEAL Current,Yes,Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Mood changes,moodChanges,No equivalent,HEAL Current,Yes,Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Loss of smell,lossOfSmell,No equivalent,HEAL Current,Yes,Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Loss of taste,lossOfTaste,No equivalent,HEAL Current,Yes,Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Runny nose,runnyNose,No equivalent,HEAL Current,Yes,Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Sore throat,soreThroat,No equivalent,HEAL Current,Yes,Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Sinus congestion,sinusCongestion,No equivalent,HEAL Current,Yes,Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Breast pain,breastPain,No equivalent,HEAL Current,Yes,Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Pelvic pain,pelvicPain,No equivalent,HEAL Current,Yes,Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Vaginal dryness,vaginalDryness,No equivalent,HEAL Current,Yes,Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Acne,acne,No equivalent,HEAL Current,Yes,Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Dry skin,drySkin,No equivalent,HEAL Current,Yes,Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Hair loss,hairLoss,No equivalent,HEAL Current,Yes,Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Night sweats,nightSweats,No equivalent,HEAL Current,Yes,Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Sleep changes,sleepChanges,No equivalent,HEAL Current,Yes,Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Bladder incontinence,bladderIncontinence,No equivalent,HEAL Current,Yes,Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Mobility,Walking step length,walkingStepLength,No equivalent,HEAL Current,Yes,Could replace the fixed 0.67 m stride in the burn model.
+Mobility,Walking speed,walkingSpeed,No equivalent,HEAL Current,Yes,
+Mobility,Walking asymmetry percentage,walkingAsymmetryPercentage,No equivalent,Undecided,No,
+Mobility,Walking double support percentage,walkingDoubleSupportPercentage,No equivalent,Undecided,No,
+Mobility,Apple walking steadiness,appleWalkingSteadiness,No equivalent,Undecided,No,
+Mobility,Apple walking steadiness event,appleWalkingSteadinessEvent,No equivalent,Undecided,No,
+Mobility,Six minute walk test distance,sixMinuteWalkTestDistance,No equivalent,Undecided,No,
+Mobility,Stair ascent speed,stairAscentSpeed,No equivalent,Undecided,No,
+Mobility,Stair descent speed,stairDescentSpeed,No equivalent,Undecided,No,
+"Hearing, vision and self care",Environmental audio exposure,environmentalAudioExposure,No equivalent,Undecided,No,
+"Hearing, vision and self care",Headphone audio exposure,headphoneAudioExposure,No equivalent,Undecided,No,
+"Hearing, vision and self care",Environmental sound reduction,environmentalSoundReduction,No equivalent,Undecided,No,
+"Hearing, vision and self care",Environmental audio exposure event,environmentalAudioExposureEvent,No equivalent,Undecided,No,
+"Hearing, vision and self care",Headphone audio exposure event,headphoneAudioExposureEvent,No equivalent,Undecided,No,
+"Hearing, vision and self care",Audio exposure event (deprecated),audioExposureEvent,No equivalent,Undecided,No,
+"Hearing, vision and self care",Hearing test,"HKAudiogramSample.sensitivityPoints: frequency, tests (leftEarSensitivity and rightEarSensitivity are deprecated)",No equivalent,"PLR, Later",No,
+"Hearing, vision and self care",Vision prescription,"HKVisionPrescription: prescriptionType, dateIssued, expirationDate. HKGlassesPrescription: leftEye, rightEye. HKContactsPrescription: brand, leftEye, rightEye",No equivalent,Undecided,No,
+"Hearing, vision and self care",Toothbrushing event,toothbrushingEvent,No equivalent,Undecided,No,
+"Hearing, vision and self care",Handwashing event,handwashingEvent,No equivalent,Undecided,No,
+Profile (set once by the member),Date of birth,dateOfBirth,"No equivalent as a record (see medical records, personal details)",HEAL Current,Yes,"Prefill at onboarding, and a check on the adults-only gate."
+Profile (set once by the member),Sex,biologicalSex,"No equivalent as a record (see medical records, personal details)",HEAL Current,Yes,Prefill at onboarding. Used in the resting-burn formula.
+Profile (set once by the member),Blood type,bloodType,No equivalent,"PLR, Later",No,
+Profile (set once by the member),Wheelchair use,wheelchairUse,No equivalent,"PLR, Later",No,
+Profile (set once by the member),Activity move mode,activityMoveMode,No equivalent,Undecided,No,
+Profile (set once by the member),Skin type,fitzpatrickSkinType,No equivalent,"PLR, Later",No,
+Medications,A medication the member tracks,"HKUserAnnotatedMedication: medication, nickname, hasSchedule, isArchived. HKMedicationConcept: displayText, generalForm, identifier, relatedCodings","Medical records, medications (below)","PLR, Later",No,"Drug questions are outside the agent's scope, so this belongs in the record, not in chat."
+Medications,A dose taken or skipped,"HKMedicationDoseEvent: doseQuantity, unit, logStatus, scheduleType, scheduledDate, scheduledDoseQuantity, medicationConceptIdentifier, medicationDoseEventType",No equivalent,"PLR, Later",No,
+Clinical and medical records,How a record arrives,"HKClinicalRecord: clinicalType, displayName, fhirResource (identifier, fhirVersion, resourceType, sourceURL, data)","MedicalResource: id, type, dataSourceId, fhirVersion, fhirResource (id, type, data)","PLR, Later",No,"Both hand over FHIR, which is the model PLR is built on."
+Clinical and medical records,FHIR resource types carried,"HKFHIRResourceType: allergyIntolerance, condition, diagnosticReport, documentReference, immunization, medicationOrder, medicationDispense, medicationStatement, medicationRequest, observation, procedure, coverage","FhirResource.type: AllergyIntolerance, Condition, Encounter, Immunization, Location, Medication, MedicationRequest, MedicationStatement, Observation, Organization, Patient, Practitioner, PractitionerRole, Procedure","PLR, Later",No,
+Clinical and medical records,Where a record came from,HKFHIRResource.sourceURL,"MedicalDataSource: id, displayName, fhirBaseUri, fhirVersion, packageName, lastDataUpdateTime","PLR, Later",No,
+Clinical and medical records,Allergies,allergyRecord,MEDICAL_RESOURCE_TYPE_ALLERGIES_INTOLERANCES,HEAL Current,Yes,
+Clinical and medical records,Conditions,conditionRecord,MEDICAL_RESOURCE_TYPE_CONDITIONS,HEAL Current,Yes,
+Clinical and medical records,Lab results,labResultRecord,MEDICAL_RESOURCE_TYPE_LABORATORY_RESULTS,"PLR, Later",No,
+Clinical and medical records,Medications,medicationRecord,MEDICAL_RESOURCE_TYPE_MEDICATIONS,"PLR, Later",No,
+Clinical and medical records,Procedures,procedureRecord,MEDICAL_RESOURCE_TYPE_PROCEDURES,"PLR, Later",No,
+Clinical and medical records,Vaccines,immunizationRecord,MEDICAL_RESOURCE_TYPE_VACCINES,"PLR, Later",No,
+Clinical and medical records,Vital signs,vitalSignRecord,MEDICAL_RESOURCE_TYPE_VITAL_SIGNS,"PLR, Later",No,
+Clinical and medical records,Clinical notes,clinicalNoteRecord,No equivalent,"PLR, Later",No,
+Clinical and medical records,Insurance coverage,coverageRecord,No equivalent,"PLR, Later",No,
+Clinical and medical records,Personal details,No equivalent as a clinical type,MEDICAL_RESOURCE_TYPE_PERSONAL_DETAILS,"PLR, Later",No,
+Clinical and medical records,Practitioner details,No equivalent,MEDICAL_RESOURCE_TYPE_PRACTITIONER_DETAILS,"PLR, Later",No,
+Clinical and medical records,Pregnancy,No equivalent as a clinical type,MEDICAL_RESOURCE_TYPE_PREGNANCY,HEAL Current,Yes,
+Clinical and medical records,Social history,No equivalent,MEDICAL_RESOURCE_TYPE_SOCIAL_HISTORY,"PLR, Later",No,
+Clinical and medical records,Visits,No equivalent,MEDICAL_RESOURCE_TYPE_VISITS,"PLR, Later",No,
+Clinical and medical records,Verifiable record (signed card),"HKVerifiableClinicalRecord: subject, issuerIdentifier, issuedDate, relevantDate, expirationDate, recordTypes, sourceType (SMART Health Card, EU Digital COVID Certificate), itemNames, dataRepresentation",No equivalent,"PLR, Later",No,
+Clinical and medical records,Clinical document,CDA (HKCDADocumentSample.document),No equivalent,"PLR, Later",No,
+iOS metadata keys (optional extras on a sample),Was user entered,HKMetadataKeyWasUserEntered,Metadata.recordingMethod,Additional,Yes,
+iOS metadata keys (optional extras on a sample),Time zone,HKMetadataKeyTimeZone,Zone offset fields,Additional,Yes,
+iOS metadata keys (optional extras on a sample),Device name,HKMetadataKeyDeviceName,Device.model,Undecided,No,
+iOS metadata keys (optional extras on a sample),Device manufacturer name,HKMetadataKeyDeviceManufacturerName,Device.manufacturer,Undecided,No,
+iOS metadata keys (optional extras on a sample),Sync identifier,HKMetadataKeySyncIdentifier,Metadata.clientRecordId,Undecided,No,
+iOS metadata keys (optional extras on a sample),Sync version,HKMetadataKeySyncVersion,Metadata.clientRecordVersion,Undecided,No,
+iOS metadata keys (optional extras on a sample),External UUID,HKMetadataKeyExternalUUID,No equivalent,Undecided,No,
+iOS metadata keys (optional extras on a sample),Average METs,HKMetadataKeyAverageMETs,No equivalent,HEAL Current,Yes,
+iOS metadata keys (optional extras on a sample),Physical effort estimation type,HKMetadataKeyPhysicalEffortEstimationType,No equivalent,Additional,Yes,
+iOS metadata keys (optional extras on a sample),Indoor workout,HKMetadataKeyIndoorWorkout,Carried by the exercise type,Undecided,No,
+iOS metadata keys (optional extras on a sample),Workout brand name,HKMetadataKeyWorkoutBrandName,ExerciseSessionRecord.title,Additional,Yes,
+iOS metadata keys (optional extras on a sample),Activity type,HKMetadataKeyActivityType,No equivalent,Additional,Yes,
+iOS metadata keys (optional extras on a sample),Blood glucose meal time,HKMetadataKeyBloodGlucoseMealTime,BloodGlucoseRecord.relationToMeal,Additional,Yes,
+iOS metadata keys (optional extras on a sample),Food type,HKMetadataKeyFoodType,NutritionRecord.name,Additional,Yes,
+iOS metadata keys (optional extras on a sample),Menstrual cycle start,HKMetadataKeyMenstrualCycleStart,MenstruationPeriodRecord.startTime,"PLR, Later",No,
+iOS metadata keys (optional extras on a sample),Heart rate motion context,HKMetadataKeyHeartRateMotionContext,No equivalent,"PLR, Later",No,
+iOS metadata keys (optional extras on a sample),Heart rate sensor location,HKMetadataKeyHeartRateSensorLocation,No equivalent,"PLR, Later",No,
+iOS metadata keys (optional extras on a sample),Body temperature sensor location,HKMetadataKeyBodyTemperatureSensorLocation,measurementLocation,"PLR, Later",No,
+iOS metadata keys (optional extras on a sample),VO2 max test type,HKMetadataKeyVO2MaxTestType,Vo2MaxRecord.measurementMethod,"PLR, Later",No,
+iOS metadata keys (optional extras on a sample),VO2 max value,HKMetadataKeyVO2MaxValue,No equivalent,"PLR, Later",No,
+iOS metadata keys (optional extras on a sample),Low cardio fitness event threshold,HKMetadataKeyLowCardioFitnessEventThreshold,No equivalent,"PLR, Later",No,
+iOS metadata keys (optional extras on a sample),Heart rate recovery activity duration,HKMetadataKeyHeartRateRecoveryActivityDuration,No equivalent,"PLR, Later",No,
+iOS metadata keys (optional extras on a sample),Heart rate recovery activity type,HKMetadataKeyHeartRateRecoveryActivityType,No equivalent,"PLR, Later",No,
+iOS metadata keys (optional extras on a sample),Heart rate recovery max observed recovery heart rate,HKMetadataKeyHeartRateRecoveryMaxObservedRecoveryHeartRate,No equivalent,"PLR, Later",No,
+iOS metadata keys (optional extras on a sample),Heart rate recovery test type,HKMetadataKeyHeartRateRecoveryTestType,No equivalent,"PLR, Later",No,
+iOS metadata keys (optional extras on a sample),Insulin delivery reason,HKMetadataKeyInsulinDeliveryReason,No equivalent,"PLR, Later",No,
+iOS metadata keys (optional extras on a sample),Was taken in lab,HKMetadataKeyWasTakenInLab,No equivalent,"PLR, Later",No,
+iOS metadata keys (optional extras on a sample),Reference range lower limit,HKMetadataKeyReferenceRangeLowerLimit,No equivalent,"PLR, Later",No,
+iOS metadata keys (optional extras on a sample),Reference range upper limit,HKMetadataKeyReferenceRangeUpperLimit,No equivalent,"PLR, Later",No,
+iOS metadata keys (optional extras on a sample),Sexual activity protection used,HKMetadataKeySexualActivityProtectionUsed,SexualActivityRecord.protectionUsed,Undecided,No,
+iOS metadata keys (optional extras on a sample),Device serial number,HKMetadataKeyDeviceSerialNumber,No equivalent,"PLR, Later",No,
+iOS metadata keys (optional extras on a sample),UDI device identifier,HKMetadataKeyUDIDeviceIdentifier,No equivalent,"PLR, Later",No,
+iOS metadata keys (optional extras on a sample),UDI production identifier,HKMetadataKeyUDIProductionIdentifier,No equivalent,"PLR, Later",No,
+iOS metadata keys (optional extras on a sample),Digital signature,HKMetadataKeyDigitalSignature,No equivalent,"PLR, Later",No,
+iOS metadata keys (optional extras on a sample),Device placement side,HKMetadataKeyDevicePlacementSide,No equivalent,"PLR, Later",No,
+iOS metadata keys (optional extras on a sample),Apple device calibrated,HKMetadataKeyAppleDeviceCalibrated,No equivalent,"PLR, Later",No,
+iOS metadata keys (optional extras on a sample),Algorithm version,HKMetadataKeyAlgorithmVersion,No equivalent,"PLR, Later",No,
+iOS metadata keys (optional extras on a sample),Apple ECG algorithm version,HKMetadataKeyAppleECGAlgorithmVersion,No equivalent,"PLR, Later",No,
+iOS metadata keys (optional extras on a sample),Date of earliest data used for estimate,HKMetadataKeyDateOfEarliestDataUsedForEstimate,No equivalent,"PLR, Later",No,
+iOS metadata keys (optional extras on a sample),Session estimate,HKMetadataKeySessionEstimate,No equivalent,"PLR, Later",No,
+iOS metadata keys (optional extras on a sample),Quantity clamped to lower bound,HKMetadataKeyQuantityClampedToLowerBound,No equivalent,"PLR, Later",No,
+iOS metadata keys (optional extras on a sample),Quantity clamped to upper bound,HKMetadataKeyQuantityClampedToUpperBound,No equivalent,"PLR, Later",No,
+iOS metadata keys (optional extras on a sample),User motion context,HKMetadataKeyUserMotionContext,No equivalent,"PLR, Later",No,
+iOS metadata keys (optional extras on a sample),Audio exposure level,HKMetadataKeyAudioExposureLevel,No equivalent,Undecided,No,
+iOS metadata keys (optional extras on a sample),Audio exposure duration,HKMetadataKeyAudioExposureDuration,No equivalent,Undecided,No,
+iOS metadata keys (optional extras on a sample),Headphone gain,HKMetadataKeyHeadphoneGain,No equivalent,Undecided,No,
+iOS metadata keys (optional extras on a sample),Barometric pressure,HKMetadataKeyBarometricPressure,No equivalent,Undecided,No,
+iOS metadata keys (optional extras on a sample),Weather condition,HKMetadataKeyWeatherCondition,No equivalent,Undecided,No,
+iOS metadata keys (optional extras on a sample),Weather humidity,HKMetadataKeyWeatherHumidity,No equivalent,Undecided,No,
+iOS metadata keys (optional extras on a sample),Weather temperature,HKMetadataKeyWeatherTemperature,No equivalent,Undecided,No,
+iOS metadata keys (optional extras on a sample),Apple fitness plus session,HKMetadataKeyAppleFitnessPlusSession,No equivalent,Undecided,No,
+iOS metadata keys (optional extras on a sample),Coached workout,HKMetadataKeyCoachedWorkout,No equivalent,Undecided,No,
+iOS metadata keys (optional extras on a sample),Group fitness,HKMetadataKeyGroupFitness,No equivalent,Undecided,No,
+iOS metadata keys (optional extras on a sample),Cycling functional threshold power test type,HKMetadataKeyCyclingFunctionalThresholdPowerTestType,No equivalent,Undecided,No,
+iOS metadata keys (optional extras on a sample),Fitness machine duration,HKMetadataKeyFitnessMachineDuration,No equivalent,Undecided,No,
+iOS metadata keys (optional extras on a sample),Cross trainer distance,HKMetadataKeyCrossTrainerDistance,No equivalent,Undecided,No,
+iOS metadata keys (optional extras on a sample),Indoor bike distance,HKMetadataKeyIndoorBikeDistance,No equivalent,Undecided,No,
+iOS metadata keys (optional extras on a sample),Alpine slope grade,HKMetadataKeyAlpineSlopeGrade,No equivalent,Undecided,No,
+iOS metadata keys (optional extras on a sample),Elevation ascended,HKMetadataKeyElevationAscended,ElevationGainedRecord.elevation,Undecided,No,
+iOS metadata keys (optional extras on a sample),Elevation descended,HKMetadataKeyElevationDescended,No equivalent,Undecided,No,
+iOS metadata keys (optional extras on a sample),Average speed,HKMetadataKeyAverageSpeed,SpeedRecord,Undecided,No,
+iOS metadata keys (optional extras on a sample),Maximum speed,HKMetadataKeyMaximumSpeed,SpeedRecord,Undecided,No,
+iOS metadata keys (optional extras on a sample),Swimming location type,HKMetadataKeySwimmingLocationType,Carried by the exercise type,Undecided,No,
+iOS metadata keys (optional extras on a sample),Swimming stroke style,HKMetadataKeySwimmingStrokeStyle,Carried by the segment type,Undecided,No,
+iOS metadata keys (optional extras on a sample),Lap length,HKMetadataKeyLapLength,ExerciseLap.length,Undecided,No,
+iOS metadata keys (optional extras on a sample),SWOLF score,HKMetadataKeySWOLFScore,No equivalent,Undecided,No,
+iOS metadata keys (optional extras on a sample),Water salinity,HKMetadataKeyWaterSalinity,No equivalent,Undecided,No,
+iOS metadata keys (optional extras on a sample),Glasses prescription description,HKMetadataKeyGlassesPrescriptionDescription,No equivalent,Undecided,No,
