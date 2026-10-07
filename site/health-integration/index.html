@@ -4,10 +4,12 @@
 <meta name="robots" content="noindex, nofollow">
 <style>
 :root{--bg:#fbfaf7;--fg:#1b1f2a;--mut:#5f6b72;--line:#d6dfdf;--card:#fff;--head:#f3ecee;
---now:#0b6b4f;--later:#1f5fa8;--y:#0b6b4f;--n:#a33a2a;--q:#8a6a10;--sel:#fff}
+--now:#0b6b4f;--later:#1f5fa8;--y:#0b6b4f;--n:#a33a2a;--q:#8a6a10;--sel:#fff;
+--ap:#f4f9fe;--ap-band:#d9ebfb;--ap-sec:#eaf4fd;--ap-line:#b9d5ee;--ap-ink:#0e4a7b;--ap-soft:#2f5f87}
 @media (prefers-color-scheme:dark){:root{--bg:#171715;--fg:#ecebe6;--mut:#a3a199;--line:#3a3935;
 --card:#201f1d;--head:#2a2825;--now:#58c9a3;--later:#7fb2f0;
---y:#58c9a3;--n:#f08a78;--q:#e0bd58;--sel:#201f1d}}
+--y:#58c9a3;--n:#f08a78;--q:#e0bd58;--sel:#201f1d;
+--ap:#161f29;--ap-band:#1c3145;--ap-sec:#1a2836;--ap-line:#2e4961;--ap-ink:#a6d0f5;--ap-soft:#9dbfdb}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--fg);
 font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
@@ -44,24 +46,47 @@ td.y{color:var(--y);font-weight:600}td.n{color:var(--n);font-weight:600}td.q{col
 .flow .arrow{width:100%;height:22px;position:relative}
 .flow .arrow:before{content:"";position:absolute;left:28px;top:0;bottom:6px;border-left:2px solid var(--line)}
 .flow .arrow:after{content:"";position:absolute;left:23px;bottom:0;border:5px solid transparent;border-top-color:var(--line)}
-dl.legend{margin:0 0 16px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 12px;font-size:14px;max-width:90ch}
-dl.legend dt{font-weight:600;white-space:nowrap}
+.panel{border:1px solid var(--ap-line);border-radius:12px;background:var(--ap);margin:0 0 20px;overflow:hidden}
+.panel-head{display:block;margin:0;padding:16px 20px;background:var(--ap-band);border-bottom:1px solid var(--ap-line)}
+.panel-title{display:block;margin:0;font-size:26px;line-height:1.2;font-weight:700;color:var(--ap-ink)}
+.panel-sub{display:block;margin:4px 0 0;font-size:14px;font-weight:400;color:var(--ap-soft);max-width:none}
+.panel-body{padding:16px 20px 2px}
+.panel .how{font-size:14px;margin:0 0 12px;max-width:none}
+details.panel>summary{cursor:pointer;list-style:none;position:relative;padding-right:60px}
+details.panel>summary::-webkit-details-marker{display:none}
+details.panel>summary:after{content:"";position:absolute;right:26px;top:50%;width:11px;height:11px;margin-top:-9px;
+border-right:3px solid var(--ap-ink);border-bottom:3px solid var(--ap-ink);transform:rotate(45deg);transition:transform .15s}
+details.panel[open]>summary:after{transform:rotate(-135deg);margin-top:-2px}
+details.panel:not([open])>summary{border-bottom:0}
+details.panel>summary:focus-visible{outline:3px solid var(--ap-ink);outline-offset:-3px}
+.when-open{display:none}details[open] .when-open{display:inline}details[open] .when-closed{display:none}
+@media (prefers-reduced-motion:reduce){details.panel>summary:after{transition:none}}
+dl.legend{margin:0 0 14px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px 12px;font-size:14px;align-items:baseline}
+dl.legend dt{white-space:nowrap}
 dl.legend dd{margin:0}
+.tag,.pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:13px;font-weight:600;
+border:1px solid currentColor;background:var(--card);white-space:nowrap}
 .tag.heal-currently{color:var(--now)}.tag.heal-later{color:var(--later)}
+.pill{color:var(--ap-soft)}
 .bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px}
-.bar button,.bar input,select{font:inherit;font-size:14px;padding:6px 11px;border:1px solid var(--line);
+.bar button,.bar input,select{font:inherit;font-size:14px;padding:6px 11px;border:1px solid var(--ap-line);
 border-radius:6px;background:var(--card);color:var(--fg)}
 .bar button{cursor:pointer}
-.bar button[aria-pressed=true]{border-color:var(--fg);font-weight:600}
+.bar button[aria-pressed=true]{border-color:var(--ap-ink);background:var(--ap-band);color:var(--ap-ink);font-weight:600}
 .bar .n{color:var(--mut);font-weight:400}
-.bar input{min-width:200px}
-#fields th[scope=row]{background:none;font-weight:600;width:16%}
-#fields td.c{font:12.5px/1.45 ui-monospace,Consolas,monospace;overflow-wrap:anywhere;width:25%}
-#fields td:last-child{width:22%;color:var(--mut)}
-#fields tr.sec td{background:var(--bg);font-weight:600;border-top:2px solid var(--line)}
-td.pick{width:13%;white-space:nowrap}
+.bar input{flex:1 1 200px;min-width:160px;max-width:320px}
+#csv{margin-left:auto}
+.panel .wrap{margin:0 0 16px}
+table.fields{width:100%;min-width:700px;table-layout:fixed;border-color:var(--ap-line)}
+table.fields th,table.fields td{border-color:var(--ap-line);padding:9px 12px}
+table.fields thead th{background:var(--ap-sec);color:var(--ap-ink);font-size:13px}
+col.c-data{width:22%}col.c-use{width:212px}
+table.fields th[scope=row]{background:none;font-weight:600}
+table.fields td.c{font:12.5px/1.45 ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+table.fields tr.sec td{background:var(--ap-sec);color:var(--ap-ink);font-weight:700}
+td.pick{white-space:nowrap}
 td.pick select{width:100%;min-width:12.5em;background:var(--sel)}
-td.pick select:focus{outline:2px solid #1f5fa8;outline-offset:1px}
+td.pick select:focus{outline:2px solid var(--ap-ink);outline-offset:1px}
 tr[data-use="HEAL, Currently"] td.pick select{border-left:4px solid var(--now)}
 tr[data-use="HEAL, Later"] td.pick select{border-left:4px solid var(--later)}
 .edited{display:none}
@@ -82,7 +107,7 @@ td.pick select{border:0;background:none;-webkit-appearance:none;appearance:none}
 <p class="lead">A concise summary of the integration possibility, cost, data available, supported sources, and the implementation path for bringing health data into HEAL.</p></header>
 
 <h1 id="1-summary">1. Summary</h1>
-<ul class="summary-list"><li><strong>Possibility:</strong> Yes. HEAL can read health and activity data directly through Apple HealthKit on iPhone and Health Connect on Android, using official platform APIs and user-granted permissions.</li><li><strong>Cost:</strong> The platform integrations themselves have no per-user, per-request, or per-record API fee. The cost is the engineering work, store requirements, and any optional third-party service HEAL chooses to add later.</li><li><strong>Release:</strong> Yes, this needs a new version of the app on the App Store and on Google Play. It cannot go out as a silent update: health access is part of the app build itself, and both stores review it. Members get it when they update the app.</li><li><strong>Data:</strong> The first release can read steps, active calories, and workouts. The iOS and Android data fields in view for the first version are listed in the Appendix below.</li><li><strong>Sources:</strong> HEAL reads from the health store on the member&#x27;s phone. Apps and devices such as watches and fitness trackers can feed Apple Health or Health Connect, after which HEAL reads the permitted data from that platform. HEAL does not need a separate integration for every compatible device.</li></ul>
+<ul class="summary-list"><li><strong>Possibility:</strong> Yes. HEAL can read health and activity data directly through Apple HealthKit on iPhone and Health Connect on Android, using official platform APIs and user-granted permissions.</li><li><strong>Cost:</strong> The platform integrations themselves have no per-user, per-request, or per-record API fee. The cost is the engineering work, store requirements, and any optional third-party service HEAL chooses to add later.</li><li><strong>Release:</strong> Yes, this needs a new version of the app on the App Store and on Google Play. It cannot go out as a silent update: health access is part of the app build itself, and both stores review it. Members get it when they update the app.</li><li><strong>Data:</strong> The first release can read steps, active calories, and workouts. The iOS and Android data fields in view are listed in the Appendix below.</li><li><strong>Sources:</strong> HEAL reads from the health store on the member&#x27;s phone. Apps and devices such as watches and fitness trackers can feed Apple Health or Health Connect, after which HEAL reads the permitted data from that platform. HEAL does not need a separate integration for every compatible device.</li></ul>
 <h1 id="2-is-it-possible-and-how">2. Is it possible, and how</h1>
 <p><strong>Yes.</strong> Apple and Google each publish an official, supported way for an app like HEAL to read a member&#x27;s health data with the member&#x27;s permission. Nothing in this proposal depends on a workaround or an unofficial tool.</p>
 <h2 id="2-1-how-it-works-step-by-step">2.1 How it works, step by step</h2>
@@ -119,28 +144,132 @@ td.pick select{border:0;background:none;-webkit-appearance:none;appearance:none}
 <h2 id="7-2-all-decisions">7.2 All decisions</h2>
 <div class="wrap"><table class="doc"><thead><tr><th><p><strong>#</strong></p></th><th><p><strong>Question</strong></p></th><th><p><strong>Decision or recommendation</strong></p></th><th><p><strong>Status</strong></p></th><th><p><strong>Owner</strong></p></th></tr></thead><tbody><tr><td><p>D1</p></td><td><p>Which calorie figure counts as Active Burned once a device is connected.</p></td><td><p>As set out in 7.1: the device&#x27;s calorie figures are used as given.</p></td><td><p>Decided</p></td><td><p>Product, nutrition team, backend owner</p></td></tr><tr><td><p>D2</p></td><td><p>How to treat a workout that the device recorded and the member also told the agent about.</p></td><td><p>The agent says it is already logged from the device, and asks whether to add this as an extra workout, replace the device&#x27;s record, or leave it as it is. Nothing is logged twice without that answer.</p></td><td><p>Decided</p></td><td><p>Product, AI team</p></td></tr><tr><td><p>D3</p></td><td><p>Which value wins when steps exist both from the device and typed in chat.</p></td><td><p>The device&#x27;s steps are used as given. If the member asks to log steps on top, the agent first says how many steps the device has already sent, and asks whether to add the new steps, replace the device&#x27;s figure, or leave it as it is. Nothing changes without that answer.</p></td><td><p>Decided</p></td><td><p>Product</p></td></tr><tr><td><p>D4</p></td><td><p>Which data HEAL reads in the first release.</p></td><td><p>Steps, active calories and workouts, plus each record&#x27;s source and whether it was entered by hand. Read only.</p></td><td><p>Decided</p></td><td><p>Product</p></td></tr><tr><td><p>D5</p></td><td><p>How far back to read when a member first connects.</p></td><td><p>First release: from the day the member connects onward, with no past data. Later: from the member&#x27;s onboarding date, which the app supplies.</p></td><td><p>Decided</p></td><td><p>Product</p></td></tr><tr><td><p>D6</p></td><td><p>Whether a device-recorded workout counts as the plan&#x27;s workout for that day.</p></td><td><p>It always counts toward Active Burned. It ticks the plan&#x27;s workout only after the agent asks and the member confirms.</p></td><td><p>Decided</p></td><td><p>Product, nutrition team</p></td></tr><tr><td><p>D7</p></td><td><p>Whether device activity changes the proactive messages.</p></td><td><p>No change to the messages themselves. Synced workouts, activity and steps appear in the day&#x27;s summary like any other log. There is no evening workout nudge at present.</p></td><td><p>Decided</p></td><td><p>Product, AI team</p></td></tr><tr><td><p>D8</p></td><td><p>Where and when HEAL asks the member to connect.</p></td><td><p>A Connect option on the Profile page. It offers the one connection that phone has, Apple Health on an iPhone or Health Connect on Android, and says what HEAL will read. Below it, a &quot;Works with&quot; line naming the devices and apps confirmed to share with that platform, and a line saying that any other app able to share with it will work too. The member connects once, gives permission, and syncing starts. Never required to use HEAL.</p></td><td><p>Decided</p></td><td><p>Product, design</p></td></tr><tr><td><p>D9</p></td><td><p>What happens to synced data when a member disconnects.</p></td><td><p>Disconnecting stops further syncing. What was already synced and stored stays. There is no option to delete it.</p></td><td><p>Decided</p></td><td><p>Product, legal</p></td></tr><tr><td><p>D10</p></td><td><p>How HEAL shows that device figures may be out of date.</p></td><td><p>An &quot;Updated 2:40 pm&quot; line on the Analytics page, with a sync on every app open.</p></td><td><p>Decided</p></td><td><p>Product, design</p></td></tr></tbody></table></div>
 <h1 id="appendix-a">Data: Appendix of data fields (iOS and Android)</h1>
-<p>The data fields in view for the first version, 13 in all: 11 have an iOS source and 11 have an Android source. The two platforms offer far more than this, and everything else is left out of the list for now. Each type we do ask for has to be justified to Apple and Google, and the member has to permit it.</p>
-<p><strong>The Useful for column is editable, by anyone with this link, with no sign-in.</strong> Pick a value and it saves itself; everyone opening the page sees it. <span id="status" role="status"></span></p>
+<p>The data fields in view, in two lists: 13 under "Already exists in PLR", and 91 more under "V2 Implementation", a list that opens and closes when its heading is clicked. The two platforms offer more than this, and the rest is left out for now. Each type we do ask for has to be justified to Apple and Google, and the member has to permit it.</p>
+<section class="panel" aria-labelledby="first-list">
+<header class="panel-head"><h2 id="first-list" class="panel-title">Already exists in PLR</h2><p class="panel-sub">13 fields: 11 with an iOS source, 11 with an Android source</p></header>
+<div class="panel-body">
+<p class="how"><strong>The Useful for column is editable, by anyone with this link, with no sign-in.</strong> Pick a value and it saves itself; everyone opening the page sees it. <span id="status" role="status"></span></p>
 <dl class="legend"><dt class="tag heal-currently">Captured currently</dt><dd>HEAL already holds this data today, whatever a device would add to it. <span class="mut">11 rows at the start.</span></dd><dt class="tag heal-later">V1 Implementation</dt><dd>Not in HEAL today. To be added in the first version. <span class="mut">2 rows at the start.</span></dd></dl>
 <div class="bar"><button data-f="" aria-pressed="true">All</button><button data-f="HEAL, Currently" aria-pressed="false">Captured currently <span class="n">11</span></button><button data-f="HEAL, Later" aria-pressed="false">V1 Implementation <span class="n">2</span></button><input id="q" type="search" placeholder="Search fields" aria-label="Search fields"><button id="csv" type="button">Download as CSV</button></div>
-<div class="wrap"><table id="fields"><thead><tr><th>Data</th><th>iOS, Apple HealthKit</th><th>Android, Health Connect</th><th>Useful for</th><th>Why</th></tr></thead><tbody>
-<tr class="sec"><td colspan="5">Activity and energy</td></tr>
-<tr data-use="HEAL, Currently" data-id="activity-and-energy__steps"><th scope="row">Steps</th><td class="c">stepCount</td><td class="c">StepsRecord.count</td><td class="pick"><select data-orig="HEAL, Currently" aria-label="Useful for Steps"><option value="HEAL, Currently" selected>Captured currently</option><option value="HEAL, Later">V1 Implementation</option></select><span class="edited" title="changed from Captured currently"></span></td><td>Replaces assumed or typed steps.</td></tr>
-<tr data-use="HEAL, Currently" data-id="activity-and-energy__active-calories"><th scope="row">Active calories</th><td class="c">activeEnergyBurned</td><td class="c">ActiveCaloriesBurnedRecord.energy</td><td class="pick"><select data-orig="HEAL, Currently" aria-label="Useful for Active calories"><option value="HEAL, Currently" selected>Captured currently</option><option value="HEAL, Later">V1 Implementation</option></select><span class="edited" title="changed from Captured currently"></span></td><td>Active Burned for members with a wearable (D1).</td></tr>
-<tr data-use="HEAL, Currently" data-id="activity-and-energy__resting-calories"><th scope="row">Resting calories</th><td class="c">basalEnergyBurned</td><td class="c">BasalMetabolicRateRecord.basalMetabolicRate</td><td class="pick"><select data-orig="HEAL, Currently" aria-label="Useful for Resting calories"><option value="HEAL, Currently" selected>Captured currently</option><option value="HEAL, Later">V1 Implementation</option></select><span class="edited" title="changed from Captured currently"></span></td><td>Could replace HEAL&#x27;s own resting-burn formula. Android gives a rate, iOS an amount.</td></tr>
-<tr data-use="HEAL, Later" data-id="activity-and-energy__total-calories-burned"><th scope="row">Total calories burned</th><td class="c">No equivalent (active and resting are separate types)</td><td class="c">TotalCaloriesBurnedRecord.energy</td><td class="pick"><select data-orig="HEAL, Later" aria-label="Useful for Total calories burned"><option value="HEAL, Currently">Captured currently</option><option value="HEAL, Later" selected>V1 Implementation</option></select><span class="edited" title="changed from V1 Implementation"></span></td><td>D1: never used, because it includes resting burn.</td></tr>
-<tr data-use="HEAL, Currently" data-id="activity-and-energy__distance-walking-and-running"><th scope="row">Distance, walking and running</th><td class="c">distanceWalkingRunning</td><td class="c">DistanceRecord.distance (one record type covers every activity)</td><td class="pick"><select data-orig="HEAL, Currently" aria-label="Useful for Distance, walking and running"><option value="HEAL, Currently" selected>Captured currently</option><option value="HEAL, Later">V1 Implementation</option></select><span class="edited" title="changed from Captured currently"></span></td><td>Detail for the workout log.</td></tr>
-<tr data-use="HEAL, Currently" data-id="activity-and-energy__exercise-minutes"><th scope="row">Exercise minutes</th><td class="c">appleExerciseTime</td><td class="c">No record of its own; total from ExerciseSessionRecord (EXERCISE_DURATION_TOTAL)</td><td class="pick"><select data-orig="HEAL, Currently" aria-label="Useful for Exercise minutes"><option value="HEAL, Currently" selected>Captured currently</option><option value="HEAL, Later">V1 Implementation</option></select><span class="edited" title="changed from Captured currently"></span></td><td>A weekly activity view.</td></tr>
-<tr data-use="HEAL, Currently" data-id="activity-and-energy__moderate-and-vigorous-activity"><th scope="row">Moderate and vigorous activity</th><td class="c">No equivalent</td><td class="c">ActivityIntensityRecord.activityIntensityType: moderate, vigorous</td><td class="pick"><select data-orig="HEAL, Currently" aria-label="Useful for Moderate and vigorous activity"><option value="HEAL, Currently" selected>Captured currently</option><option value="HEAL, Later">V1 Implementation</option></select><span class="edited" title="changed from Captured currently"></span></td><td>Intensity without heart rate.</td></tr>
-<tr class="sec"><td colspan="5">Body measurements</td></tr>
-<tr data-use="HEAL, Currently" data-id="body-measurements__weight"><th scope="row">Weight</th><td class="c">bodyMass</td><td class="c">WeightRecord.weight</td><td class="pick"><select data-orig="HEAL, Currently" aria-label="Useful for Weight"><option value="HEAL, Currently" selected>Captured currently</option><option value="HEAL, Later">V1 Implementation</option></select><span class="edited" title="changed from Captured currently"></span></td><td>The weekly check-in weight, from a smart scale.</td></tr>
-<tr data-use="HEAL, Currently" data-id="body-measurements__height"><th scope="row">Height</th><td class="c">height</td><td class="c">HeightRecord.height</td><td class="pick"><select data-orig="HEAL, Currently" aria-label="Useful for Height"><option value="HEAL, Currently" selected>Captured currently</option><option value="HEAL, Later">V1 Implementation</option></select><span class="edited" title="changed from Captured currently"></span></td><td>Prefill at onboarding.</td></tr>
-<tr data-use="HEAL, Currently" data-id="body-measurements__waist"><th scope="row">Waist</th><td class="c">waistCircumference</td><td class="c">No equivalent (not in Health Connect)</td><td class="pick"><select data-orig="HEAL, Currently" aria-label="Useful for Waist"><option value="HEAL, Currently" selected>Captured currently</option><option value="HEAL, Later">V1 Implementation</option></select><span class="edited" title="changed from Captured currently"></span></td><td>A check-in measurement. Stays manual on Android.</td></tr>
-<tr data-use="HEAL, Later" data-id="body-measurements__body-fat-percentage"><th scope="row">Body fat percentage</th><td class="c">bodyFatPercentage</td><td class="c">BodyFatRecord.percentage</td><td class="pick"><select data-orig="HEAL, Later" aria-label="Useful for Body fat percentage"><option value="HEAL, Currently">Captured currently</option><option value="HEAL, Later" selected>V1 Implementation</option></select><span class="edited" title="changed from V1 Implementation"></span></td><td>Progress beyond weight, from a smart scale.</td></tr>
-<tr data-use="HEAL, Currently" data-id="body-measurements__body-mass-index"><th scope="row">Body mass index</th><td class="c">bodyMassIndex</td><td class="c">No equivalent</td><td class="pick"><select data-orig="HEAL, Currently" aria-label="Useful for Body mass index"><option value="HEAL, Currently" selected>Captured currently</option><option value="HEAL, Later">V1 Implementation</option></select><span class="edited" title="changed from Captured currently"></span></td><td>HEAL can calculate it from weight and height.</td></tr>
-<tr class="sec"><td colspan="5">Nutrition and water</td></tr>
-<tr data-use="HEAL, Currently" data-id="nutrition-and-water__water"><th scope="row">Water</th><td class="c">dietaryWater</td><td class="c">HydrationRecord.volume</td><td class="pick"><select data-orig="HEAL, Currently" aria-label="Useful for Water"><option value="HEAL, Currently" selected>Captured currently</option><option value="HEAL, Later">V1 Implementation</option></select><span class="edited" title="changed from Captured currently"></span></td><td>The agent already tracks water.</td></tr>
-</tbody></table></div>
+<div class="wrap"><table id="fields" class="fields"><colgroup><col class="c-data"><col class="c-src"><col class="c-src"><col class="c-use"></colgroup><thead><tr><th>Data</th><th>iOS, Apple HealthKit</th><th>Android, Health Connect</th><th>Useful for</th></tr></thead><tbody>
+<tr class="sec"><td colspan="4">Activity and energy</td></tr>
+<tr data-use="HEAL, Currently" data-id="activity-and-energy__steps"><th scope="row">Steps</th><td class="c">stepCount</td><td class="c">StepsRecord.count</td><td class="pick"><select data-orig="HEAL, Currently" aria-label="Useful for Steps"><option value="HEAL, Currently" selected>Captured currently</option><option value="HEAL, Later">V1 Implementation</option></select><span class="edited" title="changed from Captured currently"></span></td></tr>
+<tr data-use="HEAL, Currently" data-id="activity-and-energy__active-calories"><th scope="row">Active calories</th><td class="c">activeEnergyBurned</td><td class="c">ActiveCaloriesBurnedRecord.energy</td><td class="pick"><select data-orig="HEAL, Currently" aria-label="Useful for Active calories"><option value="HEAL, Currently" selected>Captured currently</option><option value="HEAL, Later">V1 Implementation</option></select><span class="edited" title="changed from Captured currently"></span></td></tr>
+<tr data-use="HEAL, Currently" data-id="activity-and-energy__resting-calories"><th scope="row">Resting calories</th><td class="c">basalEnergyBurned</td><td class="c">BasalMetabolicRateRecord.basalMetabolicRate</td><td class="pick"><select data-orig="HEAL, Currently" aria-label="Useful for Resting calories"><option value="HEAL, Currently" selected>Captured currently</option><option value="HEAL, Later">V1 Implementation</option></select><span class="edited" title="changed from Captured currently"></span></td></tr>
+<tr data-use="HEAL, Later" data-id="activity-and-energy__total-calories-burned"><th scope="row">Total calories burned</th><td class="c">No equivalent (active and resting are separate types)</td><td class="c">TotalCaloriesBurnedRecord.energy</td><td class="pick"><select data-orig="HEAL, Later" aria-label="Useful for Total calories burned"><option value="HEAL, Currently">Captured currently</option><option value="HEAL, Later" selected>V1 Implementation</option></select><span class="edited" title="changed from V1 Implementation"></span></td></tr>
+<tr data-use="HEAL, Currently" data-id="activity-and-energy__distance-walking-and-running"><th scope="row">Distance, walking and running</th><td class="c">distanceWalkingRunning</td><td class="c">DistanceRecord.distance (one record type covers every activity)</td><td class="pick"><select data-orig="HEAL, Currently" aria-label="Useful for Distance, walking and running"><option value="HEAL, Currently" selected>Captured currently</option><option value="HEAL, Later">V1 Implementation</option></select><span class="edited" title="changed from Captured currently"></span></td></tr>
+<tr data-use="HEAL, Currently" data-id="activity-and-energy__exercise-minutes"><th scope="row">Exercise minutes</th><td class="c">appleExerciseTime</td><td class="c">No record of its own; total from ExerciseSessionRecord (EXERCISE_DURATION_TOTAL)</td><td class="pick"><select data-orig="HEAL, Currently" aria-label="Useful for Exercise minutes"><option value="HEAL, Currently" selected>Captured currently</option><option value="HEAL, Later">V1 Implementation</option></select><span class="edited" title="changed from Captured currently"></span></td></tr>
+<tr data-use="HEAL, Currently" data-id="activity-and-energy__moderate-and-vigorous-activity"><th scope="row">Moderate and vigorous activity</th><td class="c">No equivalent</td><td class="c">ActivityIntensityRecord.activityIntensityType: moderate, vigorous</td><td class="pick"><select data-orig="HEAL, Currently" aria-label="Useful for Moderate and vigorous activity"><option value="HEAL, Currently" selected>Captured currently</option><option value="HEAL, Later">V1 Implementation</option></select><span class="edited" title="changed from Captured currently"></span></td></tr>
+<tr class="sec"><td colspan="4">Body measurements</td></tr>
+<tr data-use="HEAL, Currently" data-id="body-measurements__weight"><th scope="row">Weight</th><td class="c">bodyMass</td><td class="c">WeightRecord.weight</td><td class="pick"><select data-orig="HEAL, Currently" aria-label="Useful for Weight"><option value="HEAL, Currently" selected>Captured currently</option><option value="HEAL, Later">V1 Implementation</option></select><span class="edited" title="changed from Captured currently"></span></td></tr>
+<tr data-use="HEAL, Currently" data-id="body-measurements__height"><th scope="row">Height</th><td class="c">height</td><td class="c">HeightRecord.height</td><td class="pick"><select data-orig="HEAL, Currently" aria-label="Useful for Height"><option value="HEAL, Currently" selected>Captured currently</option><option value="HEAL, Later">V1 Implementation</option></select><span class="edited" title="changed from Captured currently"></span></td></tr>
+<tr data-use="HEAL, Currently" data-id="body-measurements__waist"><th scope="row">Waist</th><td class="c">waistCircumference</td><td class="c">No equivalent (not in Health Connect)</td><td class="pick"><select data-orig="HEAL, Currently" aria-label="Useful for Waist"><option value="HEAL, Currently" selected>Captured currently</option><option value="HEAL, Later">V1 Implementation</option></select><span class="edited" title="changed from Captured currently"></span></td></tr>
+<tr data-use="HEAL, Later" data-id="body-measurements__body-fat-percentage"><th scope="row">Body fat percentage</th><td class="c">bodyFatPercentage</td><td class="c">BodyFatRecord.percentage</td><td class="pick"><select data-orig="HEAL, Later" aria-label="Useful for Body fat percentage"><option value="HEAL, Currently">Captured currently</option><option value="HEAL, Later" selected>V1 Implementation</option></select><span class="edited" title="changed from V1 Implementation"></span></td></tr>
+<tr data-use="HEAL, Currently" data-id="body-measurements__body-mass-index"><th scope="row">Body mass index</th><td class="c">bodyMassIndex</td><td class="c">No equivalent</td><td class="pick"><select data-orig="HEAL, Currently" aria-label="Useful for Body mass index"><option value="HEAL, Currently" selected>Captured currently</option><option value="HEAL, Later">V1 Implementation</option></select><span class="edited" title="changed from Captured currently"></span></td></tr>
+<tr class="sec"><td colspan="4">Nutrition and water</td></tr>
+<tr data-use="HEAL, Currently" data-id="nutrition-and-water__water"><th scope="row">Water</th><td class="c">dietaryWater</td><td class="c">HydrationRecord.volume</td><td class="pick"><select data-orig="HEAL, Currently" aria-label="Useful for Water"><option value="HEAL, Currently" selected>Captured currently</option><option value="HEAL, Later">V1 Implementation</option></select><span class="edited" title="changed from Captured currently"></span></td></tr>
+</tbody></table></div></div></section>
+<details class="panel" id="second-list"><summary class="panel-head"><span class="panel-title">V2 Implementation</span><span class="panel-sub">91 fields: 86 with an iOS source, 47 with an Android source. <span class="when-closed">Click to open.</span><span class="when-open">Click to close.</span></span></summary>
+<div class="panel-body"><div class="wrap"><table id="later" class="fields"><colgroup><col class="c-data"><col class="c-src"><col class="c-src"><col class="c-use"></colgroup><thead><tr><th>Data</th><th>iOS, Apple HealthKit</th><th>Android, Health Connect</th><th>Useful for</th></tr></thead><tbody>
+<tr class="sec"><td colspan="4">Symptoms</td></tr>
+<tr><th scope="row">Abdominal cramps</th><td class="c">abdominalCramps</td><td class="c">No equivalent</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Bloating</th><td class="c">bloating</td><td class="c">No equivalent</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Constipation</th><td class="c">constipation</td><td class="c">No equivalent</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Diarrhea</th><td class="c">diarrhea</td><td class="c">No equivalent</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Heartburn</th><td class="c">heartburn</td><td class="c">No equivalent</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Nausea</th><td class="c">nausea</td><td class="c">No equivalent</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Vomiting</th><td class="c">vomiting</td><td class="c">No equivalent</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Appetite changes</th><td class="c">appetiteChanges</td><td class="c">No equivalent</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Chills</th><td class="c">chills</td><td class="c">No equivalent</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Dizziness</th><td class="c">dizziness</td><td class="c">No equivalent</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Fainting</th><td class="c">fainting</td><td class="c">No equivalent</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Fatigue</th><td class="c">fatigue</td><td class="c">No equivalent</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Fever</th><td class="c">fever</td><td class="c">No equivalent</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Generalized body ache</th><td class="c">generalizedBodyAche</td><td class="c">No equivalent</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Hot flashes</th><td class="c">hotFlashes</td><td class="c">No equivalent</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Chest tightness or pain</th><td class="c">chestTightnessOrPain</td><td class="c">No equivalent</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Coughing</th><td class="c">coughing</td><td class="c">No equivalent</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Rapid pounding or fluttering heartbeat</th><td class="c">rapidPoundingOrFlutteringHeartbeat</td><td class="c">No equivalent</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Shortness of breath</th><td class="c">shortnessOfBreath</td><td class="c">No equivalent</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Skipped heartbeat</th><td class="c">skippedHeartbeat</td><td class="c">No equivalent</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Wheezing</th><td class="c">wheezing</td><td class="c">No equivalent</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Lower back pain</th><td class="c">lowerBackPain</td><td class="c">No equivalent</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Headache</th><td class="c">headache</td><td class="c">No equivalent</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Memory lapse</th><td class="c">memoryLapse</td><td class="c">No equivalent</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Mood changes</th><td class="c">moodChanges</td><td class="c">No equivalent</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Loss of smell</th><td class="c">lossOfSmell</td><td class="c">No equivalent</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Loss of taste</th><td class="c">lossOfTaste</td><td class="c">No equivalent</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Runny nose</th><td class="c">runnyNose</td><td class="c">No equivalent</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Sore throat</th><td class="c">soreThroat</td><td class="c">No equivalent</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Sinus congestion</th><td class="c">sinusCongestion</td><td class="c">No equivalent</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Breast pain</th><td class="c">breastPain</td><td class="c">No equivalent</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Pelvic pain</th><td class="c">pelvicPain</td><td class="c">No equivalent</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Vaginal dryness</th><td class="c">vaginalDryness</td><td class="c">No equivalent</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Acne</th><td class="c">acne</td><td class="c">No equivalent</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Dry skin</th><td class="c">drySkin</td><td class="c">No equivalent</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Hair loss</th><td class="c">hairLoss</td><td class="c">No equivalent</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Night sweats</th><td class="c">nightSweats</td><td class="c">No equivalent</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Sleep changes</th><td class="c">sleepChanges</td><td class="c">No equivalent</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Bladder incontinence</th><td class="c">bladderIncontinence</td><td class="c">No equivalent</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr class="sec"><td colspan="4">Nutrition and water</td></tr>
+<tr><th scope="row">A food or meal entry</th><td class="c">food (correlation that groups the nutrient samples), HKMetadataKeyFoodType</td><td class="c">NutritionRecord: name, mealType (breakfast, lunch, dinner, snack, unknown), startTime, endTime</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Energy (calories eaten)</th><td class="c">dietaryEnergyConsumed</td><td class="c">NutritionRecord.energy</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Protein</th><td class="c">dietaryProtein</td><td class="c">NutritionRecord.protein</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Carbohydrates</th><td class="c">dietaryCarbohydrates</td><td class="c">NutritionRecord.totalCarbohydrate</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Fat, total</th><td class="c">dietaryFatTotal</td><td class="c">NutritionRecord.totalFat</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Fibre</th><td class="c">dietaryFiber</td><td class="c">NutritionRecord.dietaryFiber</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Sugar</th><td class="c">dietarySugar</td><td class="c">NutritionRecord.sugar</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Sodium</th><td class="c">dietarySodium</td><td class="c">NutritionRecord.sodium</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Energy from fat</th><td class="c">No equivalent</td><td class="c">NutritionRecord.energyFromFat</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Fat, saturated</th><td class="c">dietaryFatSaturated</td><td class="c">NutritionRecord.saturatedFat</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Fat, monounsaturated</th><td class="c">dietaryFatMonounsaturated</td><td class="c">NutritionRecord.monounsaturatedFat</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Fat, polyunsaturated</th><td class="c">dietaryFatPolyunsaturated</td><td class="c">NutritionRecord.polyunsaturatedFat</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Fat, unsaturated</th><td class="c">No equivalent</td><td class="c">NutritionRecord.unsaturatedFat</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Fat, trans</th><td class="c">No equivalent</td><td class="c">NutritionRecord.transFat</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Cholesterol</th><td class="c">dietaryCholesterol</td><td class="c">NutritionRecord.cholesterol</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Potassium</th><td class="c">dietaryPotassium</td><td class="c">NutritionRecord.potassium</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Calcium</th><td class="c">dietaryCalcium</td><td class="c">NutritionRecord.calcium</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Iron</th><td class="c">dietaryIron</td><td class="c">NutritionRecord.iron</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Magnesium</th><td class="c">dietaryMagnesium</td><td class="c">NutritionRecord.magnesium</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Zinc</th><td class="c">dietaryZinc</td><td class="c">NutritionRecord.zinc</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Phosphorus</th><td class="c">dietaryPhosphorus</td><td class="c">NutritionRecord.phosphorus</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Chloride</th><td class="c">dietaryChloride</td><td class="c">NutritionRecord.chloride</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Chromium</th><td class="c">dietaryChromium</td><td class="c">NutritionRecord.chromium</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Copper</th><td class="c">dietaryCopper</td><td class="c">NutritionRecord.copper</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Iodine</th><td class="c">dietaryIodine</td><td class="c">NutritionRecord.iodine</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Manganese</th><td class="c">dietaryManganese</td><td class="c">NutritionRecord.manganese</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Molybdenum</th><td class="c">dietaryMolybdenum</td><td class="c">NutritionRecord.molybdenum</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Selenium</th><td class="c">dietarySelenium</td><td class="c">NutritionRecord.selenium</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Vitamin A</th><td class="c">dietaryVitaminA</td><td class="c">NutritionRecord.vitaminA</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Vitamin B6</th><td class="c">dietaryVitaminB6</td><td class="c">NutritionRecord.vitaminB6</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Vitamin B12</th><td class="c">dietaryVitaminB12</td><td class="c">NutritionRecord.vitaminB12</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Vitamin C</th><td class="c">dietaryVitaminC</td><td class="c">NutritionRecord.vitaminC</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Vitamin D</th><td class="c">dietaryVitaminD</td><td class="c">NutritionRecord.vitaminD</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Vitamin E</th><td class="c">dietaryVitaminE</td><td class="c">NutritionRecord.vitaminE</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Vitamin K</th><td class="c">dietaryVitaminK</td><td class="c">NutritionRecord.vitaminK</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Caffeine</th><td class="c">dietaryCaffeine</td><td class="c">NutritionRecord.caffeine</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr class="sec"><td colspan="4">Cycle and reproductive health</td></tr>
+<tr><th scope="row">Menstrual flow</th><td class="c">menstrualFlow (with HKMetadataKeyMenstrualCycleStart)</td><td class="c">MenstruationFlowRecord.flow: light, medium, heavy, unknown</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Period, start and end</th><td class="c">No equivalent as its own type (derived from menstrualFlow)</td><td class="c">MenstruationPeriodRecord: startTime, endTime</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Pregnancy</th><td class="c">pregnancy</td><td class="c">No equivalent as a record (see medical records, pregnancy)</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Lactation</th><td class="c">lactation</td><td class="c">No equivalent</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Bleeding between periods</th><td class="c">intermenstrualBleeding</td><td class="c">IntermenstrualBleedingRecord</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Basal body temperature</th><td class="c">basalBodyTemperature</td><td class="c">BasalBodyTemperatureRecord: temperature, measurementLocation</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Pregnancy test result</th><td class="c">pregnancyTestResult</td><td class="c">No equivalent</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr class="sec"><td colspan="4">Heart and vitals</td></tr>
+<tr><th scope="row">Heart rate</th><td class="c">heartRate</td><td class="c">HeartRateRecord.samples: beatsPerMinute, time</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Resting heart rate</th><td class="c">restingHeartRate</td><td class="c">RestingHeartRateRecord.beatsPerMinute</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Blood pressure</th><td class="c">bloodPressure (correlation), bloodPressureSystolic, bloodPressureDiastolic</td><td class="c">BloodPressureRecord: systolic, diastolic, bodyPosition (standing, sitting, lying down, reclining, unknown), measurementLocation (left or right wrist, left or right upper arm, unknown)</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr class="sec"><td colspan="4">Clinical and medical records</td></tr>
+<tr><th scope="row">Allergies</th><td class="c">allergyRecord</td><td class="c">MEDICAL_RESOURCE_TYPE_ALLERGIES_INTOLERANCES</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Conditions</th><td class="c">conditionRecord</td><td class="c">MEDICAL_RESOURCE_TYPE_CONDITIONS</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Pregnancy</th><td class="c">No equivalent as a clinical type</td><td class="c">MEDICAL_RESOURCE_TYPE_PREGNANCY</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr class="sec"><td colspan="4">Profile (set once by the member)</td></tr>
+<tr><th scope="row">Date of birth</th><td class="c">dateOfBirth</td><td class="c">No equivalent as a record (see medical records, personal details)</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr><th scope="row">Sex</th><td class="c">biologicalSex</td><td class="c">No equivalent as a record (see medical records, personal details)</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+<tr class="sec"><td colspan="4">Body measurements</td></tr>
+<tr><th scope="row">Lean body mass</th><td class="c">leanBodyMass</td><td class="c">LeanBodyMassRecord.mass</td><td class="pick"><span class="pill">V2 Implementation</span></td></tr>
+</tbody></table></div></div></details>
 <h1 id="8-risks-and-what-is-not-yet-verified">8. Risks and what is not yet verified</h1>
 <ul><li><strong>Devices outside the two platforms are not covered.</strong> A band that does not write into Apple Health or Health Connect will not sync. Support for those can be discussed later, according to need and numbers.</li><li><strong>The backend&#x27;s internals are not yet reviewed.</strong> This proposal is based on its interface only, and the backend contract has still to be agreed.</li><li><strong>Background sync is best effort on both platforms.</strong> Figures will sometimes be hours behind. D10 is how we are honest about that.</li><li><strong>Store review can take longer than the build.</strong> The data list (D4) is settled, so it can start now.</li><li><strong>Spotting a repeat log depends on timing.</strong> The agent can only ask &quot;is this the same workout?&quot; if the device&#x27;s record has reached HEAL before the member mentions it. If the sync is behind, the question comes too late.</li><li><strong>The legal position is from secondary sources.</strong> It needs confirming before the consent text is final.</li><li><strong>Synced data cannot be deleted in the app (D9).</strong> The legal review (C4) should confirm that this is acceptable.</li></ul>
 <h1 id="9-sources">9. Sources</h1>
@@ -194,18 +323,24 @@ function filter(){var sec=null,shown=0;
 if(tr.className==='sec'){if(sec)sec.hidden=!shown;sec=tr;shown=0;return;}
 var ok=(!f||tr.dataset.use===f)&&(!q||tr.dataset.q.indexOf(q)>-1);
 tr.hidden=!ok;if(ok)shown++;});if(sec)sec.hidden=!shown;}
-[].forEach.call(document.querySelectorAll('.bar button'),function(b){b.addEventListener('click',function(){
-f=b.dataset.f;[].forEach.call(document.querySelectorAll('.bar button'),function(x){
+[].forEach.call(document.querySelectorAll('.bar button[data-f]'),function(b){b.addEventListener('click',function(){
+f=b.dataset.f;[].forEach.call(document.querySelectorAll('.bar button[data-f]'),function(x){
 x.setAttribute('aria-pressed',x===b?'true':'false');});filter();});});
 document.getElementById('q').addEventListener('input',function(ev){q=ev.target.value.trim().toLowerCase();filter();});
 
 // a copy that can leave the page, with whatever the column says at the time
 document.getElementById('csv').addEventListener('click',function(){
 var q=function(s){return '"'+String(s).replace(/"/g,'""')+'"';};
-var out=[['Section','Data','iOS, Apple HealthKit','Android, Health Connect','Useful for','Why'].map(q).join(',')];
+var first=document.getElementById('first-list').textContent;
+var second=document.querySelector('#second-list .panel-title').textContent;
+var out=[['List','Section','Data','iOS, Apple HealthKit','Android, Health Connect','Useful for'].map(q).join(',')];
 rows.forEach(function(tr){var s=tr.querySelector('select');
-out.push([tr.closest('tbody')&&sectionOf(tr),tr.children[0].textContent,
-tr.children[1].textContent,tr.children[2].textContent,s.options[s.selectedIndex].text,tr.children[4].textContent].map(q).join(','));});
+out.push([first,sectionOf(tr),tr.children[0].textContent,
+tr.children[1].textContent,tr.children[2].textContent,s.options[s.selectedIndex].text].map(q).join(','));});
+// the second list too, so the file holds everything the page shows
+[].forEach.call(document.querySelectorAll('#later tbody tr:not(.sec)'),function(tr){
+out.push([second,sectionOf(tr),tr.children[0].textContent,
+tr.children[1].textContent,tr.children[2].textContent,tr.children[3].textContent].map(q).join(','));});
 var a=document.createElement('a');
 a.href=URL.createObjectURL(new Blob(['\ufeff'+out.join('\r\n')],{type:'text/csv;charset=utf-8'}));
 a.download='HEAL_health_data_fields.csv';a.click();URL.revokeObjectURL(a.href);});
