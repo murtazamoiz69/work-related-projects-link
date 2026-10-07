@@ -21,8 +21,8 @@ Activity and energy,Active calories,activeEnergyBurned,ActiveCaloriesBurnedRecor
 Activity and energy,Resting calories,basalEnergyBurned,BasalMetabolicRateRecord.basalMetabolicRate,Captured currently,Yes,"Could replace HEAL's own resting-burn formula. Android gives a rate, iOS an amount."
 Activity and energy,Total calories burned,No equivalent (active and resting are separate types),TotalCaloriesBurnedRecord.energy,V1 Implementation,Yes,"D1: never used, because it includes resting burn."
 Activity and energy,"Distance, walking and running",distanceWalkingRunning,DistanceRecord.distance (one record type covers every activity),Captured currently,Yes,Detail for the workout log.
-Activity and energy,"Distance, cycling",distanceCycling,DistanceRecord.distance,V1 Implementation,Yes,Detail for the workout log.
-Activity and energy,"Distance, swimming",distanceSwimming,DistanceRecord.distance,V1 Implementation,Yes,Detail for the workout log.
+Activity and energy,"Distance, cycling",distanceCycling,DistanceRecord.distance,V1 Implementation,No,Detail for the workout log.
+Activity and energy,"Distance, swimming",distanceSwimming,DistanceRecord.distance,V1 Implementation,No,Detail for the workout log.
 Activity and energy,"Distance, wheelchair",distanceWheelchair,DistanceRecord.distance,Undecided,No,
 Activity and energy,Distance downhill snow sports,distanceDownhillSnowSports,DistanceRecord.distance,Undecided,No,
 Activity and energy,Distance cross country skiing,distanceCrossCountrySkiing,DistanceRecord.distance,Undecided,No,
@@ -33,10 +33,10 @@ Activity and energy,Floors climbed,flightsClimbed,FloorsClimbedRecord.floors,Und
 Activity and energy,Elevation gained,HKMetadataKeyElevationAscended (on a workout),ElevationGainedRecord.elevation,Undecided,No,
 Activity and energy,Exercise minutes,appleExerciseTime,No record of its own; total from ExerciseSessionRecord (EXERCISE_DURATION_TOTAL),Captured currently,Yes,A weekly activity view.
 Activity and energy,Moderate and vigorous activity,No equivalent,"ActivityIntensityRecord.activityIntensityType: moderate, vigorous",Captured currently,Yes,Intensity without heart rate.
-Activity and energy,Physical effort (MET),physicalEffort,No equivalent,Captured currently,Yes,Real intensity for a burn estimate.
-Activity and energy,Workout effort score,"workoutEffortScore, estimatedWorkoutEffortScore",ExerciseSessionRecord.rateOfPerceivedExertion,V1 Implementation,Yes,Addresses the workout intensity gap.
-Activity and energy,"Daily activity summary, totals","HKActivitySummary: activeEnergyBurned, appleMoveTime, appleExerciseTime, appleStandHours, activityMoveMode, isPaused",No equivalent,V1 Implementation,Yes,A ready daily total from the Apple activity rings.
-Activity and energy,"Daily activity summary, the member's own goals","HKActivitySummary: activeEnergyBurnedGoal, appleMoveTimeGoal, exerciseTimeGoal, standHoursGoal",No equivalent,V1 Implementation,Yes,HEAL sets its own targets.
+Activity and energy,Physical effort (MET),physicalEffort,No equivalent,Captured currently,No,Real intensity for a burn estimate.
+Activity and energy,Workout effort score,"workoutEffortScore, estimatedWorkoutEffortScore",ExerciseSessionRecord.rateOfPerceivedExertion,V1 Implementation,No,Addresses the workout intensity gap.
+Activity and energy,"Daily activity summary, totals","HKActivitySummary: activeEnergyBurned, appleMoveTime, appleExerciseTime, appleStandHours, activityMoveMode, isPaused",No equivalent,V1 Implementation,No,A ready daily total from the Apple activity rings.
+Activity and energy,"Daily activity summary, the member's own goals","HKActivitySummary: activeEnergyBurnedGoal, appleMoveTimeGoal, exerciseTimeGoal, standHoursGoal",No equivalent,V1 Implementation,No,HEAL sets its own targets.
 Activity and energy,Move time,appleMoveTime,No equivalent,Undecided,No,
 Activity and energy,Stand time,appleStandTime,No equivalent,Undecided,No,
 Activity and energy,Stand hour,appleStandHour,No equivalent,Undecided,No,
@@ -85,7 +85,7 @@ Body measurements,Weight,bodyMass,WeightRecord.weight,Captured currently,Yes,"Th
 Body measurements,Height,height,HeightRecord.height,Captured currently,Yes,Prefill at onboarding.
 Body measurements,Waist,waistCircumference,No equivalent (not in Health Connect),Captured currently,Yes,A check-in measurement. Stays manual on Android.
 Body measurements,Body fat percentage,bodyFatPercentage,BodyFatRecord.percentage,V1 Implementation,Yes,"Progress beyond weight, from a smart scale."
-Body measurements,Lean body mass,leanBodyMass,LeanBodyMassRecord.mass,V1 Implementation,Yes,
+Body measurements,Lean body mass,leanBodyMass,LeanBodyMassRecord.mass,V1 Implementation,No,
 Body measurements,Body mass index,bodyMassIndex,No equivalent,Captured currently,Yes,HEAL can calculate it from weight and height.
 Body measurements,Bone mass,No equivalent,BoneMassRecord.mass,"PLR, Later",No,
 Body measurements,Body water mass,No equivalent,BodyWaterMassRecord.mass,"PLR, Later",No,
@@ -171,20 +171,20 @@ Nutrition and water,Biotin (B7),dietaryBiotin,NutritionRecord.biotin,Undecided,N
 Nutrition and water,Folate,dietaryFolate,NutritionRecord.folate,Undecided,No,
 Nutrition and water,Folic acid,No equivalent,NutritionRecord.folicAcid,Undecided,No,
 Nutrition and water,Caffeine,dietaryCaffeine,NutritionRecord.caffeine,V1 Implementation,No,
-Cycle and reproductive health,Menstrual flow,menstrualFlow (with HKMetadataKeyMenstrualCycleStart),"MenstruationFlowRecord.flow: light, medium, heavy, unknown",V1 Implementation,Yes,Relevant for members with PCOS. Highly sensitive.
-Cycle and reproductive health,"Period, start and end",No equivalent as its own type (derived from menstrualFlow),"MenstruationPeriodRecord: startTime, endTime",V1 Implementation,Yes,Same.
+Cycle and reproductive health,Menstrual flow,menstrualFlow (with HKMetadataKeyMenstrualCycleStart),"MenstruationFlowRecord.flow: light, medium, heavy, unknown",V1 Implementation,No,Relevant for members with PCOS. Highly sensitive.
+Cycle and reproductive health,"Period, start and end",No equivalent as its own type (derived from menstrualFlow),"MenstruationPeriodRecord: startTime, endTime",V1 Implementation,No,Same.
 Cycle and reproductive health,Irregular menstrual cycles,irregularMenstrualCycles,No equivalent,Undecided,No,A cycle pattern flagged by the phone. A PCOS signal.
 Cycle and reproductive health,Infrequent menstrual cycles,infrequentMenstrualCycles,No equivalent,Undecided,No,A cycle pattern flagged by the phone. A PCOS signal.
 Cycle and reproductive health,Prolonged menstrual periods,prolongedMenstrualPeriods,No equivalent,Undecided,No,A cycle pattern flagged by the phone. A PCOS signal.
 Cycle and reproductive health,Persistent intermenstrual bleeding,persistentIntermenstrualBleeding,No equivalent,Undecided,No,A cycle pattern flagged by the phone. A PCOS signal.
-Cycle and reproductive health,Pregnancy,pregnancy,"No equivalent as a record (see medical records, pregnancy)",Captured currently,Yes,"The plan must change, and it is a safety matter."
-Cycle and reproductive health,Lactation,lactation,No equivalent,Captured currently,Yes,HEAL already treats lactating as a life stage.
-Cycle and reproductive health,Bleeding between periods,intermenstrualBleeding,IntermenstrualBleedingRecord,V1 Implementation,Yes,
-Cycle and reproductive health,Basal body temperature,basalBodyTemperature,"BasalBodyTemperatureRecord: temperature, measurementLocation",V1 Implementation,Yes,
+Cycle and reproductive health,Pregnancy,pregnancy,"No equivalent as a record (see medical records, pregnancy)",Captured currently,No,"The plan must change, and it is a safety matter."
+Cycle and reproductive health,Lactation,lactation,No equivalent,Captured currently,No,HEAL already treats lactating as a life stage.
+Cycle and reproductive health,Bleeding between periods,intermenstrualBleeding,IntermenstrualBleedingRecord,V1 Implementation,No,
+Cycle and reproductive health,Basal body temperature,basalBodyTemperature,"BasalBodyTemperatureRecord: temperature, measurementLocation",V1 Implementation,No,
 Cycle and reproductive health,Cervical mucus,cervicalMucusQuality,"CervicalMucusRecord: appearance (dry, sticky, creamy, watery, egg white, unusual, unknown), sensation (light, medium, heavy, unknown)",Undecided,No,
 Cycle and reproductive health,Ovulation test,ovulationTestResult,"OvulationTestRecord.result: positive, high, negative, inconclusive","PLR, Later",No,
 Cycle and reproductive health,Progesterone test result,progesteroneTestResult,No equivalent,"PLR, Later",No,
-Cycle and reproductive health,Pregnancy test result,pregnancyTestResult,No equivalent,Captured currently,Yes,
+Cycle and reproductive health,Pregnancy test result,pregnancyTestResult,No equivalent,Captured currently,No,
 Cycle and reproductive health,Contraceptive,contraceptive,No equivalent,"PLR, Later",No,
 Cycle and reproductive health,Menopausal state,menopausalState,No equivalent,"PLR, Later",No,
 Cycle and reproductive health,Bleeding after menopause,bleedingAfterMenopause,No equivalent,"PLR, Later",No,
@@ -277,7 +277,7 @@ Clinical and medical records,Visits,No equivalent,MEDICAL_RESOURCE_TYPE_VISITS,"
 Clinical and medical records,Verifiable record (signed card),"HKVerifiableClinicalRecord: subject, issuerIdentifier, issuedDate, relevantDate, expirationDate, recordTypes, sourceType (SMART Health Card, EU Digital COVID Certificate), itemNames, dataRepresentation",No equivalent,"PLR, Later",No,
 Clinical and medical records,Clinical document,CDA (HKCDADocumentSample.document),No equivalent,"PLR, Later",No,
 iOS metadata keys (optional extras on a sample),Was user entered,HKMetadataKeyWasUserEntered,Metadata.recordingMethod,V1 Implementation,No,
-iOS metadata keys (optional extras on a sample),Time zone,HKMetadataKeyTimeZone,Zone offset fields,V1 Implementation,Yes,
+iOS metadata keys (optional extras on a sample),Time zone,HKMetadataKeyTimeZone,Zone offset fields,V1 Implementation,No,
 iOS metadata keys (optional extras on a sample),Device name,HKMetadataKeyDeviceName,Device.model,Undecided,No,
 iOS metadata keys (optional extras on a sample),Device manufacturer name,HKMetadataKeyDeviceManufacturerName,Device.manufacturer,Undecided,No,
 iOS metadata keys (optional extras on a sample),Sync identifier,HKMetadataKeySyncIdentifier,Metadata.clientRecordId,Undecided,No,
