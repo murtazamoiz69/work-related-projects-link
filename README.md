@@ -6,10 +6,11 @@ Two pages, each with its own save endpoint, deployed together:
   with the link can edit a message (the example and its notification, or the Context
   setting message) and save it.
 - `/health-integration/` the **Apple Health and Health Connect document**: the whole
-  proposal, with an appendix of the data fields marked for HEAL. Anyone with the link can
-  change the "Useful for" value on any row and save it. The full 345-row list of every
-  field the two platforms offer is kept in `health-integration-data/`, which sits outside
-  `site/` and is never served.
+  proposal, with an appendix of the data fields in view for the first version. Anyone with
+  the link can change the "Useful for" value on any row and save it. The full 345-row list
+  of every field the two platforms offer, and the workout type values that used to be
+  Appendix B, are kept in `health-integration-data/`, which sits outside `site/` and is
+  never served.
 
 A saved edit is what everyone sees from then on.
 
