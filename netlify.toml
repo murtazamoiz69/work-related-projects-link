@@ -1,8 +1,7 @@
-# This branch is the health-data document's own site.
+# The HEAL health data integration document, and nothing else.
 #   site/health-integration/        the page (built by health-integration/build_doc_site.py)
 #   netlify/functions/field-edits/  /api/field-edits, which stores the saved Useful for values
-# The journey map and its /api/edits ride along from the proactive-messages branch; the rewrite
-# below serves the document at the site root, so the path does not have to be typed.
+# The page has one address, /health-integration/. The site root sends visitors there.
 [build]
   publish = "site"
   functions = "netlify/functions"
@@ -13,7 +12,7 @@
 [[redirects]]
   from = "/"
   to = "/health-integration/"
-  status = 200
+  status = 302
 
 [[headers]]
   for = "/*"

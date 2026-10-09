@@ -1,64 +1,49 @@
-# HEAL pages, with shared editing
+# HEAL health data integration document
 
-Two pages, each with its own save endpoint, deployed together:
+One page, with shared editing: the Apple Health and Google Health Connect proposal for
+HEAL, served at `/health-integration/`. The site root redirects there.
 
-- `/` the **journey map**: the first-week journey of HEAL's proactive messages. Anyone
-  with the link can edit a message (the example and its notification, or the Context
-  setting message) and save it.
-- `/health-integration/` the **Apple Health and Health Connect document**: the whole
-  proposal, with an appendix of the data fields in view, in two lists. Anyone with the link
-  can change the "Useful for" value on any row of the first list and save it; the second
-  list, which opens and closes, is not editable. The full 345-row list
-  of every field the two platforms offer, and the workout type values that used to be
-  Appendix B, are kept in `health-integration-data/`, which sits outside `site/` and is
-  never served.
+The page ends with an appendix of the data fields in view, in two lists. Anyone with the
+link can change the "Useful for" value on any row of the first list and save it; the
+second list, which opens and closes, is not editable. A saved value is what everyone
+sees from then on.
 
-A saved edit is what everyone sees from then on.
+## What is in this branch
+
+- `site/health-integration/index.html` is the page.
+- `netlify/functions/field-edits/` is `/api/field-edits`, which stores the saved
+  "Useful for" values. `keys.mjs` lists the rows and values it accepts.
+- `health-integration-data/` holds the full 345-row list of every field the two
+  platforms offer, and the workout type values that used to be an appendix. It sits
+  outside `site/`, so it is in the repo and never served.
+- `dev/local-server.mjs` runs the page and the function on this machine.
 
 ## How saving works
 
-The two pages work the same way, against their own endpoint and their own Blobs store:
-`/api/edits` with store `journey-edits` for the journey map, `/api/field-edits` with
-store `health-field-edits` for the health-data document. The health document's rows are
-keyed by section and field name, its value must be one of the two "Useful for" values the page offers,
-and choosing the value the page was built with deletes the saved edit rather than
-storing it, so an untouched row stays untouched.
+`/api/field-edits` keeps one record per row in Netlify Blobs (store
+`health-field-edits`), so saves on different rows never overwrite each other. A row's
+value must be one of the two "Useful for" values the page offers. Choosing the value the
+page was built with deletes the saved record, so an untouched row stays untouched. If
+two people save the same row, the second is told and shown the first one's value.
 
-- `site/index.html` is the page. It loads the saved edits from `/api/edits` before it
-  renders, and again when the tab comes back into view.
-- `netlify/functions/edits/edits.mjs` is `/api/edits`. It stores one record per message
-  in Netlify Blobs (store `journey-edits`), so saves on different messages never
-  overwrite each other. If two people save the same message, the second is told and
-  keeps their text, and can save again to replace the first.
-- Every save is also written to a history record that is never rewritten:
-  `GET /api/edits?history=1` lists the latest 200, newest first, with the text before
-  and after. Use it to put back anything overwritten by mistake.
-- Only the messages on the page can be edited (`keys.mjs`); the server checks shape
-  and length too.
+Every save is also written to a history record that is never rewritten:
+`GET /api/field-edits?history=1` lists the latest 300, newest first.
 
-Read the current edits at any time:
+Read the current values at any time:
 
-    GET https://<site>/api/edits
+    GET https://<site>/api/field-edits
 
 ## Where the page comes from
 
-Don't edit `site/index.html` or `netlify/functions/edits/keys.mjs` by hand. Both are
-built from the project's proactive-sim folder (outside this repo):
+Don't edit `site/health-integration/index.html` or
+`netlify/functions/field-edits/keys.mjs` by hand. Both are built from the project's
+health-integration folder, which is outside this repo:
 
-    python proactive-sim/build_netlify_site.py
-
-The same holds for `site/health-integration/index.html` and
-`netlify/functions/field-edits/keys.mjs`, built from the health-integration folder:
-
+    python health-integration/snapshot_useful_for.py    # optional: catch up with the live values
     python health-integration/build_doc_site.py
 
-That page is the health-data document itself: the Google Doc and Google Sheet it came
-from were discarded on 6 October 2026. Its prose lives in `health-integration/
-doc_content.json` and its field tables in `health_fields.json`, written by
-`build_health_fields.py`.
-
-That uses the same `message_data.py` and `journey_map_template.html` as the artifact
-version, and swaps in `netlify_save_layer.js` as the save code. Saved edits live on the
+The page's prose lives in `health-integration/doc_content.json` and its field tables in
+`health_fields.json`, written by `build_health_fields.py`. Saved values live on the
 server, not in the page, so rebuilding and redeploying never loses them.
 
 ## Run it locally
@@ -70,16 +55,6 @@ This runs the real function against a local store in `dev/.blobs/` (ignored by g
 
 ## Deploy (Netlify)
 
-Import this repo. `netlify.toml` sets everything: publish `site`, functions
-`netlify/functions`, no build command. Netlify Blobs needs no setup. The site sends
-`noindex` so search engines leave it alone.
-
-Two branches, two sites:
-
-- `proactive-messages` is the journey map, live at proactive-messages.netlify.app.
-- `health-app-integration` is the health-data document's own site. Its `netlify.toml`
-  adds one rewrite, so the document is served at the site root as well as at
-  `/health-integration/`. Everything else is the same, which is why the journey map and
-  its `/api/edits` ride along unused.
-
-The two stores are separate, so a saved edit on one site never touches the other.
+`netlify.toml` sets everything: publish `site`, functions `netlify/functions`, no build
+command. Netlify Blobs needs no setup. A push to this branch deploys the site. The site
+sends `noindex` so search engines leave it alone.

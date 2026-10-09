@@ -1,8 +1,9 @@
-// Run the site locally, with the real /api/edits function and a local Blobs store.
+// Run the health data integration document locally, with the real /api/field-edits function and a
+// local Blobs store.
 //
-//   node dev/local-server.mjs            -> http://localhost:8770
+//   node dev/local-server.mjs            -> http://localhost:8770/health-integration/
 //
-// Saved edits go to dev/.blobs/ (ignored by git). No Netlify account needed.
+// Saved values go to dev/.blobs/ (ignored by git). No Netlify account needed.
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { dirname, join, extname } from 'node:path';
@@ -13,6 +14,7 @@ import { setEnvironmentContext } from '@netlify/blobs';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const PORT = Number(process.env.PORT || 8770);
 const TOKEN = 'local-dev';
+const PAGE = '/health-integration/';
 
 const blobs = new BlobsServer({ directory: join(ROOT, 'dev', '.blobs'), token: TOKEN });
 const { port: blobsPort } = await blobs.start();
@@ -21,7 +23,7 @@ setEnvironmentContext({ siteID: 'local', token: TOKEN, edgeURL: edge, uncachedEd
 
 // every function in netlify/functions, mounted at the path its own config declares
 const FUNCTIONS = await Promise.all(
-  ['edits/edits.mjs', 'field-edits/field-edits.mjs'].map(async (f) => {
+  ['field-edits/field-edits.mjs'].map(async (f) => {
     const m = await import(`../netlify/functions/${f}`);
     return [m.config.path, m.default];
   }),
@@ -41,8 +43,14 @@ createServer(async (req, res) => {
       res.end(await r.text());
       return;
     }
+    // the same redirect netlify.toml declares: the site root sends visitors to the page
+    if (url.pathname === '/') {
+      res.writeHead(302, { location: PAGE });
+      res.end();
+      return;
+    }
     const path = url.pathname.endsWith('/') ? `${url.pathname}index.html` : url.pathname;
-    const file = path === '/index.html' ? 'index.html' : path.slice(1);
+    const file = path.slice(1);
     if (file.includes('..')) throw new Error('bad path');
     const data = await readFile(join(ROOT, 'site', file));
     res.writeHead(200, { 'content-type': TYPES[extname(file)] || 'application/octet-stream' });
@@ -52,6 +60,5 @@ createServer(async (req, res) => {
     res.end(e.code === 'ENOENT' ? 'Not found' : String(e));
   }
 }).listen(PORT, () => console.log(
-  `journey map on http://localhost:${PORT}\n`
-  + `health-data document on http://localhost:${PORT}/health-integration/\n`
+  `health data document on http://localhost:${PORT}${PAGE}\n`
   + `(blobs on ${edge}; functions: ${[...FUNCTIONS.keys()].join(', ')})`));
