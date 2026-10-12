@@ -1,7 +1,8 @@
-// Run the health data integration document locally, with the real /api/field-edits function and a
-// local Blobs store.
+// Run the two health data pages locally, with the real /api/field-edits function and a local
+// Blobs store.
 //
-//   node dev/local-server.mjs            -> http://localhost:8770/health-integration/
+//   node dev/local-server.mjs            -> http://localhost:8770/health-integration-siam/
+//                                           http://localhost:8770/health-integration-nws/
 //
 // Saved values go to dev/.blobs/ (ignored by git). No Netlify account needed.
 import { createServer } from 'node:http';
@@ -14,7 +15,8 @@ import { setEnvironmentContext } from '@netlify/blobs';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const PORT = Number(process.env.PORT || 8770);
 const TOKEN = 'local-dev';
-const PAGE = '/health-integration/';
+const PAGE = '/health-integration-siam/';
+const OLD = '/health-integration';   // the address the page had until 12 October 2026
 
 const blobs = new BlobsServer({ directory: join(ROOT, 'dev', '.blobs'), token: TOKEN });
 const { port: blobsPort } = await blobs.start();
@@ -43,8 +45,8 @@ createServer(async (req, res) => {
       res.end(await r.text());
       return;
     }
-    // the same redirect netlify.toml declares: the site root sends visitors to the page
-    if (url.pathname === '/') {
+    // the same redirects netlify.toml declares: the site root and the old address go to the siam page
+    if (url.pathname === '/' || url.pathname === OLD || url.pathname.startsWith(`${OLD}/`)) {
       res.writeHead(302, { location: PAGE });
       res.end();
       return;
@@ -60,5 +62,5 @@ createServer(async (req, res) => {
     res.end(e.code === 'ENOENT' ? 'Not found' : String(e));
   }
 }).listen(PORT, () => console.log(
-  `health data document on http://localhost:${PORT}${PAGE}\n`
+  `health data pages on http://localhost:${PORT}${PAGE} and /health-integration-nws/\n`
   + `(blobs on ${edge}; functions: ${[...FUNCTIONS.keys()].join(', ')})`));

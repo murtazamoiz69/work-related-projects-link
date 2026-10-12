@@ -1,7 +1,8 @@
-# The HEAL health data integration document, and nothing else.
-#   site/health-integration/        the page (built by health-integration/build_doc_site.py)
-#   netlify/functions/field-edits/  /api/field-edits, which stores the saved Useful for values
-# The page has one address, /health-integration/. The site root sends visitors there.
+# The HEAL health data pages, and nothing else.
+#   site/health-integration-siam/   one page   } both built by health-integration/build_doc_site.py;
+#   site/health-integration-nws/    the other  } each keeps its own saved phases
+#   netlify/functions/field-edits/  /api/field-edits, which stores the saved phases per page
+# The site root and the old address, /health-integration/, both send visitors to the siam page.
 [build]
   publish = "site"
   functions = "netlify/functions"
@@ -11,7 +12,17 @@
 
 [[redirects]]
   from = "/"
-  to = "/health-integration/"
+  to = "/health-integration-siam/"
+  status = 302
+
+[[redirects]]
+  from = "/health-integration"
+  to = "/health-integration-siam/"
+  status = 302
+
+[[redirects]]
+  from = "/health-integration/*"
+  to = "/health-integration-siam/"
   status = 302
 
 [[headers]]
