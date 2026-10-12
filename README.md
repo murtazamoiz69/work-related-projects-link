@@ -10,9 +10,11 @@ They started as copies of each other on 12 October 2026 and are independent from
 each has its own field list, its own V1 list and its own saved phases. The site root and
 the old address, `/health-integration/`, redirect to the siam page.
 
-The two platforms offer 345 fields. Each page shows 192 of them; the rest (fields that can
-be worked out from others, per-record plumbing, iOS metadata keys, and groups the
-programme does not need) are left off and are listed in the build script.
+The two platforms offer 345 fields. Each page shows 91: only fields that both platforms
+have. Fields that can be worked out from others, per-record plumbing, iOS metadata keys
+and groups the programme does not need are left off; rows that are the same data under a
+different name on each platform are merged into one; and what only one platform has is
+left off. All of it is listed in the build script.
 
 The fields in V1 sit together in a block at the top; everything else follows by group.
 Anyone with the link can change a field's phase and it saves itself. A field moved into

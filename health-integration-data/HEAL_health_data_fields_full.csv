@@ -32,18 +32,18 @@ Activity and energy,Distance skating sports,distanceSkatingSports,DistanceRecord
 Activity and energy,Floors climbed,flightsClimbed,FloorsClimbedRecord.floors,Undecided,Undecided,Undecided,
 Activity and energy,Elevation gained,HKMetadataKeyElevationAscended (on a workout),ElevationGainedRecord.elevation,Undecided,Undecided,Undecided,
 Activity and energy,Exercise minutes,appleExerciseTime,No record of its own; total from ExerciseSessionRecord (EXERCISE_DURATION_TOTAL),V1,V1,"HEAL, Later",A weekly activity view.
-Activity and energy,Moderate and vigorous activity,No equivalent,"ActivityIntensityRecord.activityIntensityType: moderate, vigorous",V1,V1,"HEAL, Later",Intensity without heart rate.
-Activity and energy,Physical effort (MET),physicalEffort,No equivalent,Undecided,Undecided,"HEAL, Currently",Real intensity for a burn estimate.
+Activity and energy,Moderate and vigorous activity,No equivalent,"ActivityIntensityRecord.activityIntensityType: moderate, vigorous","Merged into Activity intensity, moderate and vigorous (V1)","Merged into Activity intensity, moderate and vigorous (V1)","HEAL, Later",Intensity without heart rate.
+Activity and energy,Physical effort (MET),physicalEffort,No equivalent,"Merged into Activity intensity, moderate and vigorous (V1)","Merged into Activity intensity, moderate and vigorous (V1)","HEAL, Currently",Real intensity for a burn estimate.
 Activity and energy,Workout effort score,"workoutEffortScore, estimatedWorkoutEffortScore",ExerciseSessionRecord.rateOfPerceivedExertion,Undecided,Undecided,"HEAL, Later",Addresses the workout intensity gap.
 Activity and energy,"Daily activity summary, totals","HKActivitySummary: activeEnergyBurned, appleMoveTime, appleExerciseTime, appleStandHours, activityMoveMode, isPaused",No equivalent,Not on the page,Not on the page,"HEAL, Later",A ready daily total from the Apple activity rings.
-Activity and energy,"Daily activity summary, the member's own goals","HKActivitySummary: activeEnergyBurnedGoal, appleMoveTimeGoal, exerciseTimeGoal, standHoursGoal",No equivalent,Undecided,Undecided,"HEAL, Later",HEAL sets its own targets.
-Activity and energy,Move time,appleMoveTime,No equivalent,Undecided,Undecided,Undecided,
-Activity and energy,Stand time,appleStandTime,No equivalent,Undecided,Undecided,Undecided,
-Activity and energy,Stand hour,appleStandHour,No equivalent,Undecided,Undecided,Undecided,
+Activity and energy,"Daily activity summary, the member's own goals","HKActivitySummary: activeEnergyBurnedGoal, appleMoveTimeGoal, exerciseTimeGoal, standHoursGoal",No equivalent,Not on the page,Not on the page,"HEAL, Later",HEAL sets its own targets.
+Activity and energy,Move time,appleMoveTime,No equivalent,Not on the page,Not on the page,Undecided,
+Activity and energy,Stand time,appleStandTime,No equivalent,Not on the page,Not on the page,Undecided,
+Activity and energy,Stand hour,appleStandHour,No equivalent,Not on the page,Not on the page,Undecided,
 Activity and energy,Step cadence,No equivalent,"StepsCadenceRecord.samples: rate, time",Not on the page,Not on the page,Undecided,
 Activity and energy,Wheelchair pushes,pushCount,WheelchairPushesRecord.count,Undecided,Undecided,Undecided,The step equivalent for wheelchair users.
 Activity and energy,VO2 max,vo2Max,"Vo2MaxRecord.vo2MillilitersPerMinuteKilogram, measurementMethod",V1,V1,Undecided,
-Activity and energy,Low cardio fitness event,lowCardioFitnessEvent,No equivalent,Undecided,Undecided,Undecided,
+Activity and energy,Low cardio fitness event,lowCardioFitnessEvent,No equivalent,Not on the page,Not on the page,Undecided,
 Activity and energy,NikeFuel points,nikeFuel,No equivalent,Not on the page,Not on the page,Undecided,
 Workouts,Workout,HKWorkout,ExerciseSessionRecord,Undecided,Undecided,"HEAL, Currently","The workout log, the Activity Logged grid and plan progress."
 Workouts,Workout type,HKWorkout.workoutActivityType (values in the appendix),ExerciseSessionRecord.exerciseType (values in the appendix),Undecided,Undecided,"HEAL, Currently","The two lists do not match one to one, so HEAL needs a mapping."
@@ -55,7 +55,7 @@ Workouts,Title and notes,HKMetadataKeyWorkoutBrandName,"ExerciseSessionRecord.ti
 Workouts,"Segments, sets and reps","HKWorkout.workoutActivities: uuid, startDate, endDate, duration, workoutConfiguration, statistics, workoutEvents, metadata","ExerciseSessionRecord.segments: segmentType, startTime, endTime, repetitions, setIndex, weight, rateOfPerceivedExertion",Undecided,Undecided,"HEAL, Currently","Sets, reps and weight for strength work, against the plan."
 Workouts,Heart rate and zones in the workout,"HKWorkout.statistics(for: heartRate), zoneGroupsByType, zoneGroup(for:)",HeartRateRecord for the session's time range,Undecided,Undecided,"HEAL, Later",Real workout intensity.
 Workouts,Any other total for the workout,HKWorkout.allStatistics,An aggregate request over the session's time range,Not on the page,Not on the page,"HEAL, Later",
-Workouts,Average MET,HKMetadataKeyAverageMETs,No equivalent,Undecided,Undecided,"HEAL, Currently",Real workout intensity.
+Workouts,Average MET,HKMetadataKeyAverageMETs,No equivalent,Not on the page,Not on the page,"HEAL, Currently",Real workout intensity.
 Workouts,Laps,HKWorkout.workoutEvents of type lap,"ExerciseSessionRecord.laps: startTime, endTime, length",Undecided,Undecided,Undecided,
 Workouts,Pauses and other events,"HKWorkout.workoutEvents: type, dateInterval, metadata (pause, resume, lap, marker, segment, motion paused, motion resumed, pause or resume request)",Segments of type PAUSE or REST,Undecided,Undecided,Undecided,
 Workouts,Route (GPS),HKWorkoutRoute: the list of locations,"ExerciseSessionRecord.exerciseRouteResult, then ExerciseRoute.route: time, latitude, longitude, altitude, horizontalAccuracy, verticalAccuracy",Undecided,Undecided,Undecided,"Location data, behind a separate permission on both platforms."
@@ -83,50 +83,50 @@ Sport performance detail,Underwater depth,underwaterDepth,No equivalent,Not on t
 Sport performance detail,Water temperature,waterTemperature,No equivalent,Not on the page,Not on the page,Undecided,
 Body measurements,Weight,bodyMass,WeightRecord.weight,V1,V1,"HEAL, Later","The weekly check-in weight, from a smart scale."
 Body measurements,Height,height,HeightRecord.height,V1,V1,"HEAL, Later",Prefill at onboarding.
-Body measurements,Waist,waistCircumference,No equivalent (not in Health Connect),V1,V1,"HEAL, Later",A check-in measurement. Stays manual on Android.
+Body measurements,Waist,waistCircumference,No equivalent (not in Health Connect),Not on the page,Not on the page,"HEAL, Later",A check-in measurement. Stays manual on Android.
 Body measurements,Body fat percentage,bodyFatPercentage,BodyFatRecord.percentage,Undecided,Undecided,"HEAL, Later","Progress beyond weight, from a smart scale."
 Body measurements,Lean body mass,leanBodyMass,LeanBodyMassRecord.mass,Not on the page,Not on the page,"HEAL, Later",
 Body measurements,Body mass index,bodyMassIndex,No equivalent,Not on the page,Not on the page,"HEAL, Later",HEAL can calculate it from weight and height.
-Body measurements,Bone mass,No equivalent,BoneMassRecord.mass,Undecided,Undecided,"PLR, Later",
-Body measurements,Body water mass,No equivalent,BodyWaterMassRecord.mass,Undecided,Undecided,"PLR, Later",
+Body measurements,Bone mass,No equivalent,BoneMassRecord.mass,Not on the page,Not on the page,"PLR, Later",
+Body measurements,Body water mass,No equivalent,BodyWaterMassRecord.mass,Not on the page,Not on the page,"PLR, Later",
 Body measurements,Skin or wrist temperature,appleSleepingWristTemperature,"SkinTemperatureRecord: baseline, deltas (delta, time), measurementLocation (finger, toe, wrist, unknown)",V1,V1,"PLR, Later",
 Heart and vitals,Heart rate,heartRate,"HeartRateRecord.samples: beatsPerMinute, time",Undecided,Undecided,"HEAL, Later",Real workout intensity.
 Heart and vitals,Resting heart rate,restingHeartRate,RestingHeartRateRecord.beatsPerMinute,V1,V1,"HEAL, Later",A fitness trend for the weekly check-in.
 Heart and vitals,Blood pressure,"bloodPressure (correlation), bloodPressureSystolic, bloodPressureDiastolic","BloodPressureRecord: systolic, diastolic, bodyPosition (standing, sitting, lying down, reclining, unknown), measurementLocation (left or right wrist, left or right upper arm, unknown)",Undecided,Undecided,"HEAL, Later","The agent already records this in chat, and PLR is where it is kept."
-Heart and vitals,Walking heart rate average,walkingHeartRateAverage,No equivalent,Undecided,Undecided,"PLR, Later",
-Heart and vitals,"Heart rate variability, SDNN",heartRateVariabilitySDNN,No equivalent,V1,V1,"PLR, Later",Apple's long-standing measure. Not comparable with RMSSD.
-Heart and vitals,"Heart rate variability, RMSSD",heartRateVariabilityRMSSD (iOS 27 and later),HeartRateVariabilityRmssdRecord.heartRateVariabilityMillis,V1,V1,"PLR, Later",
-Heart and vitals,"Heart rate recovery, one minute",heartRateRecoveryOneMinute,No equivalent,Undecided,Undecided,"PLR, Later",
-Heart and vitals,Atrial fibrillation burden,atrialFibrillationBurden,No equivalent,Undecided,Undecided,"PLR, Later",
-Heart and vitals,High heart rate event,highHeartRateEvent,No equivalent,Undecided,Undecided,"PLR, Later",
-Heart and vitals,Low heart rate event,lowHeartRateEvent,No equivalent,Undecided,Undecided,"PLR, Later",
-Heart and vitals,Irregular heart rhythm event,irregularHeartRhythmEvent,No equivalent,Undecided,Undecided,"PLR, Later",
-Heart and vitals,Hypertension event,hypertensionEvent (iOS 26.2 and later),No equivalent,Undecided,Undecided,"PLR, Later",Relevant to members with hypertension.
-Heart and vitals,Heartbeat series,HKHeartbeatSeriesSample (beat-to-beat intervals),No equivalent,Undecided,Undecided,"PLR, Later",
-Heart and vitals,Electrocardiogram,"HKElectrocardiogram: classification, averageHeartRate, symptomsStatus, numberOfVoltageMeasurements, samplingFrequency, voltage measurements, lead",No equivalent,Undecided,Undecided,"PLR, Later",
+Heart and vitals,Walking heart rate average,walkingHeartRateAverage,No equivalent,Not on the page,Not on the page,"PLR, Later",
+Heart and vitals,"Heart rate variability, SDNN",heartRateVariabilitySDNN,No equivalent,Merged into Heart rate variability (V1),Merged into Heart rate variability (V1),"PLR, Later",Apple's long-standing measure. Not comparable with RMSSD.
+Heart and vitals,"Heart rate variability, RMSSD",heartRateVariabilityRMSSD (iOS 27 and later),HeartRateVariabilityRmssdRecord.heartRateVariabilityMillis,Merged into Heart rate variability (V1),Merged into Heart rate variability (V1),"PLR, Later",
+Heart and vitals,"Heart rate recovery, one minute",heartRateRecoveryOneMinute,No equivalent,Not on the page,Not on the page,"PLR, Later",
+Heart and vitals,Atrial fibrillation burden,atrialFibrillationBurden,No equivalent,Not on the page,Not on the page,"PLR, Later",
+Heart and vitals,High heart rate event,highHeartRateEvent,No equivalent,Not on the page,Not on the page,"PLR, Later",
+Heart and vitals,Low heart rate event,lowHeartRateEvent,No equivalent,Not on the page,Not on the page,"PLR, Later",
+Heart and vitals,Irregular heart rhythm event,irregularHeartRhythmEvent,No equivalent,Not on the page,Not on the page,"PLR, Later",
+Heart and vitals,Hypertension event,hypertensionEvent (iOS 26.2 and later),No equivalent,Not on the page,Not on the page,"PLR, Later",Relevant to members with hypertension.
+Heart and vitals,Heartbeat series,HKHeartbeatSeriesSample (beat-to-beat intervals),No equivalent,Not on the page,Not on the page,"PLR, Later",
+Heart and vitals,Electrocardiogram,"HKElectrocardiogram: classification, averageHeartRate, symptomsStatus, numberOfVoltageMeasurements, samplingFrequency, voltage measurements, lead",No equivalent,Not on the page,Not on the page,"PLR, Later",
 Heart and vitals,Blood oxygen,oxygenSaturation,OxygenSaturationRecord.percentage,Undecided,Undecided,"PLR, Later",
 Heart and vitals,Body temperature,bodyTemperature,"BodyTemperatureRecord: temperature, measurementLocation (armpit, ear, finger, forehead, mouth, rectum, temporal artery, toe, vagina, wrist, unknown)",Undecided,Undecided,"PLR, Later",
 Heart and vitals,Respiratory rate,respiratoryRate,RespiratoryRateRecord.rate,Undecided,Undecided,"PLR, Later",
-Heart and vitals,Sleep apnea event,sleepApneaEvent,No equivalent,Undecided,Undecided,"PLR, Later",
-Heart and vitals,Breathing disturbances during sleep,appleSleepingBreathingDisturbances,No equivalent,Undecided,Undecided,"PLR, Later",
+Heart and vitals,Sleep apnea event,sleepApneaEvent,No equivalent,Not on the page,Not on the page,"PLR, Later",
+Heart and vitals,Breathing disturbances during sleep,appleSleepingBreathingDisturbances,No equivalent,Not on the page,Not on the page,"PLR, Later",
 "Glucose, lungs and other readings",Blood glucose,bloodGlucose,"BloodGlucoseRecord: level, relationToMeal (before meal, after meal, fasting, general, unknown), mealType, specimenSource (capillary blood, interstitial fluid, plasma, serum, tears, whole blood, unknown)",Undecided,Undecided,"PLR, Later",The agent already records sugar in chat. Matters for members with diabetes.
-"Glucose, lungs and other readings",Insulin delivery,insulinDelivery,No equivalent,Undecided,Undecided,"PLR, Later",
-"Glucose, lungs and other readings",Number of alcoholic drinks,numberOfAlcoholicBeverages,No equivalent,Undecided,Undecided,Undecided,Alcohol calories and off-plan days.
-"Glucose, lungs and other readings",Blood alcohol content,bloodAlcoholContent,No equivalent,Undecided,Undecided,"PLR, Later",
-"Glucose, lungs and other readings","Forced expiratory volume, 1 second",forcedExpiratoryVolume1,No equivalent,Undecided,Undecided,"PLR, Later",
-"Glucose, lungs and other readings",Forced vital capacity,forcedVitalCapacity,No equivalent,Undecided,Undecided,"PLR, Later",
-"Glucose, lungs and other readings",Peak expiratory flow rate,peakExpiratoryFlowRate,No equivalent,Undecided,Undecided,"PLR, Later",
-"Glucose, lungs and other readings",Inhaler usage,inhalerUsage,No equivalent,Undecided,Undecided,"PLR, Later",
-"Glucose, lungs and other readings",Number of times fallen,numberOfTimesFallen,No equivalent,Undecided,Undecided,Undecided,
-"Glucose, lungs and other readings",Peripheral perfusion index,peripheralPerfusionIndex,No equivalent,Undecided,Undecided,"PLR, Later",
-"Glucose, lungs and other readings",Electrodermal activity,electrodermalActivity,No equivalent,Undecided,Undecided,"PLR, Later",
+"Glucose, lungs and other readings",Insulin delivery,insulinDelivery,No equivalent,Not on the page,Not on the page,"PLR, Later",
+"Glucose, lungs and other readings",Number of alcoholic drinks,numberOfAlcoholicBeverages,No equivalent,Not on the page,Not on the page,Undecided,Alcohol calories and off-plan days.
+"Glucose, lungs and other readings",Blood alcohol content,bloodAlcoholContent,No equivalent,Not on the page,Not on the page,"PLR, Later",
+"Glucose, lungs and other readings","Forced expiratory volume, 1 second",forcedExpiratoryVolume1,No equivalent,Not on the page,Not on the page,"PLR, Later",
+"Glucose, lungs and other readings",Forced vital capacity,forcedVitalCapacity,No equivalent,Not on the page,Not on the page,"PLR, Later",
+"Glucose, lungs and other readings",Peak expiratory flow rate,peakExpiratoryFlowRate,No equivalent,Not on the page,Not on the page,"PLR, Later",
+"Glucose, lungs and other readings",Inhaler usage,inhalerUsage,No equivalent,Not on the page,Not on the page,"PLR, Later",
+"Glucose, lungs and other readings",Number of times fallen,numberOfTimesFallen,No equivalent,Not on the page,Not on the page,Undecided,
+"Glucose, lungs and other readings",Peripheral perfusion index,peripheralPerfusionIndex,No equivalent,Not on the page,Not on the page,"PLR, Later",
+"Glucose, lungs and other readings",Electrodermal activity,electrodermalActivity,No equivalent,Not on the page,Not on the page,"PLR, Later",
 Sleep and mind,Sleep,"sleepAnalysis: inBed, awake, asleepCore, asleepDeep, asleepREM, asleepUnspecified","SleepSessionRecord: startTime, endTime, title, notes, stages (stage, startTime, endTime). Stage types: awake, awake in bed, out of bed, light, deep, REM, sleeping, unknown",V1,V1,"HEAL, Later",Bedtime and wake time could replace the routine questions that time the morning and evening messages.
 Sleep and mind,Mindfulness session,mindfulSession,"MindfulnessSessionRecord: mindfulnessSessionType (breathing, meditation, movement, music, unguided, unknown), title, notes, startTime, endTime",Undecided,Undecided,Undecided,
-Sleep and mind,State of mind,"HKStateOfMind: kind, valence, valenceClassification, labels (38 values), associations (18 values)",No equivalent,Undecided,Undecided,"PLR, Later",
-Sleep and mind,Anxiety questionnaire (GAD-7),"HKGAD7Assessment: answers, risk, score",No equivalent,Undecided,Undecided,"PLR, Later",
-Sleep and mind,Depression questionnaire (PHQ-9),"HKPHQ9Assessment: answers, risk, score",No equivalent,Undecided,Undecided,"PLR, Later",
-Sleep and mind,Time in daylight,timeInDaylight,No equivalent,Undecided,Undecided,Undecided,
-Sleep and mind,UV exposure,uvExposure,No equivalent,Undecided,Undecided,Undecided,
+Sleep and mind,State of mind,"HKStateOfMind: kind, valence, valenceClassification, labels (38 values), associations (18 values)",No equivalent,Not on the page,Not on the page,"PLR, Later",
+Sleep and mind,Anxiety questionnaire (GAD-7),"HKGAD7Assessment: answers, risk, score",No equivalent,Not on the page,Not on the page,"PLR, Later",
+Sleep and mind,Depression questionnaire (PHQ-9),"HKPHQ9Assessment: answers, risk, score",No equivalent,Not on the page,Not on the page,"PLR, Later",
+Sleep and mind,Time in daylight,timeInDaylight,No equivalent,Not on the page,Not on the page,Undecided,
+Sleep and mind,UV exposure,uvExposure,No equivalent,Not on the page,Not on the page,Undecided,
 Nutrition and water,A food or meal entry,"food (correlation that groups the nutrient samples), HKMetadataKeyFoodType","NutritionRecord: name, mealType (breakfast, lunch, dinner, snack, unknown), startTime, endTime",Undecided,Undecided,"HEAL, Currently","Meals logged in another app, for example MyFitnessPal. Needs the same overlap question as workouts."
 Nutrition and water,Water,dietaryWater,HydrationRecord.volume,V1,V1,"HEAL, Later",The agent already tracks water.
 Nutrition and water,Energy (calories eaten),dietaryEnergyConsumed,NutritionRecord.energy,Undecided,Undecided,"HEAL, Currently",HEAL counts calories and the main nutrients today.
@@ -141,7 +141,7 @@ Nutrition and water,"Fat, saturated",dietaryFatSaturated,NutritionRecord.saturat
 Nutrition and water,"Fat, monounsaturated",dietaryFatMonounsaturated,NutritionRecord.monounsaturatedFat,Undecided,Undecided,"HEAL, Later",
 Nutrition and water,"Fat, polyunsaturated",dietaryFatPolyunsaturated,NutritionRecord.polyunsaturatedFat,Undecided,Undecided,"HEAL, Later",
 Nutrition and water,"Fat, unsaturated",No equivalent,NutritionRecord.unsaturatedFat,Not on the page,Not on the page,"HEAL, Later",
-Nutrition and water,"Fat, trans",No equivalent,NutritionRecord.transFat,Undecided,Undecided,"HEAL, Later",
+Nutrition and water,"Fat, trans",No equivalent,NutritionRecord.transFat,Not on the page,Not on the page,"HEAL, Later",
 Nutrition and water,Cholesterol,dietaryCholesterol,NutritionRecord.cholesterol,Undecided,Undecided,"HEAL, Later",
 Nutrition and water,Potassium,dietaryPotassium,NutritionRecord.potassium,Undecided,Undecided,"HEAL, Later",
 Nutrition and water,Calcium,dietaryCalcium,NutritionRecord.calcium,Undecided,Undecided,"HEAL, Later",
@@ -168,68 +168,68 @@ Nutrition and water,Riboflavin (B2),dietaryRiboflavin,NutritionRecord.riboflavin
 Nutrition and water,Niacin (B3),dietaryNiacin,NutritionRecord.niacin,Undecided,Undecided,Undecided,
 Nutrition and water,Pantothenic acid (B5),dietaryPantothenicAcid,NutritionRecord.pantothenicAcid,Undecided,Undecided,Undecided,
 Nutrition and water,Biotin (B7),dietaryBiotin,NutritionRecord.biotin,Undecided,Undecided,Undecided,
-Nutrition and water,Folate,dietaryFolate,NutritionRecord.folate,Undecided,Undecided,Undecided,
-Nutrition and water,Folic acid,No equivalent,NutritionRecord.folicAcid,Undecided,Undecided,Undecided,
+Nutrition and water,Folate,dietaryFolate,NutritionRecord.folate,Merged into Folate and folic acid (Undecided),Merged into Folate and folic acid (Undecided),Undecided,
+Nutrition and water,Folic acid,No equivalent,NutritionRecord.folicAcid,Merged into Folate and folic acid (Undecided),Merged into Folate and folic acid (Undecided),Undecided,
 Nutrition and water,Caffeine,dietaryCaffeine,NutritionRecord.caffeine,Undecided,Undecided,"HEAL, Later",
 Cycle and reproductive health,Menstrual flow,menstrualFlow (with HKMetadataKeyMenstrualCycleStart),"MenstruationFlowRecord.flow: light, medium, heavy, unknown",V1,V1,"HEAL, Later",Relevant for members with PCOS. Highly sensitive.
 Cycle and reproductive health,"Period, start and end",No equivalent as its own type (derived from menstrualFlow),"MenstruationPeriodRecord: startTime, endTime",Not on the page,Not on the page,"HEAL, Later",Same.
-Cycle and reproductive health,Irregular menstrual cycles,irregularMenstrualCycles,No equivalent,Undecided,Undecided,Undecided,A cycle pattern flagged by the phone. A PCOS signal.
-Cycle and reproductive health,Infrequent menstrual cycles,infrequentMenstrualCycles,No equivalent,Undecided,Undecided,Undecided,A cycle pattern flagged by the phone. A PCOS signal.
-Cycle and reproductive health,Prolonged menstrual periods,prolongedMenstrualPeriods,No equivalent,Undecided,Undecided,Undecided,A cycle pattern flagged by the phone. A PCOS signal.
-Cycle and reproductive health,Persistent intermenstrual bleeding,persistentIntermenstrualBleeding,No equivalent,Undecided,Undecided,Undecided,A cycle pattern flagged by the phone. A PCOS signal.
-Cycle and reproductive health,Pregnancy,pregnancy,"No equivalent as a record (see medical records, pregnancy)",Undecided,Undecided,"HEAL, Currently","The plan must change, and it is a safety matter."
-Cycle and reproductive health,Lactation,lactation,No equivalent,Undecided,Undecided,"HEAL, Currently",HEAL already treats lactating as a life stage.
+Cycle and reproductive health,Irregular menstrual cycles,irregularMenstrualCycles,No equivalent,Not on the page,Not on the page,Undecided,A cycle pattern flagged by the phone. A PCOS signal.
+Cycle and reproductive health,Infrequent menstrual cycles,infrequentMenstrualCycles,No equivalent,Not on the page,Not on the page,Undecided,A cycle pattern flagged by the phone. A PCOS signal.
+Cycle and reproductive health,Prolonged menstrual periods,prolongedMenstrualPeriods,No equivalent,Not on the page,Not on the page,Undecided,A cycle pattern flagged by the phone. A PCOS signal.
+Cycle and reproductive health,Persistent intermenstrual bleeding,persistentIntermenstrualBleeding,No equivalent,Not on the page,Not on the page,Undecided,A cycle pattern flagged by the phone. A PCOS signal.
+Cycle and reproductive health,Pregnancy,pregnancy,"No equivalent as a record (see medical records, pregnancy)",Merged into Pregnancy (Undecided),Merged into Pregnancy (Undecided),"HEAL, Currently","The plan must change, and it is a safety matter."
+Cycle and reproductive health,Lactation,lactation,No equivalent,Not on the page,Not on the page,"HEAL, Currently",HEAL already treats lactating as a life stage.
 Cycle and reproductive health,Bleeding between periods,intermenstrualBleeding,IntermenstrualBleedingRecord,Undecided,Undecided,"HEAL, Later",
 Cycle and reproductive health,Basal body temperature,basalBodyTemperature,"BasalBodyTemperatureRecord: temperature, measurementLocation",V1,V1,"HEAL, Later",
 Cycle and reproductive health,Cervical mucus,cervicalMucusQuality,"CervicalMucusRecord: appearance (dry, sticky, creamy, watery, egg white, unusual, unknown), sensation (light, medium, heavy, unknown)",Undecided,Undecided,Undecided,
 Cycle and reproductive health,Ovulation test,ovulationTestResult,"OvulationTestRecord.result: positive, high, negative, inconclusive",Undecided,Undecided,"PLR, Later",
-Cycle and reproductive health,Progesterone test result,progesteroneTestResult,No equivalent,Undecided,Undecided,"PLR, Later",
-Cycle and reproductive health,Pregnancy test result,pregnancyTestResult,No equivalent,Undecided,Undecided,"HEAL, Currently",
-Cycle and reproductive health,Contraceptive,contraceptive,No equivalent,Undecided,Undecided,"PLR, Later",
-Cycle and reproductive health,Menopausal state,menopausalState,No equivalent,Undecided,Undecided,"PLR, Later",
-Cycle and reproductive health,Bleeding after menopause,bleedingAfterMenopause,No equivalent,Undecided,Undecided,"PLR, Later",
-Cycle and reproductive health,Bleeding during pregnancy,bleedingDuringPregnancy,No equivalent,Undecided,Undecided,"PLR, Later",
-Cycle and reproductive health,Bleeding after pregnancy,bleedingAfterPregnancy,No equivalent,Undecided,Undecided,"PLR, Later",
+Cycle and reproductive health,Progesterone test result,progesteroneTestResult,No equivalent,Not on the page,Not on the page,"PLR, Later",
+Cycle and reproductive health,Pregnancy test result,pregnancyTestResult,No equivalent,Not on the page,Not on the page,"HEAL, Currently",
+Cycle and reproductive health,Contraceptive,contraceptive,No equivalent,Not on the page,Not on the page,"PLR, Later",
+Cycle and reproductive health,Menopausal state,menopausalState,No equivalent,Not on the page,Not on the page,"PLR, Later",
+Cycle and reproductive health,Bleeding after menopause,bleedingAfterMenopause,No equivalent,Not on the page,Not on the page,"PLR, Later",
+Cycle and reproductive health,Bleeding during pregnancy,bleedingDuringPregnancy,No equivalent,Not on the page,Not on the page,"PLR, Later",
+Cycle and reproductive health,Bleeding after pregnancy,bleedingAfterPregnancy,No equivalent,Not on the page,Not on the page,"PLR, Later",
 Cycle and reproductive health,Sexual activity,sexualActivity,"SexualActivityRecord.protectionUsed: protected, unprotected, unknown",Undecided,Undecided,Undecided,
-Symptoms,Abdominal cramps,abdominalCramps,No equivalent,Undecided,Undecided,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
-Symptoms,Bloating,bloating,No equivalent,Undecided,Undecided,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
-Symptoms,Constipation,constipation,No equivalent,Undecided,Undecided,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
-Symptoms,Diarrhea,diarrhea,No equivalent,Undecided,Undecided,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
-Symptoms,Heartburn,heartburn,No equivalent,Undecided,Undecided,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
-Symptoms,Nausea,nausea,No equivalent,Undecided,Undecided,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
-Symptoms,Vomiting,vomiting,No equivalent,Undecided,Undecided,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
-Symptoms,Appetite changes,appetiteChanges,No equivalent,Undecided,Undecided,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
-Symptoms,Chills,chills,No equivalent,Undecided,Undecided,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
-Symptoms,Dizziness,dizziness,No equivalent,Undecided,Undecided,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
-Symptoms,Fainting,fainting,No equivalent,Undecided,Undecided,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
-Symptoms,Fatigue,fatigue,No equivalent,Undecided,Undecided,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
-Symptoms,Fever,fever,No equivalent,Undecided,Undecided,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
-Symptoms,Generalized body ache,generalizedBodyAche,No equivalent,Undecided,Undecided,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
-Symptoms,Hot flashes,hotFlashes,No equivalent,Undecided,Undecided,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
-Symptoms,Chest tightness or pain,chestTightnessOrPain,No equivalent,Undecided,Undecided,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
-Symptoms,Coughing,coughing,No equivalent,Undecided,Undecided,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
-Symptoms,Rapid pounding or fluttering heartbeat,rapidPoundingOrFlutteringHeartbeat,No equivalent,Undecided,Undecided,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
-Symptoms,Shortness of breath,shortnessOfBreath,No equivalent,Undecided,Undecided,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
-Symptoms,Skipped heartbeat,skippedHeartbeat,No equivalent,Undecided,Undecided,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
-Symptoms,Wheezing,wheezing,No equivalent,Undecided,Undecided,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
-Symptoms,Lower back pain,lowerBackPain,No equivalent,Undecided,Undecided,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
-Symptoms,Headache,headache,No equivalent,Undecided,Undecided,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
-Symptoms,Memory lapse,memoryLapse,No equivalent,Undecided,Undecided,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
-Symptoms,Mood changes,moodChanges,No equivalent,Undecided,Undecided,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
-Symptoms,Loss of smell,lossOfSmell,No equivalent,Undecided,Undecided,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
-Symptoms,Loss of taste,lossOfTaste,No equivalent,Undecided,Undecided,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
-Symptoms,Runny nose,runnyNose,No equivalent,Undecided,Undecided,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
-Symptoms,Sore throat,soreThroat,No equivalent,Undecided,Undecided,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
-Symptoms,Sinus congestion,sinusCongestion,No equivalent,Undecided,Undecided,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
-Symptoms,Breast pain,breastPain,No equivalent,Undecided,Undecided,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
-Symptoms,Pelvic pain,pelvicPain,No equivalent,Undecided,Undecided,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
-Symptoms,Vaginal dryness,vaginalDryness,No equivalent,Undecided,Undecided,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
-Symptoms,Acne,acne,No equivalent,Undecided,Undecided,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
-Symptoms,Dry skin,drySkin,No equivalent,Undecided,Undecided,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
-Symptoms,Hair loss,hairLoss,No equivalent,Undecided,Undecided,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
-Symptoms,Night sweats,nightSweats,No equivalent,Undecided,Undecided,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
-Symptoms,Sleep changes,sleepChanges,No equivalent,Undecided,Undecided,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
-Symptoms,Bladder incontinence,bladderIncontinence,No equivalent,Undecided,Undecided,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Abdominal cramps,abdominalCramps,No equivalent,Not on the page,Not on the page,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Bloating,bloating,No equivalent,Not on the page,Not on the page,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Constipation,constipation,No equivalent,Not on the page,Not on the page,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Diarrhea,diarrhea,No equivalent,Not on the page,Not on the page,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Heartburn,heartburn,No equivalent,Not on the page,Not on the page,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Nausea,nausea,No equivalent,Not on the page,Not on the page,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Vomiting,vomiting,No equivalent,Not on the page,Not on the page,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Appetite changes,appetiteChanges,No equivalent,Not on the page,Not on the page,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Chills,chills,No equivalent,Not on the page,Not on the page,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Dizziness,dizziness,No equivalent,Not on the page,Not on the page,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Fainting,fainting,No equivalent,Not on the page,Not on the page,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Fatigue,fatigue,No equivalent,Not on the page,Not on the page,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Fever,fever,No equivalent,Not on the page,Not on the page,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Generalized body ache,generalizedBodyAche,No equivalent,Not on the page,Not on the page,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Hot flashes,hotFlashes,No equivalent,Not on the page,Not on the page,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Chest tightness or pain,chestTightnessOrPain,No equivalent,Not on the page,Not on the page,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Coughing,coughing,No equivalent,Not on the page,Not on the page,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Rapid pounding or fluttering heartbeat,rapidPoundingOrFlutteringHeartbeat,No equivalent,Not on the page,Not on the page,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Shortness of breath,shortnessOfBreath,No equivalent,Not on the page,Not on the page,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Skipped heartbeat,skippedHeartbeat,No equivalent,Not on the page,Not on the page,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Wheezing,wheezing,No equivalent,Not on the page,Not on the page,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Lower back pain,lowerBackPain,No equivalent,Not on the page,Not on the page,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Headache,headache,No equivalent,Not on the page,Not on the page,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Memory lapse,memoryLapse,No equivalent,Not on the page,Not on the page,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Mood changes,moodChanges,No equivalent,Not on the page,Not on the page,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Loss of smell,lossOfSmell,No equivalent,Not on the page,Not on the page,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Loss of taste,lossOfTaste,No equivalent,Not on the page,Not on the page,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Runny nose,runnyNose,No equivalent,Not on the page,Not on the page,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Sore throat,soreThroat,No equivalent,Not on the page,Not on the page,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Sinus congestion,sinusCongestion,No equivalent,Not on the page,Not on the page,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Breast pain,breastPain,No equivalent,Not on the page,Not on the page,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Pelvic pain,pelvicPain,No equivalent,Not on the page,Not on the page,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Vaginal dryness,vaginalDryness,No equivalent,Not on the page,Not on the page,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Acne,acne,No equivalent,Not on the page,Not on the page,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Dry skin,drySkin,No equivalent,Not on the page,Not on the page,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Hair loss,hairLoss,No equivalent,Not on the page,Not on the page,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Night sweats,nightSweats,No equivalent,Not on the page,Not on the page,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Sleep changes,sleepChanges,No equivalent,Not on the page,Not on the page,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
+Symptoms,Bladder incontinence,bladderIncontinence,No equivalent,Not on the page,Not on the page,"HEAL, Currently",Typed in by the member in the Health app. Each carries a severity or a present / not present value.
 Mobility,Walking step length,walkingStepLength,No equivalent,Not on the page,Not on the page,"HEAL, Currently",Could replace the fixed 0.67 m stride in the burn model.
 Mobility,Walking speed,walkingSpeed,No equivalent,Not on the page,Not on the page,"HEAL, Currently",
 Mobility,Walking asymmetry percentage,walkingAsymmetryPercentage,No equivalent,Not on the page,Not on the page,Undecided,
@@ -249,14 +249,14 @@ Mobility,Stair descent speed,stairDescentSpeed,No equivalent,Not on the page,Not
 "Hearing, vision and self care",Vision prescription,"HKVisionPrescription: prescriptionType, dateIssued, expirationDate. HKGlassesPrescription: leftEye, rightEye. HKContactsPrescription: brand, leftEye, rightEye",No equivalent,Not on the page,Not on the page,Undecided,
 "Hearing, vision and self care",Toothbrushing event,toothbrushingEvent,No equivalent,Not on the page,Not on the page,Undecided,
 "Hearing, vision and self care",Handwashing event,handwashingEvent,No equivalent,Not on the page,Not on the page,Undecided,
-Profile (set once by the member),Date of birth,dateOfBirth,"No equivalent as a record (see medical records, personal details)",Undecided,Undecided,"HEAL, Currently","Prefill at onboarding, and a check on the adults-only gate."
-Profile (set once by the member),Sex,biologicalSex,"No equivalent as a record (see medical records, personal details)",Undecided,Undecided,"HEAL, Currently",Prefill at onboarding. Used in the resting-burn formula.
+Profile (set once by the member),Date of birth,dateOfBirth,"No equivalent as a record (see medical records, personal details)",Merged into Date of birth and sex (Undecided),Merged into Date of birth and sex (Undecided),"HEAL, Currently","Prefill at onboarding, and a check on the adults-only gate."
+Profile (set once by the member),Sex,biologicalSex,"No equivalent as a record (see medical records, personal details)",Merged into Date of birth and sex (Undecided),Merged into Date of birth and sex (Undecided),"HEAL, Currently",Prefill at onboarding. Used in the resting-burn formula.
 Profile (set once by the member),Blood type,bloodType,No equivalent,Not on the page,Not on the page,"PLR, Later",
 Profile (set once by the member),Wheelchair use,wheelchairUse,No equivalent,Not on the page,Not on the page,"PLR, Later",
 Profile (set once by the member),Activity move mode,activityMoveMode,No equivalent,Not on the page,Not on the page,Undecided,
 Profile (set once by the member),Skin type,fitzpatrickSkinType,No equivalent,Not on the page,Not on the page,"PLR, Later",
 Medications,A medication the member tracks,"HKUserAnnotatedMedication: medication, nickname, hasSchedule, isArchived. HKMedicationConcept: displayText, generalForm, identifier, relatedCodings","Medical records, medications (below)",Undecided,Undecided,"PLR, Later","Drug questions are outside the agent's scope, so this belongs in the record, not in chat."
-Medications,A dose taken or skipped,"HKMedicationDoseEvent: doseQuantity, unit, logStatus, scheduleType, scheduledDate, scheduledDoseQuantity, medicationConceptIdentifier, medicationDoseEventType",No equivalent,Undecided,Undecided,"PLR, Later",
+Medications,A dose taken or skipped,"HKMedicationDoseEvent: doseQuantity, unit, logStatus, scheduleType, scheduledDate, scheduledDoseQuantity, medicationConceptIdentifier, medicationDoseEventType",No equivalent,Not on the page,Not on the page,"PLR, Later",
 Clinical and medical records,How a record arrives,"HKClinicalRecord: clinicalType, displayName, fhirResource (identifier, fhirVersion, resourceType, sourceURL, data)","MedicalResource: id, type, dataSourceId, fhirVersion, fhirResource (id, type, data)",Not on the page,Not on the page,"PLR, Later","Both hand over FHIR, which is the model PLR is built on."
 Clinical and medical records,FHIR resource types carried,"HKFHIRResourceType: allergyIntolerance, condition, diagnosticReport, documentReference, immunization, medicationOrder, medicationDispense, medicationStatement, medicationRequest, observation, procedure, coverage","FhirResource.type: AllergyIntolerance, Condition, Encounter, Immunization, Location, Medication, MedicationRequest, MedicationStatement, Observation, Organization, Patient, Practitioner, PractitionerRole, Procedure",Not on the page,Not on the page,"PLR, Later",
 Clinical and medical records,Where a record came from,HKFHIRResource.sourceURL,"MedicalDataSource: id, displayName, fhirBaseUri, fhirVersion, packageName, lastDataUpdateTime",Not on the page,Not on the page,"PLR, Later",
@@ -267,15 +267,15 @@ Clinical and medical records,Medications,medicationRecord,MEDICAL_RESOURCE_TYPE_
 Clinical and medical records,Procedures,procedureRecord,MEDICAL_RESOURCE_TYPE_PROCEDURES,Undecided,Undecided,"PLR, Later",
 Clinical and medical records,Vaccines,immunizationRecord,MEDICAL_RESOURCE_TYPE_VACCINES,Undecided,Undecided,"PLR, Later",
 Clinical and medical records,Vital signs,vitalSignRecord,MEDICAL_RESOURCE_TYPE_VITAL_SIGNS,Undecided,Undecided,"PLR, Later",
-Clinical and medical records,Clinical notes,clinicalNoteRecord,No equivalent,Undecided,Undecided,"PLR, Later",
-Clinical and medical records,Insurance coverage,coverageRecord,No equivalent,Undecided,Undecided,"PLR, Later",
-Clinical and medical records,Personal details,No equivalent as a clinical type,MEDICAL_RESOURCE_TYPE_PERSONAL_DETAILS,Undecided,Undecided,"PLR, Later",
-Clinical and medical records,Practitioner details,No equivalent,MEDICAL_RESOURCE_TYPE_PRACTITIONER_DETAILS,Undecided,Undecided,"PLR, Later",
-Clinical and medical records,Pregnancy,No equivalent as a clinical type,MEDICAL_RESOURCE_TYPE_PREGNANCY,Undecided,Undecided,"HEAL, Currently",
-Clinical and medical records,Social history,No equivalent,MEDICAL_RESOURCE_TYPE_SOCIAL_HISTORY,Undecided,Undecided,"PLR, Later",
-Clinical and medical records,Visits,No equivalent,MEDICAL_RESOURCE_TYPE_VISITS,Undecided,Undecided,"PLR, Later",
-Clinical and medical records,Verifiable record (signed card),"HKVerifiableClinicalRecord: subject, issuerIdentifier, issuedDate, relevantDate, expirationDate, recordTypes, sourceType (SMART Health Card, EU Digital COVID Certificate), itemNames, dataRepresentation",No equivalent,Undecided,Undecided,"PLR, Later",
-Clinical and medical records,Clinical document,CDA (HKCDADocumentSample.document),No equivalent,Undecided,Undecided,"PLR, Later",
+Clinical and medical records,Clinical notes,clinicalNoteRecord,No equivalent,Not on the page,Not on the page,"PLR, Later",
+Clinical and medical records,Insurance coverage,coverageRecord,No equivalent,Not on the page,Not on the page,"PLR, Later",
+Clinical and medical records,Personal details,No equivalent as a clinical type,MEDICAL_RESOURCE_TYPE_PERSONAL_DETAILS,Merged into Date of birth and sex (Undecided),Merged into Date of birth and sex (Undecided),"PLR, Later",
+Clinical and medical records,Practitioner details,No equivalent,MEDICAL_RESOURCE_TYPE_PRACTITIONER_DETAILS,Not on the page,Not on the page,"PLR, Later",
+Clinical and medical records,Pregnancy,No equivalent as a clinical type,MEDICAL_RESOURCE_TYPE_PREGNANCY,Merged into Pregnancy (Undecided),Merged into Pregnancy (Undecided),"HEAL, Currently",
+Clinical and medical records,Social history,No equivalent,MEDICAL_RESOURCE_TYPE_SOCIAL_HISTORY,Not on the page,Not on the page,"PLR, Later",
+Clinical and medical records,Visits,No equivalent,MEDICAL_RESOURCE_TYPE_VISITS,Not on the page,Not on the page,"PLR, Later",
+Clinical and medical records,Verifiable record (signed card),"HKVerifiableClinicalRecord: subject, issuerIdentifier, issuedDate, relevantDate, expirationDate, recordTypes, sourceType (SMART Health Card, EU Digital COVID Certificate), itemNames, dataRepresentation",No equivalent,Not on the page,Not on the page,"PLR, Later",
+Clinical and medical records,Clinical document,CDA (HKCDADocumentSample.document),No equivalent,Not on the page,Not on the page,"PLR, Later",
 iOS metadata keys (optional extras on a sample),Was user entered,HKMetadataKeyWasUserEntered,Metadata.recordingMethod,Not on the page,Not on the page,"HEAL, Later",
 iOS metadata keys (optional extras on a sample),Time zone,HKMetadataKeyTimeZone,Zone offset fields,Not on the page,Not on the page,"HEAL, Later",
 iOS metadata keys (optional extras on a sample),Device name,HKMetadataKeyDeviceName,Device.model,Not on the page,Not on the page,Undecided,
@@ -344,3 +344,8 @@ iOS metadata keys (optional extras on a sample),Lap length,HKMetadataKeyLapLengt
 iOS metadata keys (optional extras on a sample),SWOLF score,HKMetadataKeySWOLFScore,No equivalent,Not on the page,Not on the page,Undecided,
 iOS metadata keys (optional extras on a sample),Water salinity,HKMetadataKeyWaterSalinity,No equivalent,Not on the page,Not on the page,Undecided,
 iOS metadata keys (optional extras on a sample),Glasses prescription description,HKMetadataKeyGlassesPrescriptionDescription,No equivalent,Not on the page,Not on the page,Undecided,
+Activity and energy,"Activity intensity, moderate and vigorous","physicalEffort, in MET: 3 to 6 is moderate, above 6 is vigorous","ActivityIntensityRecord.activityIntensityType: moderate, vigorous",V1,V1,,Merged from: Moderate and vigorous activity; Physical effort (MET)
+Heart and vitals,Heart rate variability,"heartRateVariabilitySDNN, heartRateVariabilityRMSSD (iOS 27 and later)",HeartRateVariabilityRmssdRecord.heartRateVariabilityMillis,V1,V1,,"Merged from: Heart rate variability, SDNN; Heart rate variability, RMSSD"
+Nutrition and water,Folate and folic acid,dietaryFolate,"NutritionRecord.folate, NutritionRecord.folicAcid",Undecided,Undecided,,Merged from: Folate; Folic acid
+Cycle and reproductive health,Pregnancy,pregnancy,"MEDICAL_RESOURCE_TYPE_PREGNANCY, a medical record",Undecided,Undecided,,Merged from: Pregnancy; Pregnancy
+Profile (set once by the member),Date of birth and sex,"dateOfBirth, biologicalSex","MEDICAL_RESOURCE_TYPE_PERSONAL_DETAILS, a medical record",Undecided,Undecided,,Merged from: Date of birth; Sex; Personal details
