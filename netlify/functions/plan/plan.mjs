@@ -8,7 +8,8 @@
 // two people editing at once never overwrite each other. Every change is also kept as a log record
 // ("log/<time>-<rand>"), which is never rewritten. Files an item stops using are deleted.
 import { getStore } from '@netlify/blobs';
-import { applyOp, emptyPlan, filesDropped, normalize, newId } from '../../../site/plan-ops.mjs';
+import { applyOp, filesDropped, normalize, newId } from '../../../site/plan-ops.mjs';
+import SEED from './seed.mjs';
 
 const KEY = 'plan';
 const MAX_REQUEST = 100000;
@@ -19,9 +20,11 @@ const json = (status, body) => new Response(JSON.stringify(body), {
   headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' },
 });
 
+// Until the first save, the plan is the starting plan in seed.mjs (the sheet's pending items).
 async function read(s) {
   const r = await s.getWithMetadata(KEY, { type: 'json' });
-  return r ? { plan: normalize(r.data), exists: true, etag: r.etag } : { plan: emptyPlan(), exists: false, etag: null };
+  return r ? { plan: normalize(r.data), exists: true, etag: r.etag }
+    : { plan: normalize(JSON.parse(JSON.stringify(SEED))), exists: false, etag: null };
 }
 
 // Write only if nobody wrote since the read. The local dev Blobs server returns no etag on reads,

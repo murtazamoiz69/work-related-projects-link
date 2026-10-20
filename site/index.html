@@ -92,10 +92,20 @@
   }
   .mix { display: flex; gap: 4px; margin-top: 6px; flex-wrap: wrap; }
   .mix span { font-size: 11px; padding: 0 6px; border-radius: 4px; font-weight: 600; }
-  .quick { padding: 0 12px 8px; display: flex; flex-direction: column; gap: 6px; }
-  .quick input {
-    width: 100%; padding: 7px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel);
+  .quick { padding: 0 12px 8px; display: flex; gap: 6px; }
+  .quick input, .search-in {
+    flex: 1; min-width: 0; padding: 7px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel);
   }
+  .quick button { flex: 0 0 auto; }
+  .col-title .search { margin-left: auto; display: flex; align-items: center; gap: 4px; flex: 1; justify-content: flex-end; min-width: 0; }
+  .search-in { padding: 4px 8px; font-weight: 400; font-size: 13px; max-width: 220px; }
+  .icon-btn {
+    display: inline-grid; place-items: center; width: 28px; height: 28px; padding: 0; border-radius: 6px;
+    border: 1px solid transparent; background: transparent; color: var(--muted); flex: 0 0 auto;
+  }
+  .icon-btn:hover { background: var(--panel); border-color: var(--line); color: var(--ink); }
+  .icon-btn.on { color: var(--accent); }
+  .icon-btn svg { width: 16px; height: 16px; }
   .list { flex: 1; overflow-y: auto; padding: 4px 12px 12px; min-height: 60px; display: flex; flex-direction: column; gap: 8px; }
   .empty { color: var(--muted); font-size: 12px; text-align: center; padding: 18px 8px; border: 1px dashed var(--line); border-radius: 8px; }
 
@@ -104,7 +114,12 @@
     border-left: 4px solid transparent; cursor: grab; user-select: none;
   }
   .card:hover { outline: 1px solid var(--line); }
-  .card .ctop { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); }
+  .card .ctop { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); min-height: 22px; }
+  .cact { display: flex; gap: 2px; margin-left: auto; }
+  .ptag + .cact { margin-left: 0; }
+  .cact .icon-btn { width: 24px; height: 24px; }
+  .cact .icon-btn svg { width: 14px; height: 14px; }
+  .cact .del:hover { color: var(--danger); }
   .card .ctitle { margin-top: 2px; font-weight: 500; word-break: break-word; }
   .card .cmeta { display: flex; align-items: center; gap: 10px; margin-top: 6px; color: var(--muted); font-size: 12px; }
   .card .cmeta:empty { display: none; }
@@ -137,17 +152,20 @@
   .dr-head { display: flex; align-items: center; gap: 8px; padding: 12px 16px; border-bottom: 1px solid var(--line); color: var(--muted); }
   .dr-head .x { margin-left: auto; font-size: 18px; line-height: 1; padding: 4px 10px; }
   .dr-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 18px; }
+  .dr-body > * { flex-shrink: 0; }
   .title-in {
-    width: 100%; border: 1px solid transparent; border-radius: 6px; padding: 6px 8px; margin: -6px -8px 0;
-    font-size: 20px; font-weight: 700; resize: none; background: transparent; overflow: hidden;
+    display: block; width: 100%; border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px;
+    font-size: 18px; line-height: 1.4; font-weight: 700; resize: none; background: var(--panel); overflow: hidden;
+    min-height: 44px;
   }
-  .title-in:hover, .title-in:focus { border-color: var(--line); outline: none; }
-  .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .title-in:focus { border-color: var(--accent); outline: none; }
+  .fields { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
   .lbl { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .03em; margin-bottom: 6px; }
   select, .field input, .field textarea {
     width: 100%; border: 1px solid var(--line); border-radius: 6px; padding: 7px 10px; background: var(--panel);
   }
   .field textarea { resize: vertical; }
+  .field .title-in { resize: none; }
   .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 6px; }
   .chips:empty { display: none; }
   .chip { display: inline-flex; align-items: center; gap: 4px; background: var(--accent-soft); color: var(--accent); border-radius: 999px; padding: 2px 4px 2px 10px; font-weight: 600; font-size: 13px; }
@@ -171,46 +189,50 @@
   /* Calendar */
   .cal-wrap { height: 100%; overflow-y: auto; padding: 16px; }
   .cal-inner { max-width: 1180px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
-  .milestones { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
-  .ms { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
-  .ms .name { font-weight: 700; font-size: 15px; }
-  .ms .dates { color: var(--muted); font-size: 13px; }
-  .ms .ends { margin-top: 8px; font-weight: 600; }
-  .ms .status { display: inline-block; margin-top: 6px; font-size: 12px; font-weight: 700; padding: 1px 8px; border-radius: 999px; background: var(--col); color: var(--muted); }
-  .ms .status.live { background: var(--accent-soft); color: var(--accent); }
   .week { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
   .week-head { display: flex; align-items: baseline; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
   .week-head .name { font-weight: 700; font-size: 15px; }
   .week-head .sub { color: var(--muted); font-size: 13px; }
-  .days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); border-bottom: 1px solid var(--line); }
-  .day { padding: 6px 8px; border-right: 1px solid var(--line); min-height: 46px; position: relative; }
-  .day:last-child { border-right: 0; }
-  .day .dn { font-size: 11px; color: var(--muted); text-transform: uppercase; font-weight: 700; }
-  .day .dd { font-weight: 700; }
-  .day.weekend { background: var(--col); }
-  .day.today { box-shadow: inset 0 0 0 2px var(--today); }
-  .day .due { position: absolute; top: 6px; right: 6px; font-size: 10px; font-weight: 700; color: var(--danger); text-transform: uppercase; }
-  .bars { padding: 10px 14px 12px; display: flex; flex-direction: column; gap: 6px; }
-  .bar {
-    display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 6px; cursor: pointer;
-    background: var(--col); border-left: 4px solid var(--line);
+  .wscroll { overflow-x: auto; }
+  .wgrid { display: grid; grid-template-columns: repeat(7, minmax(130px, 1fr)); min-width: 910px; }
+  .dcol { border-right: 1px solid var(--line); display: flex; flex-direction: column; min-width: 0; }
+  .dcol:last-child { border-right: 0; }
+  .dcol.weekend { background: var(--col); }
+  .dcol.today { box-shadow: inset 0 0 0 2px var(--today); }
+  .dhead { padding: 6px 8px; border-bottom: 1px solid var(--line); position: relative; min-height: 46px; }
+  .dhead .dn { font-size: 11px; color: var(--muted); text-transform: uppercase; font-weight: 700; }
+  .dhead .dd { font-weight: 700; }
+  .dhead .flags { position: absolute; top: 6px; right: 6px; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+  .dhead .flag { font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--danger); }
+  .dhead .flag.now { color: var(--today); }
+  .dlist { flex: 1; padding: 6px; display: flex; flex-direction: column; gap: 6px; min-height: 90px; }
+  .noday { display: flex; gap: 10px; align-items: flex-start; padding: 8px 14px 10px; border-top: 1px solid var(--line); }
+  .noday .lbl2 { font-size: 12px; font-weight: 700; color: var(--muted); padding-top: 8px; white-space: nowrap; }
+  .dlist.row { flex-direction: row; flex-wrap: wrap; min-height: 44px; flex: 1; padding: 4px; border: 1px dashed var(--line); border-radius: 8px; }
+  .dlist.row .ccard { width: 190px; }
+  .dlist:empty::after { content: attr(data-empty); color: var(--muted); font-size: 12px; padding: 6px 4px; }
+  .ccard {
+    background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--line); border-radius: 6px;
+    padding: 5px 7px; font-size: 12px; cursor: grab; user-select: none; box-shadow: var(--shadow);
   }
-  .bar:hover { outline: 1px solid var(--line); }
-  .bar .bid { color: var(--muted); font-size: 12px; }
-  .bar .btitle { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
-  .bar .bend { color: var(--muted); font-size: 12px; white-space: nowrap; }
-  .none { color: var(--muted); font-size: 13px; }
-  .unsched .bars { padding-top: 12px; }
+  .ccard:hover { outline: 1px solid var(--muted); }
+  .ccard .ctop { display: flex; align-items: center; gap: 4px; color: var(--muted); font-size: 11px; }
+  .ccard .ptag { font-size: 10px; padding: 0 4px; }
+  .ccard .ct { font-weight: 600; line-height: 1.3; margin-top: 1px; word-break: break-word; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .ccard.p-vhigh, .ccard.p-high, .ccard.p-med, .ccard.p-low { border-color: transparent; }
+  .ccard.p-vhigh { border-left-color: var(--vhigh); } .ccard.p-high { border-left-color: var(--high); }
+  .ccard.p-med { border-left-color: var(--med); } .ccard.p-low { border-left-color: var(--low); }
+  .unplanned .dlist.row { margin: 10px 14px 12px; }
+  .cal-hint { color: var(--muted); font-size: 13px; }
+  .cday { display: inline-flex; align-items: center; gap: 3px; }
+  .cday svg { width: 12px; height: 12px; }
 
   @media (max-width: 760px) {
     .top { gap: 10px; }
     .board { grid-template-columns: repeat(4, minmax(260px, 85vw)); }
-    .milestones { grid-template-columns: 1fr; }
     .fields { grid-template-columns: 1fr; }
-    .day { padding: 4px; }
-    .day .dn { font-size: 10px; }
-    .day .due { position: static; display: block; }
-    .bar .bend { display: none; }
+    .noday { flex-direction: column; gap: 4px; }
+    .noday .lbl2 { padding-top: 0; }
   }
   .toast {
     position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); z-index: 9;
@@ -250,9 +272,10 @@
 <aside class="drawer" id="drawer" hidden aria-label="Item details">
   <div class="dr-head"><span id="drId"></span><button class="x" id="drClose" aria-label="Close">&times;</button></div>
   <div class="dr-body">
-    <textarea id="fTitle" class="title-in" rows="1" placeholder="Title"></textarea>
+    <label class="field"><div class="lbl">Title</div><textarea id="fTitle" class="title-in" rows="1" placeholder="What is this item?"></textarea></label>
     <div class="fields">
       <label><div class="lbl">Sprint</div><select id="fCol"></select></label>
+      <label><div class="lbl">Day</div><select id="fDay"></select></label>
       <label><div class="lbl">Priority</div><select id="fPri"></select></label>
     </div>
     <div class="field">
@@ -290,7 +313,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
 <script type="module">
-import { SPRINTS, PRIORITIES, COLS, emptyPlan, normalize, applyOp, colOf, newId } from './plan-ops.mjs';
+import { SPRINTS, PRIORITIES, COLS, emptyPlan, normalize, applyOp, colOf, newId, dayInSprint } from './plan-ops.mjs';
 
 const PRI_BY = Object.fromEntries(PRIORITIES.map((p) => [p.id, p]));
 const MAX_FILE = 4 * 1024 * 1024;
@@ -318,6 +341,8 @@ const DAY = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const fmt = (dt) => dt.getDate() + ' ' + MON[dt.getMonth()];
 const fmtDay = (dt) => DAY[dt.getDay()] + ' ' + fmt(dt);
 const range = (s) => fmt(d(s.start)) + ' to ' + fmt(d(s.end));
+const iso = (dt) => dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0');
+const sprintDays = (s) => { const a = d(s.start); return Array.from({ length: 7 }, (_, i) => new Date(a.getFullYear(), a.getMonth(), a.getDate() + i)); };
 const today = () => { const t = new Date(); return new Date(t.getFullYear(), t.getMonth(), t.getDate()); };
 const daysBetween = (a, b) => Math.round((b - a) / 86400000);
 const stamp = (ts) => { const t = new Date(ts); return fmt(t) + ', ' + String(t.getHours()).padStart(2, '0') + ':' + String(t.getMinutes()).padStart(2, '0'); };
@@ -365,6 +390,8 @@ async function flush() {
       queue.shift();
       if (j.plan) server = normalize(j.plan);
       if (!r.ok && j.error) toast('Not saved: ' + j.error);
+      const saved = r.ok && op.day && server.items[op.id];
+      if (saved && saved.day !== op.day) toast('The server did not keep the day. It is running older code; restart or redeploy it.');
       rebase();
     } else {
       throw new Error(j.error || 'HTTP ' + r.status);
@@ -395,27 +422,43 @@ async function poll() {
 window.addEventListener('beforeunload', (e) => { if (queue.length || pendingText()) { e.preventDefault(); e.returnValue = ''; } });
 
 // ---------- board ----------
+const ICON = {
+  search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>',
+  close: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>',
+  edit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="m13.5 6.5 4 4"/></svg>',
+  cal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>',
+  trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>',
+};
+let searchOpen = false;
+
 function cardHTML(it, col) {
   const p = col !== 'backlog' && it.priority ? PRI_BY[it.priority] : null;
   let meta = '';
   if (it.comments.length) meta += '<span title="Comments">&#128172; ' + it.comments.length + '</span>';
   if (it.attachments.length) meta += '<span title="Attachments">&#128206; ' + it.attachments.length + '</span>';
+  if (it.day && col !== 'backlog') meta += '<span class="cday" title="Day in the calendar">' + ICON.cal + fmtDay(d(it.day)) + '</span>';
   if (it.assignees.length) {
     meta += '<span class="avatars">' + it.assignees.slice(0, 4).map((a) => '<span class="av" title="' + esc(a) + '">' + esc(initials(a)) + '</span>').join('') + '</span>';
   }
   const hide = matches(it) ? '' : ' style="display:none"';
   return '<div class="card' + (p ? ' p-' + p.id : '') + '" data-id="' + it.id + '"' + hide + '>' +
-    '<div class="ctop"><span>#' + it.num + '</span>' + (p ? '<span class="ptag t-' + p.id + '">' + p.label + '</span>' : '') + '</div>' +
+    '<div class="ctop"><span>#' + it.num + '</span>' + (p ? '<span class="ptag t-' + p.id + '">' + p.label + '</span>' : '') +
+    '<span class="cact"><button class="icon-btn edit" data-act="edit" title="Edit" aria-label="Edit #' + it.num + '">' + ICON.edit + '</button>' +
+    '<button class="icon-btn del" data-act="delete" title="Delete" aria-label="Delete #' + it.num + '">' + ICON.trash + '</button></span></div>' +
     '<div class="ctitle">' + esc(it.title || 'Untitled') + '</div>' +
     '<div class="cmeta">' + meta + '</div></div>';
 }
 function headHTML(col) {
   const ids = plan.cols[col];
   if (col === 'backlog') {
-    return '<div class="col-head"><div class="col-title">All items <span class="count">' + ids.length + '</span></div>' +
+    const open = searchOpen || !!query;
+    return '<div class="col-head"><div class="col-title">All items <span class="count">' + ids.length + '</span>' +
+      '<span class="search">' + (open ? '<input id="search" class="search-in" placeholder="Search all items" value="' + esc(query) + '">' : '') +
+      '<button class="icon-btn' + (open ? ' on' : '') + '" id="searchBtn" title="' + (open ? 'Close search' : 'Search') + '" aria-label="' + (open ? 'Close search' : 'Search') + '">' +
+      (open ? ICON.close : ICON.search) + '</button></span></div>' +
       '<div class="col-sub">Not planned into a sprint yet</div></div>' +
-      '<div class="quick"><input id="quickAdd" placeholder="Add an item and press Enter"' + (loaded ? '' : ' disabled') + '>' +
-      '<input id="search" placeholder="Search all items" value="' + esc(query) + '"></div>';
+      '<div class="quick"><input id="quickAdd" placeholder="Add an item"' + (loaded ? '' : ' disabled') + '>' +
+      '<button class="primary" id="quickAddBtn"' + (loaded ? '' : ' disabled') + '>Add</button></div>';
   }
   const s = SPRINTS.find((x) => x.id === col);
   const mix = PRIORITIES.map((p) => {
@@ -448,13 +491,13 @@ function renderBoard() {
   board.querySelectorAll('.list').forEach((l, i) => { l.scrollTop = scrolls[i] || 0; });
   $('quickAdd').value = quickVal;
   bindBoard();
-  if (focused) { const el = $(focused); el.focus(); el.setSelectionRange(caret, caret); }
+  if (focused && $(focused)) { const el = $(focused); el.focus(); el.setSelectionRange(caret, caret); }
 }
 function bindBoard() {
   document.querySelectorAll('.list').forEach((list) => {
     if (!window.Sortable) return;
     Sortable.create(list, {
-      group: 'items', animation: 150, filter: '.empty', ghostClass: 'sortable-ghost', dragClass: 'sortable-drag',
+      group: 'items', animation: 150, filter: '.empty, .cact', preventOnFilter: false, ghostClass: 'sortable-ghost', dragClass: 'sortable-drag',
       forceFallback: true, fallbackTolerance: 4, scroll: true, bubbleScroll: true,
       disabled: !loaded,
       onStart: () => { dragging = true; },
@@ -472,13 +515,35 @@ function bindBoard() {
     });
   });
   document.querySelectorAll('.card').forEach((c) => {
-    c.addEventListener('click', () => { if (Date.now() - dragEnded > 200) openItem(c.dataset.id); });
+    c.addEventListener('click', (e) => {
+      const act = e.target.closest('[data-act]');
+      if (act) {
+        e.stopPropagation();
+        if (act.dataset.act === 'edit') openItem(c.dataset.id); else deleteItem(c.dataset.id);
+        return;
+      }
+      if (Date.now() - dragEnded > 200) openItem(c.dataset.id);
+    });
   });
   const qa = $('quickAdd');
-  qa.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && qa.value.trim()) { const title = qa.value.trim(); qa.value = ''; commit({ type: 'add', id: newId(), title }); }
+  const addQuick = () => {
+    const title = qa.value.trim();
+    if (!title) { qa.focus(); return; }
+    qa.value = '';
+    commit({ type: 'add', id: newId(), title });
+    $('quickAdd').focus();
+  };
+  qa.addEventListener('keydown', (e) => { if (e.key === 'Enter') addQuick(); });
+  $('quickAddBtn').addEventListener('click', addQuick);
+  $('searchBtn').addEventListener('click', () => {
+    if (searchOpen || query) { searchOpen = false; query = ''; renderBoard(); }
+    else { searchOpen = true; renderBoard(); $('search').focus(); }
   });
-  $('search').addEventListener('input', (e) => { query = e.target.value; renderBoard(); });
+  const si = $('search');
+  if (si) {
+    si.addEventListener('input', (e) => { query = e.target.value; renderBoard(); });
+    si.addEventListener('keydown', (e) => { if (e.key === 'Escape') { e.stopPropagation(); searchOpen = false; query = ''; renderBoard(); } });
+  }
 }
 let dragEnded = 0;
 
@@ -487,7 +552,12 @@ $('fCol').innerHTML = '<option value="backlog">Not planned</option>' + SPRINTS.m
 $('fPri').innerHTML = '<option value="">None</option>' + PRIORITIES.map((p) => '<option value="' + p.id + '">' + p.label + '</option>').join('');
 
 const cur = () => (openId ? plan.items[openId] : null);
-function fitTitle() { const t = $('fTitle'); t.style.height = 'auto'; t.style.height = t.scrollHeight + 'px'; }
+function fitTitle() {
+  const t = $('fTitle');
+  if ($('drawer').hidden) return;
+  t.style.height = 'auto';
+  t.style.height = (t.scrollHeight + t.offsetHeight - t.clientHeight) + 'px';
+}
 
 // Title and description save after a short pause in typing.
 const textTimers = {};
@@ -519,6 +589,14 @@ function openItem(id) {
   $('drawer').hidden = false; $('scrim').hidden = false;
   fitTitle();
 }
+function dayOptions(col, value) {
+  const s = SPRINTS.find((x) => x.id === col);
+  const sel = $('fDay');
+  sel.innerHTML = s ? '<option value="">No day</option>' + sprintDays(s).map((dt) => '<option value="' + iso(dt) + '">' + fmtDay(dt) + '</option>').join('')
+    : '<option value="">Pick a sprint first</option>';
+  sel.disabled = !s;
+  sel.value = s && dayInSprint(value, col) ? value : '';
+}
 function fillDrawer(all) {
   const it = cur();
   if (!it) return;
@@ -527,6 +605,7 @@ function fillDrawer(all) {
   if (!textTimers.title) set($('fTitle'), it.title);
   if (!textTimers.description) set($('fDesc'), it.description);
   set($('fCol'), colOf(plan, it.id) || 'backlog');
+  if (all || document.activeElement !== $('fDay')) dayOptions(colOf(plan, it.id), it.day);
   set($('fPri'), it.priority || '');
   renderAssignees(); renderAttachments(); renderComments();
   $('fDates').textContent = 'Created ' + stamp(it.created) + ' · Updated ' + stamp(it.updated);
@@ -573,6 +652,7 @@ $('fDesc').addEventListener('input', function () { queueText('description', this
 $('fDesc').addEventListener('blur', flushText);
 $('fPri').addEventListener('change', function () { commit({ type: 'update', id: openId, fields: { priority: this.value } }); });
 $('fCol').addEventListener('change', function () { commit({ type: 'move', id: openId, to: this.value, before: null }); });
+$('fDay').addEventListener('change', function () { commit({ type: 'update', id: openId, fields: { day: this.value } }); });
 $('fAssigneeIn').addEventListener('keydown', function (e) {
   const v = this.value.trim();
   if (e.key === 'Enter' && v) { commit({ type: 'addAssignee', id: openId, name: v }); this.value = ''; }
@@ -612,63 +692,97 @@ $('fCommentAdd').addEventListener('click', () => {
   try { localStorage.setItem(NAME_KEY, me); } catch (e) {}
   if (commit({ type: 'addComment', id: openId, comment: { id: newId(), author: me, text } })) $('fComment').value = '';
 });
-$('fDelete').addEventListener('click', () => {
-  const it = cur();
+function deleteItem(id) {
+  const it = plan.items[id];
+  if (!it) return;
   if (!confirm('Delete #' + it.num + ' "' + (it.title || 'Untitled') + '" for everyone? This cannot be undone.')) return;
-  for (const k of Object.keys(textTimers)) { clearTimeout(textTimers[k]); delete textTimers[k]; }
-  openId = null; $('drawer').hidden = true; $('scrim').hidden = true;
-  commit({ type: 'delete', id: it.id });
-});
+  if (openId === id) {
+    for (const k of Object.keys(textTimers)) { clearTimeout(textTimers[k]); delete textTimers[k]; }
+    openId = null; $('drawer').hidden = true; $('scrim').hidden = true;
+  }
+  commit({ type: 'delete', id });
+}
+$('fDelete').addEventListener('click', () => { if (openId) deleteItem(openId); });
 $('drClose').addEventListener('click', closeItem);
 $('scrim').addEventListener('click', closeItem);
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && openId) closeItem(); });
 
 // ---------- calendar ----------
-function barHTML(it, endLabel, showPri) {
+// Each sprint is a week of droppable days plus "No day yet"; "Not planned" is at the bottom.
+// Dropping a card on a day sets the item's sprint and day; on "No day yet" it keeps the sprint
+// and clears the day; on "Not planned" it leaves the sprints.
+function ccardHTML(it, showPri) {
   const p = showPri && it.priority ? PRI_BY[it.priority] : null;
-  return '<div class="bar' + (p ? ' p-' + p.id : '') + '" data-id="' + it.id + '">' +
-    '<span class="bid">#' + it.num + '</span><span class="btitle">' + esc(it.title || 'Untitled') + '</span>' +
-    (p ? '<span class="ptag t-' + p.id + '" style="margin-left:0">' + p.label + '</span>' : '') +
-    (it.assignees.length ? '<span class="avatars" style="margin-left:0">' + it.assignees.slice(0, 3).map((a) => '<span class="av" title="' + esc(a) + '">' + esc(initials(a)) + '</span>').join('') + '</span>' : '') +
-    (endLabel ? '<span class="bend">' + endLabel + '</span>' : '') + '</div>';
+  return '<div class="ccard' + (p ? ' p-' + p.id : '') + '" data-id="' + it.id + '" title="' + esc(it.title || 'Untitled') + '">' +
+    '<div class="ctop"><span>#' + it.num + '</span>' + (p ? '<span class="ptag t-' + p.id + '">' + p.label + '</span>' : '') + '</div>' +
+    '<div class="ct">' + esc(it.title || 'Untitled') + '</div></div>';
 }
 function renderCalendar() {
+  if (dragging) return;
   const t = today();
-  let html = '<div class="milestones">' + SPRINTS.map((s) => {
-    const st = sprintStatus(s), n = plan.cols[s.id].length;
-    return '<div class="ms"><div class="name">' + s.name + (s.note ? ' <span class="badge">' + s.note + '</span>' : '') + '</div>' +
-      '<div class="dates">' + range(s) + '</div><div class="ends">Delivers ' + fmtDay(d(s.end)) + '</div>' +
-      '<div class="dates">' + n + (n === 1 ? ' item' : ' items') + '</div>' +
-      '<span class="status' + (st.live ? ' live' : '') + '">' + st.text + '</span></div>';
-  }).join('') + '</div>';
+  const wrap = $('calEl');
+  const scrolls = Array.from(wrap.querySelectorAll('.wscroll')).map((w) => w.scrollLeft);
+  let html = '<div class="cal-hint">Drag items onto a day. Dropping on a day in another sprint moves the item to that sprint.</div>';
   for (const s of SPRINTS) {
-    const start = d(s.start), end = d(s.end);
-    let days = '';
-    for (let i = 0; i < 7; i++) {
-      const day = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
-      const isToday = +day === +t, isEnd = +day === +end;
-      days += '<div class="day' + (day.getDay() === 0 || day.getDay() === 6 ? ' weekend' : '') + (isToday ? ' today' : '') + '">' +
-        '<div class="dn">' + DAY[day.getDay()] + '</div><div class="dd">' + fmt(day) + '</div>' +
-        (isEnd ? '<span class="due">Delivery</span>' : '') +
-        (isToday ? '<span class="due" style="color:var(--today);' + (isEnd ? 'top:20px' : '') + '">Today</span>' : '') + '</div>';
-    }
     const items = plan.cols[s.id].map((id) => plan.items[id]);
+    let cols = '';
+    for (const dt of sprintDays(s)) {
+      const key = iso(dt), isToday = +dt === +t, isEnd = key === s.end;
+      const onDay = items.filter((it) => it.day === key);
+      cols += '<div class="dcol' + (dt.getDay() === 0 || dt.getDay() === 6 ? ' weekend' : '') + (isToday ? ' today' : '') + '">' +
+        '<div class="dhead"><div class="dn">' + DAY[dt.getDay()] + '</div><div class="dd">' + fmt(dt) + '</div>' +
+        '<div class="flags">' + (isEnd ? '<span class="flag">Delivery</span>' : '') + (isToday ? '<span class="flag now">Today</span>' : '') + '</div></div>' +
+        '<div class="dlist" data-col="' + s.id + '" data-day="' + key + '">' + onDay.map((it) => ccardHTML(it, true)).join('') + '</div></div>';
+    }
+    const noDay = items.filter((it) => !it.day);
     html += '<div class="week"><div class="week-head"><span class="name">' + s.name + '</span>' +
       (s.note ? '<span class="badge">' + s.note + '</span>' : '') +
-      '<span class="sub">' + range(s) + ' &middot; ' + sprintStatus(s).text + ' &middot; ' + items.length + (items.length === 1 ? ' item' : ' items') + '</span></div>' +
-      '<div class="days">' + days + '</div><div class="bars">' +
-      (items.length ? items.map((it) => barHTML(it, 'Due ' + fmt(end), true)).join('') : '<div class="none">Nothing planned for this sprint yet.</div>') +
-      '</div></div>';
+      '<span class="sub">' + range(s) + ' &middot; Delivers ' + fmtDay(d(s.end)) + ' &middot; ' + sprintStatus(s).text + ' &middot; ' +
+      items.length + (items.length === 1 ? ' item' : ' items') + '</span></div>' +
+      '<div class="wscroll"><div class="wgrid">' + cols + '</div></div>' +
+      '<div class="noday"><span class="lbl2">No day yet</span><div class="dlist row" data-col="' + s.id + '" data-day="" data-empty="' + (items.length ? 'Every item in this sprint has a day.' : 'Nothing planned for this sprint yet.') + '">' +
+      noDay.map((it) => ccardHTML(it, true)).join('') + '</div></div></div>';
   }
   const back = plan.cols.backlog.map((id) => plan.items[id]);
-  html += '<div class="week unsched"><div class="week-head"><span class="name">Not planned</span><span class="sub">' +
-    back.length + (back.length === 1 ? ' item' : ' items') + ' without a sprint</span></div><div class="bars">' +
-    (back.length ? back.map((it) => barHTML(it, '', false)).join('') : '<div class="none">Every item is in a sprint.</div>') + '</div></div>';
-  $('calEl').innerHTML = html;
-  $('calEl').querySelectorAll('.bar').forEach((b) => b.addEventListener('click', () => openItem(b.dataset.id)));
+  html += '<div class="week unplanned"><div class="week-head"><span class="name">Not planned</span><span class="sub">' +
+    back.length + (back.length === 1 ? ' item' : ' items') + ' without a sprint. Drag one onto a day to plan it.</span></div>' +
+    '<div class="dlist row" data-col="backlog" data-day="" data-empty="Every item is in a sprint.">' + back.map((it) => ccardHTML(it, false)).join('') + '</div></div>';
+  wrap.innerHTML = html;
+  wrap.querySelectorAll('.wscroll').forEach((w, i) => { w.scrollLeft = scrolls[i] || 0; });
+  bindCalendar();
+}
+function bindCalendar() {
+  const wrap = $('calEl');
+  wrap.querySelectorAll('.dlist').forEach((list) => {
+    if (!window.Sortable) return;
+    Sortable.create(list, {
+      group: 'cal', animation: 150, ghostClass: 'sortable-ghost', dragClass: 'sortable-drag',
+      forceFallback: true, fallbackTolerance: 4, scroll: true, bubbleScroll: true, disabled: !loaded,
+      onStart: () => { dragging = true; },
+      onEnd: (evt) => {
+        dragging = false;
+        dragEnded = Date.now();
+        const id = evt.item.dataset.id;
+        const to = evt.to.dataset.col, day = evt.to.dataset.day;
+        if (evt.to === evt.from && evt.oldIndex === evt.newIndex) { renderCalendar(); return; }
+        const sib = (el, dir) => { let x = el[dir]; while (x && !x.classList.contains('ccard')) x = x[dir]; return x; };
+        const next = sib(evt.item, 'nextElementSibling'), prev = sib(evt.item, 'previousElementSibling');
+        // place it in the column's order: before the next card on that day, else right after the previous one,
+        // else (an empty day in the same sprint) where it already was
+        const others = plan.cols[to].filter((x) => x !== id);
+        let before = null;
+        if (next) before = next.dataset.id;
+        else if (prev) before = others[others.indexOf(prev.dataset.id) + 1] || null;
+        else if (colOf(plan, id) === to) { const list = plan.cols[to]; before = list[list.indexOf(id) + 1] || null; }
+        const op = { type: 'move', id, to, before };
+        if (to !== 'backlog') op.day = day;
+        commit(op);
+      },
+    });
+  });
+  wrap.querySelectorAll('.ccard').forEach((c) => c.addEventListener('click', () => { if (Date.now() - dragEnded > 200) openItem(c.dataset.id); }));
 }
 
-// ---------- views ----------
 function renderAll() {
   if ($('calendar').hidden) renderBoard(); else renderCalendar();
   if (openId) {

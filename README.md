@@ -17,6 +17,14 @@ and everyone sees the same plan.
 - `netlify/functions/files/files.mjs`: `/api/files`, attachment files (4 MB each) in Netlify Blobs.
 - Sprint dates are `SPRINTS` in `site/plan-ops.mjs`.
 
+## Starting items
+
+A new site starts with the pending items of the NWS Roadmap & feedbacks sheet (as of 20 Oct 2026), all in
+"All items": rows of "User Feedback (UF)" not struck through and not marked "Moved to Sprint N", and rows
+of "Roadmap" not struck through or already in a sprint, with same-issue rows merged (57 items). They live
+in `netlify/functions/plan/seed.mjs`, built by `python dev/build_seed.py`. The server uses them only while
+nothing has been saved; after the first change the saved plan is used.
+
 ## Deploy
 
 Connect this branch to a Netlify site (Add new site, Import from Git, branch `sprint-planning`).

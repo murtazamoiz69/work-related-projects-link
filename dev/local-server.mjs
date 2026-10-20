@@ -3,7 +3,8 @@
 //   npm install
 //   node dev/local-server.mjs            -> http://localhost:8771
 //
-// Saved data goes to dev/.blobs/ (ignored by git). No Netlify account needed.
+// Saved data goes to dev/.blobs/ (ignored by git), or to BLOBS_DIR if set. No Netlify account needed.
+// An empty store starts from the sheet's pending items (netlify/functions/plan/seed.mjs).
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { dirname, join, extname } from 'node:path';
@@ -15,7 +16,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const PORT = Number(process.env.PORT || 8771);
 const TOKEN = 'local-dev';
 
-const blobs = new BlobsServer({ directory: join(ROOT, 'dev', '.blobs'), token: TOKEN });
+const blobs = new BlobsServer({ directory: process.env.BLOBS_DIR || join(ROOT, 'dev', '.blobs'), token: TOKEN });
 const { port: blobsPort } = await blobs.start();
 const edge = `http://localhost:${blobsPort}`;
 setEnvironmentContext({ siteID: 'local', token: TOKEN, edgeURL: edge, uncachedEdgeURL: edge });
