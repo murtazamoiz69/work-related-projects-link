@@ -5,8 +5,11 @@ Sprint 6: 6 to 12 Nov, the last delivery). Anyone with the link can add, edit, m
 and everyone sees the same plan.
 
 - **Board**: "All items" on the left, one column per sprint. Drag cards between and within columns.
-  Click a card for its description, priority, assignees, attachments and comments.
-- **Calendar**: each sprint as a week with its delivery date and items, plus everything not planned yet.
+  "All items" always lists V High first, then High, Med, Low and no priority. Click a card for its
+  description, priority, start and end dates, assignees, attachments and comments.
+- **Calendar**: a Gantt chart per sprint. Each item with dates is a bar from its start to its end; drag a
+  bar to move it (onto another sprint too), drag its edges to change the dates, and drag cards from
+  "No dates yet" or "Not planned" onto a day to place them.
 
 ## How it is built
 

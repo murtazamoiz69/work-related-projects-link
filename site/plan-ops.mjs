@@ -2,8 +2,9 @@
 // and by /api/plan (to apply it to the shared copy), so both always agree.
 //
 // A plan: {version, nextNum, items: {id: item}, cols: {backlog: [ids], s4: [...], s5, s6}}
-// An item: {id, num, title, description, priority, day, assignees, attachments, comments, created, updated}
-// `day` is the day of its sprint it is placed on in the calendar ("2026-10-26"), or '' for none.
+// An item: {id, num, title, description, priority, start, end, assignees, attachments, comments, created, updated}
+// `start` and `end` are the days its bar spans in the calendar ("2026-10-26"), both inside its sprint and
+// start <= end, or both '' for no dates. (Older plans had a single `day`; normalize turns it into both.)
 
 export const SPRINTS = [
   { id: 's4', name: 'Sprint 4', start: '2026-10-23', end: '2026-10-29' },
@@ -45,7 +46,9 @@ export function normalize(p) {
     it.comments = it.comments || [];
     if (!seen.has(id)) out.cols.backlog.push(id);
     const col = out.cols.backlog.includes(id) ? 'backlog' : COLS.find((c) => out.cols[c].includes(id));
-    if (!dayInSprint(it.day, col)) it.day = '';
+    if (!it.start && !it.end && it.day) { it.start = it.day; it.end = it.day; }
+    delete it.day;
+    setDates(it, it.start, it.end, col);
     if (it.num >= out.nextNum) out.nextNum = it.num + 1;
   }
   return out;
@@ -58,6 +61,18 @@ const isId = (v) => typeof v === 'string' && /^[a-z0-9]{6,40}$/i.test(v);
 export function dayInSprint(day, col) {
   const s = SPRINTS.find((x) => x.id === col);
   return !!s && typeof day === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(day) && day >= s.start && day <= s.end;
+}
+
+// Sets an item's dates for sprint `col`: one missing date takes the other's value, the two are put in
+// order, and anything outside the sprint clears both.
+export function setDates(it, start, end, col) {
+  let s = typeof start === 'string' ? start : '', e = typeof end === 'string' ? end : '';
+  if (!s) s = e;
+  if (!e) e = s;
+  if (s > e) [s, e] = [e, s];
+  if (!s || !dayInSprint(s, col) || !dayInSprint(e, col)) { s = ''; e = ''; }
+  it.start = s;
+  it.end = e;
 }
 
 export function colOf(plan, id) {
@@ -82,7 +97,7 @@ export function applyOp(plan, op, now = Date.now()) {
       if (plan.items[op.id]) return null; // already added (a retry)
       if (Object.keys(plan.items).length >= LIMITS.items) return 'The board is full.';
       plan.items[op.id] = {
-        id: op.id, num: plan.nextNum++, title: str(op.title, LIMITS.title), description: '', priority: '', day: '',
+        id: op.id, num: plan.nextNum++, title: str(op.title, LIMITS.title), description: '', priority: '', start: '', end: '',
         assignees: [], attachments: [], comments: [], created: now, updated: now,
       };
       const to = COLS.includes(op.to) ? op.to : 'backlog';
@@ -95,21 +110,23 @@ export function applyOp(plan, op, now = Date.now()) {
       if ('title' in f) it.title = str(f.title, LIMITS.title);
       if ('description' in f) it.description = str(f.description, LIMITS.description);
       if ('priority' in f) it.priority = PRIORITIES.some((p) => p.id === f.priority) ? f.priority : '';
-      if ('day' in f) it.day = dayInSprint(f.day, colOf(plan, op.id)) ? f.day : '';
+      if ('start' in f || 'end' in f) {
+        setDates(it, 'start' in f ? f.start : it.start, 'end' in f ? f.end : it.end, colOf(plan, op.id));
+      }
       it.updated = now;
       return null;
     }
     case 'move': {
       // {to, before}: the column, and the item to sit in front of (null for the end).
-      // {day} as well when dropped on a calendar day; otherwise a day outside the new sprint is cleared.
+      // {start, end} as well when dropped on the calendar; otherwise dates outside the new sprint are cleared.
       const e = needItem(); if (e) return e;
       if (!COLS.includes(op.to)) return 'Unknown column.';
       removeFromCols(plan, op.id);
       const list = plan.cols[op.to];
       const at = op.before ? list.indexOf(op.before) : -1;
       if (at === -1) list.push(op.id); else list.splice(at, 0, op.id);
-      if ('day' in op) it.day = dayInSprint(op.day, op.to) ? op.day : '';
-      else if (!dayInSprint(it.day, op.to)) it.day = '';
+      if ('start' in op || 'end' in op) setDates(it, op.start, op.end, op.to);
+      else setDates(it, it.start, it.end, op.to);
       it.updated = now;
       return null;
     }

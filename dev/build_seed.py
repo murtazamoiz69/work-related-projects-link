@@ -222,7 +222,7 @@ def build():
         iid = "seeditem%03d" % i
         desc = summary + "\n\nFrom the sheet: " + "; ".join(sources) + "\nSheet status: " + status
         items[iid] = {
-            "id": iid, "num": i, "title": title, "description": desc, "priority": "", "day": "",
+            "id": iid, "num": i, "title": title, "description": desc, "priority": "", "start": "", "end": "",
             "assignees": [], "comments": [], "created": CREATED, "updated": CREATED,
             "attachments": [{"id": "%sa%d" % (iid, k), "type": "link", "name": name, "url": url} for k, (name, url) in enumerate(links, 1)],
         }

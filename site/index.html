@@ -159,7 +159,7 @@
     min-height: 44px;
   }
   .title-in:focus { border-color: var(--accent); outline: none; }
-  .fields { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .lbl { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .03em; margin-bottom: 6px; }
   select, .field input, .field textarea {
     width: 100%; border: 1px solid var(--line); border-radius: 6px; padding: 7px 10px; background: var(--panel);
@@ -194,26 +194,56 @@
   .week-head .name { font-weight: 700; font-size: 15px; }
   .week-head .sub { color: var(--muted); font-size: 13px; }
   .wscroll { overflow-x: auto; }
-  .wgrid { display: grid; grid-template-columns: repeat(7, minmax(130px, 1fr)); min-width: 910px; }
-  .dcol { border-right: 1px solid var(--line); display: flex; flex-direction: column; min-width: 0; }
-  .dcol:last-child { border-right: 0; }
-  .dcol.weekend { background: var(--col); }
-  .dcol.today { box-shadow: inset 0 0 0 2px var(--today); }
-  .dhead { padding: 6px 8px; border-bottom: 1px solid var(--line); position: relative; min-height: 46px; }
+  .gwrap { min-width: 910px; }
+  .ghead { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); border-bottom: 1px solid var(--line); }
+  .dhead { padding: 6px 8px; border-right: 1px solid var(--line); position: relative; min-height: 46px; }
+  .dhead:last-child { border-right: 0; }
+  .dhead.weekend { background: var(--col); }
+  .dhead.today { box-shadow: inset 0 -3px 0 var(--today); }
   .dhead .dn { font-size: 11px; color: var(--muted); text-transform: uppercase; font-weight: 700; }
   .dhead .dd { font-weight: 700; }
   .dhead .flags { position: absolute; top: 6px; right: 6px; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
   .dhead .flag { font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--danger); }
   .dhead .flag.now { color: var(--today); }
-  .dlist { flex: 1; padding: 6px; display: flex; flex-direction: column; gap: 6px; min-height: 90px; }
+  .gantt {
+    position: relative; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); grid-auto-rows: 36px;
+    row-gap: 6px; padding: 8px 0; min-height: 60px;
+  }
+  .gbg { position: absolute; top: 0; bottom: 0; border-right: 1px solid var(--line); pointer-events: none; }
+  .gbg:last-of-type { border-right: 0; }
+  .gbg.weekend { background: var(--col); }
+  .gbg.today { background: var(--accent-soft); }
+  .gempty { grid-column: 1 / -1; align-self: center; color: var(--muted); font-size: 12px; padding: 0 14px; position: relative; }
+  .gbar {
+    position: relative; z-index: 1; margin: 0 4px; display: flex; align-items: center; gap: 6px; min-width: 0;
+    background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--muted); border-radius: 6px;
+    padding: 0 12px; font-size: 12px; cursor: grab; user-select: none; touch-action: none; box-shadow: var(--shadow);
+  }
+  .gbar:hover { outline: 1px solid var(--muted); }
+  .gbar .bid { color: var(--muted); flex: 0 0 auto; }
+  .gbar .bt { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0; }
+  .gbar .ptag { flex: 0 0 auto; margin-left: 0; font-size: 10px; padding: 0 4px; }
+  .gbar .grip { position: absolute; top: 0; bottom: 0; width: 9px; cursor: ew-resize; }
+  .gbar .grip.l { left: -4px; } .gbar .grip.r { right: -1px; }
+  .gbar .grip::after { content: ''; position: absolute; top: 9px; bottom: 9px; left: 3px; width: 2px; border-radius: 2px; background: var(--muted); opacity: 0; }
+  .gbar:hover .grip::after { opacity: .6; }
+  .gbar.p-vhigh { border-left-color: var(--vhigh); } .gbar.p-high { border-left-color: var(--high); }
+  .gbar.p-med { border-left-color: var(--med); } .gbar.p-low { border-left-color: var(--low); }
+  .gbar.lifted { opacity: .35; }
+  .gbar.preview { opacity: .85; outline: 2px dashed var(--accent); z-index: 2; pointer-events: none; }
+  .gfloat {
+    position: fixed; z-index: 20; pointer-events: none; background: var(--panel); border: 1px solid var(--accent);
+    border-radius: 6px; padding: 4px 8px; font-size: 12px; font-weight: 600; box-shadow: 0 6px 18px rgba(9, 30, 66, .25); max-width: 240px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
   .noday { display: flex; gap: 10px; align-items: flex-start; padding: 8px 14px 10px; border-top: 1px solid var(--line); }
   .noday .lbl2 { font-size: 12px; font-weight: 700; color: var(--muted); padding-top: 8px; white-space: nowrap; }
-  .dlist.row { flex-direction: row; flex-wrap: wrap; min-height: 44px; flex: 1; padding: 4px; border: 1px dashed var(--line); border-radius: 8px; }
-  .dlist.row .ccard { width: 190px; }
-  .dlist:empty::after { content: attr(data-empty); color: var(--muted); font-size: 12px; padding: 6px 4px; }
+  .strip { display: flex; flex-wrap: wrap; gap: 6px; min-height: 44px; flex: 1; padding: 4px; border: 1px dashed var(--line); border-radius: 8px; }
+  .strip:empty::after { content: attr(data-empty); color: var(--muted); font-size: 12px; padding: 6px 4px; }
+  .strip.over, .gantt.over { outline: 2px solid var(--accent); outline-offset: -2px; }
   .ccard {
-    background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--line); border-radius: 6px;
-    padding: 5px 7px; font-size: 12px; cursor: grab; user-select: none; box-shadow: var(--shadow);
+    width: 190px; background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--line); border-radius: 6px;
+    padding: 5px 7px; font-size: 12px; cursor: grab; user-select: none; touch-action: none; box-shadow: var(--shadow);
   }
   .ccard:hover { outline: 1px solid var(--muted); }
   .ccard .ctop { display: flex; align-items: center; gap: 4px; color: var(--muted); font-size: 11px; }
@@ -222,7 +252,8 @@
   .ccard.p-vhigh, .ccard.p-high, .ccard.p-med, .ccard.p-low { border-color: transparent; }
   .ccard.p-vhigh { border-left-color: var(--vhigh); } .ccard.p-high { border-left-color: var(--high); }
   .ccard.p-med { border-left-color: var(--med); } .ccard.p-low { border-left-color: var(--low); }
-  .unplanned .dlist.row { margin: 10px 14px 12px; }
+  .ccard.lifted { opacity: .35; }
+  .unplanned .strip { margin: 10px 14px 12px; }
   .cal-hint { color: var(--muted); font-size: 13px; }
   .cday { display: inline-flex; align-items: center; gap: 3px; }
   .cday svg { width: 12px; height: 12px; }
@@ -275,8 +306,9 @@
     <label class="field"><div class="lbl">Title</div><textarea id="fTitle" class="title-in" rows="1" placeholder="What is this item?"></textarea></label>
     <div class="fields">
       <label><div class="lbl">Sprint</div><select id="fCol"></select></label>
-      <label><div class="lbl">Day</div><select id="fDay"></select></label>
       <label><div class="lbl">Priority</div><select id="fPri"></select></label>
+      <label><div class="lbl">Start</div><select id="fStart"></select></label>
+      <label><div class="lbl">End</div><select id="fEnd"></select></label>
     </div>
     <div class="field">
       <div class="lbl">Assignees</div>
@@ -313,7 +345,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
 <script type="module">
-import { SPRINTS, PRIORITIES, COLS, emptyPlan, normalize, applyOp, colOf, newId, dayInSprint } from './plan-ops.mjs';
+import { SPRINTS, PRIORITIES, COLS, emptyPlan, normalize, applyOp, colOf, newId } from './plan-ops.mjs';
 
 const PRI_BY = Object.fromEntries(PRIORITIES.map((p) => [p.id, p]));
 const MAX_FILE = 4 * 1024 * 1024;
@@ -390,8 +422,8 @@ async function flush() {
       queue.shift();
       if (j.plan) server = normalize(j.plan);
       if (!r.ok && j.error) toast('Not saved: ' + j.error);
-      const saved = r.ok && op.day && server.items[op.id];
-      if (saved && saved.day !== op.day) toast('The server did not keep the day. It is running older code; restart or redeploy it.');
+      const saved = r.ok && op.start && server.items[op.id];
+      if (saved && saved.start !== op.start) toast('The server did not keep the dates. It is running older code; restart or redeploy it.');
       rebase();
     } else {
       throw new Error(j.error || 'HTTP ' + r.status);
@@ -432,11 +464,11 @@ const ICON = {
 let searchOpen = false;
 
 function cardHTML(it, col) {
-  const p = col !== 'backlog' && it.priority ? PRI_BY[it.priority] : null;
+  const p = it.priority ? PRI_BY[it.priority] : null;
   let meta = '';
   if (it.comments.length) meta += '<span title="Comments">&#128172; ' + it.comments.length + '</span>';
   if (it.attachments.length) meta += '<span title="Attachments">&#128206; ' + it.attachments.length + '</span>';
-  if (it.day && col !== 'backlog') meta += '<span class="cday" title="Day in the calendar">' + ICON.cal + fmtDay(d(it.day)) + '</span>';
+  if (it.start && col !== 'backlog') meta += '<span class="cday" title="Dates in the calendar">' + ICON.cal + spanLabel(it) + '</span>';
   if (it.assignees.length) {
     meta += '<span class="avatars">' + it.assignees.slice(0, 4).map((a) => '<span class="av" title="' + esc(a) + '">' + esc(initials(a)) + '</span>').join('') + '</span>';
   }
@@ -470,6 +502,21 @@ function headHTML(col) {
     '<div class="col-sub">' + range(s) + ' &middot; ' + sprintStatus(s).text + '</div>' +
     (mix ? '<div class="mix">' + mix + '</div>' : '') + '</div>';
 }
+// "All items" always lists V High first, then High, Med, Low, then no priority; within a priority the
+// saved order is kept. Sprint columns keep their dragged order.
+const PRI_RANK = { vhigh: 0, high: 1, med: 2, low: 3 };
+const rank = (id) => (plan.items[id].priority in PRI_RANK ? PRI_RANK[plan.items[id].priority] : 4);
+function shownOrder(col) {
+  const ids = plan.cols[col];
+  if (col !== 'backlog') return ids;
+  return ids.map((id, i) => [id, i]).sort((a, b) => rank(a[0]) - rank(b[0]) || a[1] - b[1]).map((x) => x[0]);
+}
+function spanLabel(it) {
+  if (!it.start) return '';
+  const a = d(it.start), b = d(it.end || it.start);
+  if (it.start === it.end) return fmtDay(a);
+  return a.getMonth() === b.getMonth() ? a.getDate() + ' to ' + fmt(b) : fmt(a) + ' to ' + fmt(b);
+}
 function matches(it) {
   if (!query) return true;
   return (it.title + ' ' + it.description + ' ' + it.assignees.join(' ') + ' #' + it.num).toLowerCase().includes(query.toLowerCase());
@@ -486,7 +533,7 @@ function renderBoard() {
     const ids = plan.cols[col];
     const empty = ids.length ? '' : '<div class="empty">' + (col === 'backlog' ? (loaded ? 'No items yet. Add one above.' : 'Loading...') : 'Drag items here') + '</div>';
     return '<div class="col" data-col="' + col + '">' + headHTML(col) +
-      '<div class="list" data-col="' + col + '">' + ids.map((id) => cardHTML(plan.items[id], col)).join('') + empty + '</div></div>';
+      '<div class="list" data-col="' + col + '">' + shownOrder(col).map((id) => cardHTML(plan.items[id], col)).join('') + empty + '</div></div>';
   }).join('');
   board.querySelectorAll('.list').forEach((l, i) => { l.scrollTop = scrolls[i] || 0; });
   $('quickAdd').value = quickVal;
@@ -589,13 +636,15 @@ function openItem(id) {
   $('drawer').hidden = false; $('scrim').hidden = false;
   fitTitle();
 }
-function dayOptions(col, value) {
+function dateOptions(col, it) {
   const s = SPRINTS.find((x) => x.id === col);
-  const sel = $('fDay');
-  sel.innerHTML = s ? '<option value="">No day</option>' + sprintDays(s).map((dt) => '<option value="' + iso(dt) + '">' + fmtDay(dt) + '</option>').join('')
-    : '<option value="">Pick a sprint first</option>';
-  sel.disabled = !s;
-  sel.value = s && dayInSprint(value, col) ? value : '';
+  for (const [id, which, none] of [['fStart', 'start', 'No dates'], ['fEnd', 'end', 'No dates']]) {
+    const sel = $(id);
+    sel.innerHTML = s ? '<option value="">' + none + '</option>' + sprintDays(s).map((dt) => '<option value="' + iso(dt) + '">' + fmtDay(dt) + '</option>').join('')
+      : '<option value="">Pick a sprint first</option>';
+    sel.disabled = !s;
+    sel.value = s ? it[which] || '' : '';
+  }
 }
 function fillDrawer(all) {
   const it = cur();
@@ -605,7 +654,7 @@ function fillDrawer(all) {
   if (!textTimers.title) set($('fTitle'), it.title);
   if (!textTimers.description) set($('fDesc'), it.description);
   set($('fCol'), colOf(plan, it.id) || 'backlog');
-  if (all || document.activeElement !== $('fDay')) dayOptions(colOf(plan, it.id), it.day);
+  if (all || (document.activeElement !== $('fStart') && document.activeElement !== $('fEnd'))) dateOptions(colOf(plan, it.id), it);
   set($('fPri'), it.priority || '');
   renderAssignees(); renderAttachments(); renderComments();
   $('fDates').textContent = 'Created ' + stamp(it.created) + ' · Updated ' + stamp(it.updated);
@@ -652,7 +701,15 @@ $('fDesc').addEventListener('input', function () { queueText('description', this
 $('fDesc').addEventListener('blur', flushText);
 $('fPri').addEventListener('change', function () { commit({ type: 'update', id: openId, fields: { priority: this.value } }); });
 $('fCol').addEventListener('change', function () { commit({ type: 'move', id: openId, to: this.value, before: null }); });
-$('fDay').addEventListener('change', function () { commit({ type: 'update', id: openId, fields: { day: this.value } }); });
+// Picking a start after the end (or an end before the start) moves the other date with it.
+$('fStart').addEventListener('change', function () {
+  const it = cur(), v = this.value;
+  commit({ type: 'update', id: openId, fields: v ? { start: v, end: it.end && it.end >= v ? it.end : v } : { start: '', end: '' } });
+});
+$('fEnd').addEventListener('change', function () {
+  const it = cur(), v = this.value;
+  commit({ type: 'update', id: openId, fields: v ? { end: v, start: it.start && it.start <= v ? it.start : v } : { start: '', end: '' } });
+});
 $('fAssigneeIn').addEventListener('keydown', function (e) {
   const v = this.value.trim();
   if (e.key === 'Enter' && v) { commit({ type: 'addAssignee', id: openId, name: v }); this.value = ''; }
@@ -708,79 +765,195 @@ $('scrim').addEventListener('click', closeItem);
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && openId) closeItem(); });
 
 // ---------- calendar ----------
-// Each sprint is a week of droppable days plus "No day yet"; "Not planned" is at the bottom.
-// Dropping a card on a day sets the item's sprint and day; on "No day yet" it keeps the sprint
-// and clears the day; on "Not planned" it leaves the sprints.
+// Each sprint is a Gantt chart over its seven days: an item with dates is a bar from its start to its end.
+// Drag a bar to move it (onto another sprint too), drag its left or right edge to change the start or
+// the end. Cards in "No dates yet" or "Not planned" are dragged onto a day to place them (one day long
+// at first). Dropping a bar on "No dates yet" clears its dates; on "Not planned" it leaves the sprints.
 function ccardHTML(it, showPri) {
   const p = showPri && it.priority ? PRI_BY[it.priority] : null;
   return '<div class="ccard' + (p ? ' p-' + p.id : '') + '" data-id="' + it.id + '" title="' + esc(it.title || 'Untitled') + '">' +
     '<div class="ctop"><span>#' + it.num + '</span>' + (p ? '<span class="ptag t-' + p.id + '">' + p.label + '</span>' : '') + '</div>' +
     '<div class="ct">' + esc(it.title || 'Untitled') + '</div></div>';
 }
+const dayIndex = (s, key) => Math.round((d(key) - d(s.start)) / 86400000);
+function barHTML(it, s, row) {
+  const p = it.priority ? PRI_BY[it.priority] : null;
+  const a = dayIndex(s, it.start), b = dayIndex(s, it.end);
+  return '<div class="gbar' + (p ? ' p-' + p.id : '') + '" data-id="' + it.id + '" style="grid-column:' + (a + 1) + ' / ' + (b + 2) + ';grid-row:' + row + '"' +
+    ' title="' + esc('#' + it.num + ' ' + (it.title || 'Untitled') + ' · ' + spanLabel(it)) + '">' +
+    '<span class="grip l" data-grip="start"></span><span class="bid">#' + it.num + '</span><span class="bt">' + esc(it.title || 'Untitled') + '</span>' +
+    (p ? '<span class="ptag t-' + p.id + '">' + p.label + '</span>' : '') + '<span class="grip r" data-grip="end"></span></div>';
+}
 function renderCalendar() {
   if (dragging) return;
   const t = today();
   const wrap = $('calEl');
   const scrolls = Array.from(wrap.querySelectorAll('.wscroll')).map((w) => w.scrollLeft);
-  let html = '<div class="cal-hint">Drag items onto a day. Dropping on a day in another sprint moves the item to that sprint.</div>';
+  let html = '<div class="cal-hint">Drag a bar to move it, drag its edges to change the start or end date. Drag cards from "No dates yet" onto a day to place them.</div>';
   for (const s of SPRINTS) {
     const items = plan.cols[s.id].map((id) => plan.items[id]);
-    let cols = '';
-    for (const dt of sprintDays(s)) {
+    const dated = items.filter((it) => it.start).sort((x, y) => (x.start < y.start ? -1 : x.start > y.start ? 1 : x.end < y.end ? -1 : x.end > y.end ? 1 : 0));
+    const undated = items.filter((it) => !it.start);
+    const days = sprintDays(s);
+    const heads = days.map((dt) => {
       const key = iso(dt), isToday = +dt === +t, isEnd = key === s.end;
-      const onDay = items.filter((it) => it.day === key);
-      cols += '<div class="dcol' + (dt.getDay() === 0 || dt.getDay() === 6 ? ' weekend' : '') + (isToday ? ' today' : '') + '">' +
-        '<div class="dhead"><div class="dn">' + DAY[dt.getDay()] + '</div><div class="dd">' + fmt(dt) + '</div>' +
-        '<div class="flags">' + (isEnd ? '<span class="flag">Delivery</span>' : '') + (isToday ? '<span class="flag now">Today</span>' : '') + '</div></div>' +
-        '<div class="dlist" data-col="' + s.id + '" data-day="' + key + '">' + onDay.map((it) => ccardHTML(it, true)).join('') + '</div></div>';
-    }
-    const noDay = items.filter((it) => !it.day);
+      return '<div class="dhead' + (dt.getDay() === 0 || dt.getDay() === 6 ? ' weekend' : '') + (isToday ? ' today' : '') + '"><div class="dn">' + DAY[dt.getDay()] + '</div><div class="dd">' + fmt(dt) + '</div>' +
+        '<div class="flags">' + (isEnd ? '<span class="flag">Delivery</span>' : '') + (isToday ? '<span class="flag now">Today</span>' : '') + '</div></div>';
+    }).join('');
+    const bg = days.map((dt, i) => '<div class="gbg' + (dt.getDay() === 0 || dt.getDay() === 6 ? ' weekend' : '') + (+dt === +t ? ' today' : '') +
+      '" style="left:' + (i * 100 / 7) + '%;width:' + (100 / 7) + '%"></div>').join('');
+    const bars = dated.length ? dated.map((it, i) => barHTML(it, s, i + 1)).join('') : '<div class="gempty">No dated items yet. Drag a card onto a day.</div>';
     html += '<div class="week"><div class="week-head"><span class="name">' + s.name + '</span>' +
       (s.note ? '<span class="badge">' + s.note + '</span>' : '') +
       '<span class="sub">' + range(s) + ' &middot; Delivers ' + fmtDay(d(s.end)) + ' &middot; ' + sprintStatus(s).text + ' &middot; ' +
       items.length + (items.length === 1 ? ' item' : ' items') + '</span></div>' +
-      '<div class="wscroll"><div class="wgrid">' + cols + '</div></div>' +
-      '<div class="noday"><span class="lbl2">No day yet</span><div class="dlist row" data-col="' + s.id + '" data-day="" data-empty="' + (items.length ? 'Every item in this sprint has a day.' : 'Nothing planned for this sprint yet.') + '">' +
-      noDay.map((it) => ccardHTML(it, true)).join('') + '</div></div></div>';
+      '<div class="wscroll"><div class="gwrap"><div class="ghead">' + heads + '</div>' +
+      '<div class="gantt" data-col="' + s.id + '">' + bg + bars + '</div></div></div>' +
+      '<div class="noday"><span class="lbl2">No dates yet</span><div class="strip" data-col="' + s.id + '" data-empty="' +
+      (items.length ? 'Every item in this sprint has dates.' : 'Nothing planned for this sprint yet.') + '">' +
+      undated.map((it) => ccardHTML(it, true)).join('') + '</div></div></div>';
   }
-  const back = plan.cols.backlog.map((id) => plan.items[id]);
+  const back = shownOrder('backlog').map((id) => plan.items[id]);
   html += '<div class="week unplanned"><div class="week-head"><span class="name">Not planned</span><span class="sub">' +
     back.length + (back.length === 1 ? ' item' : ' items') + ' without a sprint. Drag one onto a day to plan it.</span></div>' +
-    '<div class="dlist row" data-col="backlog" data-day="" data-empty="Every item is in a sprint.">' + back.map((it) => ccardHTML(it, false)).join('') + '</div></div>';
+    '<div class="strip" data-col="backlog" data-empty="Every item is in a sprint.">' + back.map((it) => ccardHTML(it, true)).join('') + '</div></div>';
   wrap.innerHTML = html;
   wrap.querySelectorAll('.wscroll').forEach((w, i) => { w.scrollLeft = scrolls[i] || 0; });
-  bindCalendar();
+  wrap.querySelectorAll('.gbar, .ccard').forEach((el) => el.addEventListener('pointerdown', ganttDown));
 }
-function bindCalendar() {
-  const wrap = $('calEl');
-  wrap.querySelectorAll('.dlist').forEach((list) => {
-    if (!window.Sortable) return;
-    Sortable.create(list, {
-      group: 'cal', animation: 150, ghostClass: 'sortable-ghost', dragClass: 'sortable-drag',
-      forceFallback: true, fallbackTolerance: 4, scroll: true, bubbleScroll: true, disabled: !loaded,
-      onStart: () => { dragging = true; },
-      onEnd: (evt) => {
-        dragging = false;
-        dragEnded = Date.now();
-        const id = evt.item.dataset.id;
-        const to = evt.to.dataset.col, day = evt.to.dataset.day;
-        if (evt.to === evt.from && evt.oldIndex === evt.newIndex) { renderCalendar(); return; }
-        const sib = (el, dir) => { let x = el[dir]; while (x && !x.classList.contains('ccard')) x = x[dir]; return x; };
-        const next = sib(evt.item, 'nextElementSibling'), prev = sib(evt.item, 'previousElementSibling');
-        // place it in the column's order: before the next card on that day, else right after the previous one,
-        // else (an empty day in the same sprint) where it already was
-        const others = plan.cols[to].filter((x) => x !== id);
-        let before = null;
-        if (next) before = next.dataset.id;
-        else if (prev) before = others[others.indexOf(prev.dataset.id) + 1] || null;
-        else if (colOf(plan, id) === to) { const list = plan.cols[to]; before = list[list.indexOf(id) + 1] || null; }
-        const op = { type: 'move', id, to, before };
-        if (to !== 'backlog') op.day = day;
-        commit(op);
-      },
-    });
-  });
-  wrap.querySelectorAll('.ccard').forEach((c) => c.addEventListener('click', () => { if (Date.now() - dragEnded > 200) openItem(c.dataset.id); }));
+
+// One drag at a time. g = {id, mode: 'move' | 'start' | 'end' | 'place', el, x0, y0, moved, grab, target}
+let g = null;
+function ganttDown(e) {
+  if (e.button !== 0 || !loaded) return;
+  const el = e.currentTarget;
+  const id = el.dataset.id, it = plan.items[id];
+  const grip = e.target.closest('[data-grip]');
+  const mode = el.classList.contains('ccard') ? 'place' : grip ? grip.dataset.grip : 'move';
+  let grab = 0;
+  if (mode === 'move') {
+    const s = SPRINTS.find((x) => x.id === colOf(plan, id));
+    const hit = ganttAt(e.clientX, e.clientY);
+    grab = hit && hit.col === s.id ? hit.day - dayIndex(s, it.start) : 0;
+  }
+  g = { id, mode, el, x0: e.clientX, y0: e.clientY, moved: false, grab, target: null };
+  document.addEventListener('pointermove', ganttMove);
+  document.addEventListener('pointerup', ganttUp);
+  document.addEventListener('pointercancel', ganttCancel);
+  e.preventDefault();
+}
+// The sprint chart and day under a point, or null.
+function ganttAt(x, y) {
+  for (const gt of document.querySelectorAll('#calEl .gantt')) {
+    const r = gt.getBoundingClientRect();
+    if (y >= r.top - 4 && y <= r.bottom + 4 && x >= r.left && x <= r.right) {
+      return { col: gt.dataset.col, el: gt, day: Math.max(0, Math.min(6, Math.floor((x - r.left) / (r.width / 7)))) };
+    }
+  }
+  return null;
+}
+function stripAt(x, y) {
+  for (const st of document.querySelectorAll('#calEl .strip')) {
+    const r = st.getBoundingClientRect();
+    if (y >= r.top && y <= r.bottom && x >= r.left && x <= r.right) return st;
+  }
+  return null;
+}
+function clearPreview() {
+  document.querySelectorAll('#calEl .gbar.preview, .gfloat').forEach((x) => x.remove());
+  document.querySelectorAll('#calEl .over').forEach((x) => x.classList.remove('over'));
+}
+function ganttMove(e) {
+  if (!g) return;
+  if (!g.moved) {
+    if (Math.abs(e.clientX - g.x0) + Math.abs(e.clientY - g.y0) < 5) return;
+    g.moved = true; dragging = true; g.el.classList.add('lifted');
+  }
+  const it = plan.items[g.id];
+  const cur = colOf(plan, g.id);
+  clearPreview();
+  g.target = null;
+  const hit = ganttAt(e.clientX, e.clientY);
+  if (hit && (g.mode === 'move' || g.mode === 'place' || hit.col === cur)) {
+    const s = SPRINTS.find((x) => x.id === hit.col);
+    let a, b;
+    if (g.mode === 'place') { a = b = hit.day; }
+    else if (g.mode === 'move') {
+      const sOld = SPRINTS.find((x) => x.id === cur);
+      const len = dayIndex(sOld, it.end) - dayIndex(sOld, it.start);
+      a = Math.max(0, Math.min(6 - len, hit.day - g.grab)); b = a + len;
+    } else {
+      const sCur = SPRINTS.find((x) => x.id === cur);
+      a = dayIndex(sCur, it.start); b = dayIndex(sCur, it.end);
+      if (g.mode === 'start') a = Math.min(hit.day, b); else b = Math.max(hit.day, a);
+    }
+    const days = sprintDays(s);
+    g.target = { kind: 'dates', col: hit.col, start: iso(days[a]), end: iso(days[b]) };
+    const pv = document.createElement('div');
+    pv.className = 'gbar preview' + (it.priority ? ' p-' + it.priority : '');
+    pv.style.gridColumn = (a + 1) + ' / ' + (b + 2);
+    pv.style.gridRow = '1';
+    pv.innerHTML = '<span class="bid">#' + it.num + '</span><span class="bt">' + esc(it.title || 'Untitled') + '</span>';
+    pv.title = '';
+    hit.el.appendChild(pv);
+    hit.el.classList.add('over');
+    const f = floatLabel(e, a === b ? fmtDay(days[a]) : fmt(days[a]) + ' to ' + fmt(days[b]));
+    f.style.borderColor = 'var(--accent)';
+  } else {
+    const st = g.mode === 'move' || g.mode === 'place' ? stripAt(e.clientX, e.clientY) : null;
+    if (st) {
+      g.target = { kind: st.dataset.col === 'backlog' ? 'backlog' : 'nodates', col: st.dataset.col };
+      st.classList.add('over');
+    }
+    floatLabel(e, st ? (st.dataset.col === 'backlog' ? 'Not planned' : 'No dates yet') : '#' + it.num + ' ' + (it.title || 'Untitled'));
+  }
+  autoScroll(e.clientY);
+}
+function floatLabel(e, text) {
+  const f = document.createElement('div');
+  f.className = 'gfloat';
+  f.textContent = text;
+  f.style.left = (e.clientX + 14) + 'px';
+  f.style.top = (e.clientY + 14) + 'px';
+  document.body.appendChild(f);
+  return f;
+}
+function autoScroll(y) {
+  const box = document.querySelector('#calendar .cal-wrap');
+  const r = box.getBoundingClientRect();
+  if (y < r.top + 40) box.scrollTop -= 14; else if (y > r.bottom - 40) box.scrollTop += 14;
+}
+function ganttEnd() {
+  document.removeEventListener('pointermove', ganttMove);
+  document.removeEventListener('pointerup', ganttUp);
+  document.removeEventListener('pointercancel', ganttCancel);
+  clearPreview();
+  dragging = false;
+}
+function ganttCancel() { ganttEnd(); g = null; renderCalendar(); }
+function ganttUp() {
+  const drag = g;
+  ganttEnd();
+  g = null;
+  if (!drag) return;
+  if (!drag.moved) { openItem(drag.id); return; }
+  dragEnded = Date.now();
+  const it = plan.items[drag.id], cur = colOf(plan, drag.id), tg = drag.target;
+  if (!tg) { renderCalendar(); return; }
+  if (tg.kind === 'dates') {
+    if (tg.col === cur) {
+      if (tg.start === it.start && tg.end === it.end) { renderCalendar(); return; }
+      commit({ type: 'update', id: drag.id, fields: { start: tg.start, end: tg.end } });
+    } else commit({ type: 'move', id: drag.id, to: tg.col, before: null, start: tg.start, end: tg.end });
+  } else if (tg.kind === 'nodates') {
+    if (tg.col === cur) {
+      if (!it.start) { renderCalendar(); return; }
+      commit({ type: 'update', id: drag.id, fields: { start: '', end: '' } });
+    } else commit({ type: 'move', id: drag.id, to: tg.col, before: null, start: '', end: '' });
+  } else if (tg.kind === 'backlog') {
+    if (cur === 'backlog') { renderCalendar(); return; }
+    commit({ type: 'move', id: drag.id, to: 'backlog', before: null });
+  }
 }
 
 function renderAll() {
