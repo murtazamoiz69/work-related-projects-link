@@ -1,0 +1,9 @@
+{
+  "name": "sprint-planner",
+  "private": true,
+  "description": "Sprint planner board with shared editing: static page plus Netlify Functions over Netlify Blobs.",
+  "type": "module",
+  "dependencies": {
+    "@netlify/blobs": "11.1.1"
+  }
+}
