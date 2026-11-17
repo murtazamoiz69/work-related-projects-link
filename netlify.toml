@@ -1,0 +1,19 @@
+# Recipes prototype (Heal): recipes in the menu, and Simi A (recipe database) vs B (blog titles + pages).
+#   site/                      the page, engine.js (search + Simi's tool loop), data/, kit/
+#   netlify/edge-functions/    /api/llm (NVIDIA NIM call, holds the key) and /api/page (blog pages only)
+# Set NVIDIA_API_KEY in Site configuration > Environment variables. Optional: NIM_MODEL, NIM_BASE_URL.
+[build]
+  publish = "site"
+  edge_functions = "netlify/edge-functions"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "no-referrer"
+
+[[headers]]
+  for = "/data/*"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"

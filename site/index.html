@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Recipes Prototype</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="kit/heal-phone-kit.css">
+<style>
+  /* Page around the phones (not part of the app) */
+  :root { --pg-bg:#F4F5F2; --pg-surface:#fff; --pg-border:#E3E6E0; --pg-tx:#1F2722; --pg-tx2:#5A665E; --pg-accent:#2F5D50; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--pg-bg); color:var(--pg-tx); font-family:"Instrument Sans", system-ui, sans-serif; }
+  header.pg { background:var(--pg-surface); border-bottom:1px solid var(--pg-border); padding:12px 20px; display:flex; gap:20px; align-items:center; flex-wrap:wrap; }
+  header.pg h1 { font-size:16px; margin:0; }
+  .tabs { display:flex; gap:2px; padding:3px; background:#F7F8F5; border:1px solid var(--pg-border); border-radius:8px; }
+  .tabs button { font:inherit; font-size:13px; font-weight:600; color:var(--pg-tx2); background:none; border:0; border-radius:6px; padding:7px 14px; cursor:pointer; }
+  .tabs button[aria-pressed="true"] { background:#fff; color:var(--pg-accent); box-shadow:0 1px 2px rgba(0,0,0,.08); }
+  .meta { margin-left:auto; font-size:12px; color:var(--pg-tx2); }
+  main { padding:20px; }
+  .view[hidden] { display:none; }
+  .menu-view { display:flex; gap:32px; align-items:flex-start; justify-content:center; flex-wrap:wrap; }
+  .phonebox { width:380px; max-width:100%; }
+  .side { max-width:380px; font-size:13px; line-height:1.55; color:var(--pg-tx2); }
+  .side h2 { font-size:15px; color:var(--pg-tx); margin:0 0 8px; }
+  .side b { color:var(--pg-tx); }
+  .askbar { max-width:1000px; margin:0 auto 16px; background:var(--pg-surface); border:1px solid var(--pg-border); border-radius:12px; padding:12px; }
+  .askrow { display:flex; gap:8px; }
+  .askrow input { flex:1; font:inherit; font-size:14px; padding:10px 12px; border:1px solid var(--pg-border); border-radius:8px; }
+  .askrow button { font:inherit; font-weight:600; font-size:14px; padding:0 16px; border:0; border-radius:8px; background:var(--pg-accent); color:#fff; cursor:pointer; }
+  .askrow button.ghost { background:none; color:var(--pg-tx2); border:1px solid var(--pg-border); }
+  .examples { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+  .examples button { font:inherit; font-size:12px; padding:5px 10px; border-radius:999px; border:1px solid var(--pg-border); background:#FAFBF9; color:var(--pg-tx); cursor:pointer; }
+  .compare { display:flex; gap:28px; justify-content:center; flex-wrap:wrap; }
+  .col { width:380px; max-width:100%; }
+  .col h3 { font-size:14px; margin:0 0 2px; }
+  .col p.how { font-size:12px; color:var(--pg-tx2); margin:0 0 10px; min-height:34px; }
+  .trace { margin-top:10px; font-size:12px; color:var(--pg-tx2); background:var(--pg-surface); border:1px solid var(--pg-border); border-radius:10px; padding:10px 12px; min-height:44px; }
+  .trace b { color:var(--pg-tx); }
+  .trace ol { margin:4px 0 0; padding-left:18px; }
+  .trace li { margin-bottom:4px; }
+  .trace code { font-size:11px; background:#F1F3EF; padding:1px 4px; border-radius:4px; }
+  .err { color:#B42318; }
+
+  /* New app parts (drawn at the kit's scale) */
+  .rq { width:100%; height:calc(48px*var(--kmvs)); border:1px solid var(--border); border-radius:var(--rmd); padding:0 var(--md) 0 calc(var(--md) + 26px); font:inherit; font-size:var(--fbase); color:var(--tx); background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23889089' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E") no-repeat 12px center; }
+  .rq:focus { outline:none; border-color:var(--c-borderFocus, var(--p)); }
+  .rrow { display:flex; gap:var(--md); align-items:center; padding:var(--sm) 0; border-bottom:1px solid var(--border); cursor:pointer; background:none; border-left:0; border-right:0; border-top:0; width:100%; text-align:left; font:inherit; }
+  .rthumb { width:calc(56px*var(--kms)); height:calc(56px*var(--kms)); border-radius:var(--rsm); background:var(--c-primarySubtle, #EEF2EF) center/cover no-repeat; flex:none; }
+  .rname { font-weight:600; font-size:var(--fbase); color:var(--tx); line-height:1.25; }
+  .rmeta { font-size:var(--fsm); color:var(--tx2); margin-top:2px; }
+  .rhero { width:100%; aspect-ratio:4/3; border-radius:var(--rmd); background:var(--c-primarySubtle, #EEF2EF) center/cover no-repeat; }
+  .rsec { font-weight:600; font-size:var(--fmd); color:var(--tx); margin:var(--lg) 0 var(--xs); }
+  .rtext { font-size:var(--fbase); line-height:1.5; color:var(--tx); white-space:pre-wrap; }
+  .rcount { font-size:var(--fsm); color:var(--tx2); }
+  .rcard { display:flex; gap:var(--sm); align-items:center; border:1px solid var(--border); border-radius:var(--rmd); padding:var(--xs); margin:var(--xs) 0; cursor:pointer; background:#fff; width:100%; text-align:left; font:inherit; }
+  .rcard .rthumb { width:calc(40px*var(--kms)); height:calc(40px*var(--kms)); }
+  .md p { margin:0 0 var(--xs); } .md ul, .md ol { margin:0 0 var(--xs); padding-left:1.2em; } .md li { margin-bottom:2px; }
+  .md a { color:var(--link, var(--c-link)); word-break:break-all; }
+  .typing { color:var(--tx2); font-style:italic; }
+  .new { outline:2px dashed #E8833A; outline-offset:2px; }
+  /* Recipes: search + one filter button, applied chips, bottom-sheet filters */
+  .rsearch { display:flex; gap:var(--sm); align-items:center; }
+  .rsearch .rq { flex:1; min-width:0; }
+  .fbtn { position:relative; flex:none; width:calc(48px*var(--kmvs)); height:calc(48px*var(--kmvs)); border:1px solid var(--border); border-radius:var(--rmd); background:#fff; color:var(--tx); display:grid; place-items:center; cursor:pointer; }
+  .fbtn.on { border-color:var(--p); color:var(--p); background:var(--c-chipSelectedBackground); }
+  .fdot { position:absolute; top:-6px; right:-6px; min-width:18px; height:18px; padding:0 5px; border-radius:9px; background:var(--p); color:#fff; font:600 11px/18px "Instrument Sans",sans-serif; text-align:center; }
+  .fdot[hidden] { display:none; }
+  .fscrim { position:absolute; inset:0; }
+  /* Meal tabs, pills, filter sheet */
+  .itabs { display:flex; gap:var(--sm); justify-content:space-between; overflow-x:auto; scrollbar-width:none; padding:0 var(--md); border-bottom:1px solid var(--border); margin-top:var(--md); }
+  .itab { flex:none; border:0; background:none; padding:var(--sm) 0; font:500 var(--fbase)/1.2 "Instrument Sans",sans-serif; color:var(--tx2); cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; }
+  .itab.on { color:var(--tx); font-weight:600; border-bottom-color:var(--p); }
+  .ilink { border:0; background:none; padding:0; font:600 var(--fsm)/1.2 "Instrument Sans",sans-serif; color:var(--p); cursor:pointer; white-space:nowrap; }
+  /* Filter sheet: pills in an even grid (4 across for diet, 3 for cuisine), the same gap (--sm)
+     across and down, --md under each heading, --xl between sections. */
+  .ipills { display:grid; grid-template-columns:repeat(var(--cols, 3), minmax(0, 1fr)); gap:var(--sm); }
+  .ipill { border:1px solid var(--border); background:#fff; border-radius:999px; min-height:calc(40px*var(--kmvs)); padding:0 calc(8px*var(--kms)); font:500 var(--fbase)/1.1 "Instrument Sans",sans-serif; color:var(--tx); cursor:pointer; display:flex; align-items:center; justify-content:center; text-align:center; white-space:nowrap; }
+  /* Selected: the app's chip-selected colours, same as the applied chips on the screen. */
+  .ipill.on, .ichip { background:var(--c-chipSelectedBackground); border-color:var(--c-chipSelectedBorder); color:var(--p); font-weight:600; }
+  /* The row under the meal tabs: chips left, count right, one height, centred. */
+  .imeta { display:flex; align-items:center; gap:var(--sm); min-height:calc(32px*var(--kmvs)); padding-top:var(--sm); padding-bottom:var(--xs); }
+  .ichips { flex:1; min-width:0; display:flex; gap:var(--xs); overflow:hidden; }
+  .ichip { flex:none; display:inline-flex; align-items:center; height:calc(28px*var(--kmvs)); padding:0 calc(12px*var(--kms)); border-width:1px; border-style:solid; border-radius:999px; font:600 var(--fsm)/1 "Instrument Sans",sans-serif; cursor:pointer; white-space:nowrap; }
+  .ichip.more { background:#fff; border-color:var(--border); color:var(--tx2); }
+  .icount { flex:none; margin-left:auto; font:500 var(--fsm)/1 "Instrument Sans",sans-serif; color:var(--tx2); white-space:nowrap; }
+  .isheet { z-index:30; }
+  .icard { position:relative; background:#fff; border-radius:var(--rxl) var(--rxl) 0 0; padding:var(--sm) var(--lg) 0; max-height:70%; display:flex; flex-direction:column; }
+  .icard .grab { margin-bottom:var(--sm); }
+  .ihead { display:flex; align-items:center; justify-content:space-between; padding-bottom:var(--sm); }
+  .ibody { flex:1; min-height:0; overflow-y:auto; scrollbar-width:none; padding-bottom:var(--md); }
+  .ifoot { padding:var(--md) 0 calc(var(--md) + 24px); border-top:1px solid var(--border); display:flex; }
+  .ifoot .btn { flex:1; }
+  .isheet .isec { font:600 var(--fsm)/1.2 "Instrument Sans",sans-serif; color:var(--tx2); text-transform:uppercase; letter-spacing:.05em; margin:var(--xl) 0 var(--md); }
+  .isheet .isec:first-child { margin-top:var(--md); }
+</style>
+</head>
+<body>
+<header class="pg">
+  <h1>Recipes prototype</h1>
+  <div class="tabs" role="group" aria-label="View">
+    <button type="button" data-view="menu" aria-pressed="true">Recipes in the menu</button>
+    <button type="button" data-view="simi" aria-pressed="false">Ask Simi: A vs B</button>
+  </div>
+  <span class="meta" id="meta"></span>
+</header>
+<main>
+  <section class="view menu-view" id="view-menu">
+    <div class="phonebox" id="phone-menu"></div>
+    <div class="side">
+      <h2>Recipes in the left menu</h2>
+      <p>Open the menu: <b>Recipes</b> is the new item (outlined). It opens a searchable list of the old NWS recipes.</p>
+      <p><b>Search</b> matches dish names and ingredients ("paneer", "oats").</p>
+      <p><b>Meal tabs</b> under the search: All, Breakfast, Lunch, Snacks, Dinner, Dessert. Breakfast includes On waking and Pre breakfast; Snacks covers Morning and Evening snack; Dinner includes Post dinner.</p>
+      <p>The <b>filter button</b> beside the search opens a sheet with <b>Diet</b> (Veg, Egg, Non-veg, Vegan) and <b>Cuisine</b> as pills; pick one or more. Reset clears them; the button says how many recipes you'll get. Once applied, the button shows how many are on, and a quiet line under the tabs says what they are, with Clear.</p>
+      <p>A recipe shows its photo, ingredients, nutrition (where the recipe has it) and method. View only.</p>
+      <p id="menu-count"></p>
+    </div>
+  </section>
+
+  <section class="view" id="view-simi" hidden>
+    <div class="askbar">
+      <form class="askrow" id="ask">
+        <input id="q" autocomplete="off" placeholder="Ask both Simis, e.g. I have paneer and spinach, what can I make for dinner?">
+        <button type="submit">Ask both</button>
+        <button type="button" class="ghost" id="reset">New chat</button>
+      </form>
+      <div class="examples" id="examples"></div>
+    </div>
+    <div class="compare">
+      <div class="col">
+        <h3>A: from the recipe database</h3>
+        <p class="how">Searches the indexed old NWS recipes (names, ingredients, category, cuisine, diet) and reads them in full.</p>
+        <div class="phonebox" id="phone-a"></div>
+        <div class="trace" id="trace-a">What Simi did shows here.</div>
+      </div>
+      <div class="col">
+        <h3>B: blog titles + restricted browsing</h3>
+        <p class="how" id="how-b">Knows only the titles and links under nourishwithsim.com/blogs/recipes/. May open up to 3 of those pages, nothing else.</p>
+        <div class="phonebox" id="phone-b"></div>
+        <div class="trace" id="trace-b">What Simi did shows here.</div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="kit/heal-phone-kit.js"></script>
+<script src="engine.js"></script>
+<script>
+const $ = (s, r = document) => r.querySelector(s);
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const api = (u, o) => fetch(u, o).then(async (r) => { const j = await r.json(); if (!r.ok) throw new Error(j.error || r.status); return j; });
+const now = () => new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+let FACETS = null;
+const recipeCache = {};
+const getRecipe = async (id) => getRecipeLocal(id);
+
+/* ---------- shared: a recipe's own screen ---------- */
+function recipeScreen(r, back) {
+  const tidy = (s) => s.replace(/\n\s*\n(?=(- |\d+[.)] ))/g, '\n');   /* no gaps between list items */
+  const sec = (t, body) => body ? `<p class="rsec">${t}</p><div class="rtext">${esc(tidy(body))}</div>` : '';
+  const pills = [r.diet, r.cuisine, ...r.categories.split(', ')].filter(Boolean).map((p) => `<span class="mp-pill">${esc(p)}</span>`).join('');
+  return screen(`<div class="pad">${shdr(esc(r.name), back)}</div>
+    <div class="scroll pad" style="padding-bottom:var(--xl)">
+      <div class="rhero" style="background-image:url('${esc(r.image)}')"></div>${sp('md')}
+      <p class="t-h3 cs" style="margin:0">${esc(r.name)}</p>${sp('sm')}<div>${pills}</div>
+      ${r.method ? sec('Ingredients', r.ingredients) + sec('Nutrition', r.nutrition) + sec('Method', r.method) : sec('Recipe', r.full_text)}
+    </div>`);
+}
+
+/* ---------- 1. Recipes in the menu (final layout, 17 Nov) ---------- */
+/* Search with a filter button beside it; meal tabs under the search (All, Breakfast,
+   Lunch, Snacks, Dinner, Dessert). The filter button opens a sheet with Diet and Cuisine
+   as soft pills (pick one or more), Reset, and one button that says how many recipes
+   you'll get. Applied diet/cuisine show as a quiet line under the tabs with Clear. */
+const MEALS = { Breakfast: ['On Waking', 'Pre Breakfast', 'Breakfast'], Lunch: ['Lunch'], Snacks: ['Morning Snack', 'Evening Snack'],
+  Dinner: ['Dinner', 'Post Dinner'], Dessert: ['Dessert'] };
+const DIETS = { Veg: 'Vegetarian', Egg: 'Eggetarian', 'Non-veg': 'Non Vegetarian', Vegan: 'Vegan' };
+const M = { box: $('#phone-menu'), q: '', meal: '', diet: [], cuisine: [] };
+const FILTER_SVG = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>`;
+const toggle = (arr, v) => (arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
+const recipeFilter = (s) => ({ query: s.q || '', category: MEALS[s.meal] || [], diet: s.diet.map((d) => DIETS[d]), cuisine: s.cuisine });
+const recipeCount = async (s) => countRecipes(recipeFilter(s));
+
+function drawerItems() {
+  const items = [['chat', 'Chat', 'm-chat'], ['diet', 'View diet plan'], ['workout', 'View workout plan'], ['shopping-list', 'Recipes', 'm-recipes'],
+    ['analytics', 'Analytics'], ['profile', 'Profile'], ['bell', 'Preferences']];
+  return items.map(([i, l, g]) => { const h = drawerItem(ic(i, 22), l, { on: l === 'Chat', go: g }); return l === 'Recipes' ? h.replace('class="ditem', 'class="ditem new') : h; });
+}
+function menuShow(id) {
+  if (id === 'm-chat') return mountPhone(M.box, chatScreen(niaMsg(WELCOME, '9:41 AM'), { menu: 'm-menu' })), fit();
+  if (id === 'm-menu') return mountPhone(M.box, overlay(chatScreen(niaMsg(WELCOME, '9:41 AM'), { menu: 'm-menu' }), drawer(drawerItems(), { close: 'm-chat' }))), fit();
+  if (id === 'm-recipes') return recipesScreen();
+  if (id.startsWith('m-r:')) return getRecipe(id.slice(4)).then((r) => { mountPhone(M.box, recipeScreen(r, 'm-recipes')); fit(); });
+}
+
+function recipesScreen() {
+  const tabs = ['All', ...Object.keys(MEALS)].map((m) => `<button type="button" class="itab${(m === 'All' ? !M.meal : M.meal === m) ? ' on' : ''}" data-meal="${m}">${m}</button>`).join('');
+  mountPhone(M.box, screen(`<div class="pad">${shdr('Recipes', 'm-menu')}
+      <div class="rsearch">
+        <input class="rq" id="rq" type="search" placeholder="Search dishes or ingredients" value="${esc(M.q)}">
+        <button type="button" class="fbtn" id="fbtn" aria-label="Diet and cuisine filters">${FILTER_SVG}<span class="fdot" id="fdot" hidden></span></button>
+      </div></div>
+    <div class="itabs" role="tablist" aria-label="Meal">${tabs}</div>
+    <div class="pad imeta"><div class="ichips" id="ichips"></div><span class="icount" id="rcount"></span></div>
+    <div class="scroll pad" id="rlist" style="padding-bottom:var(--xl)"></div>`));
+  fit();
+  const input = $('#rq', M.box);
+  let t; input.addEventListener('input', () => { clearTimeout(t); t = setTimeout(() => { M.q = input.value; loadList(); }, 200); });
+  $('.itabs', M.box).addEventListener('click', (e) => {
+    const b = e.target.closest('[data-meal]'); if (!b) return;
+    M.meal = b.dataset.meal === 'All' ? '' : b.dataset.meal;
+    M.box.querySelectorAll('.itab').forEach((x) => x.classList.toggle('on', x === b));
+    loadList();
+  });
+  $('#fbtn', M.box).addEventListener('click', openFilters);
+  $('#ichips', M.box).addEventListener('click', (e) => { if (e.target.closest('.ichip')) openFilters(); });
+  applied();
+}
+
+/* One row under the meal tabs: the applied filters as chips on the left (tap one to change
+   them in the sheet; whatever doesn't fit folds into "+N"), the recipe count on the right. */
+function applied() {
+  const all = [...M.diet, ...M.cuisine];
+  const dot = $('#fdot', M.box); if (!dot) return;
+  dot.hidden = !all.length; dot.textContent = all.length || '';
+  $('#fbtn', M.box).classList.toggle('on', !!all.length);
+  const box = $('#ichips', M.box);
+  const chip = (v) => `<button type="button" class="ichip">${esc(v)}</button>`;
+  box.innerHTML = all.map(chip).join('');
+  let shown = all.length;
+  while (shown > 0 && box.scrollWidth > box.clientWidth) {
+    shown--;
+    box.innerHTML = all.slice(0, shown).map(chip).join('') + `<button type="button" class="ichip more" aria-label="${all.length - shown} more filters">+${all.length - shown}</button>`;
+  }
+  loadList();
+}
+
+async function loadList() {
+  const rows = searchRecipes(recipeFilter(M), 80), n = countRecipes(recipeFilter(M));
+  const list = $('#rlist', M.box); if (!list) return;
+  $('#rcount', M.box).textContent = n ? `${n.toLocaleString()} recipe${n === 1 ? '' : 's'}` : '';
+  list.innerHTML = rows.length ? rows.map((r) => `<button type="button" class="rrow" data-go="m-r:${r.id}">
+      <span class="rthumb" style="background-image:url('${esc(r.thumb || r.image)}')"></span>
+      <span><span class="rname">${esc(r.name)}</span><span class="rmeta" style="display:block">${esc([r.diet, r.cuisine].filter(Boolean).join(' · '))}</span></span></button>`).join('')
+    + (n > rows.length ? `<p class="t-cap cm center" style="margin:var(--md) 0">Showing ${rows.length} of ${n.toLocaleString()}. Search or filter to narrow.</p>` : '')
+    : `<p class="t-bs c2" style="margin-top:var(--lg)">No recipes match. Try another word, another meal, or fewer filters.</p>`;
+}
+
+/* The filter sheet: Diet and Cuisine as soft pills, Reset, and "Show N recipes". */
+function openFilters() {
+  const d = { ...M, diet: M.diet.slice(), cuisine: M.cuisine.slice() };
+  const sec = (title, key, opts) => `<p class="isec">${title}</p><div class="ipills" style="--cols:${opts.length === 4 ? 4 : 3}">${opts.map((o) => `<button type="button" class="ipill${d[key].includes(o) ? ' on' : ''}" aria-pressed="${d[key].includes(o)}" data-k="${key}" data-o="${esc(o)}">${esc(o)}</button>`).join('')}</div>`;
+  const body = () => sec('Diet', 'diet', Object.keys(DIETS)) + sec('Cuisine', 'cuisine', FACETS.cuisines);
+  const host = $('.devscreen', M.box); host.querySelector('.isheet')?.remove();
+  host.insertAdjacentHTML('beforeend', `<div class="sheet isheet" role="dialog" aria-label="Filters"><div class="fscrim" data-x></div><div class="icard">
+    <div class="grab"></div>
+    <div class="ihead"><span class="t-h3 cs">Filters</span><span class="row" style="gap:var(--md)"><button type="button" class="ilink" data-reset>Clear</button><button type="button" class="iconbtn" aria-label="Close" data-x>${ic('close', 22)}</button></span></div>
+    <div class="ibody" id="ibody">${body()}</div>
+    <div class="ifoot">${btn('Show recipes', 'primary', '', 'data-show')}</div></div></div>`);
+  const sh = host.querySelector('.isheet');
+  const recount = async () => {
+    const n = await recipeCount(d); const b = $('[data-show]', sh); if (!b) return;
+    b.textContent = n ? `Show ${n.toLocaleString()} recipe${n === 1 ? '' : 's'}` : 'No recipes match';
+    b.className = 'btn ' + (n ? 'primary' : 'off');
+  };
+  sh.addEventListener('click', (e) => {
+    if (e.target.closest('[data-x]')) return sh.remove();
+    const p = e.target.closest('[data-o]');
+    if (p) { d[p.dataset.k] = toggle(d[p.dataset.k], p.dataset.o); p.classList.toggle('on'); p.setAttribute('aria-pressed', String(p.classList.contains('on'))); recount(); }
+    if (e.target.closest('[data-reset]')) { d.diet = []; d.cuisine = []; $('#ibody', sh).innerHTML = body(); recount(); }
+    if (e.target.closest('[data-show]') && !e.target.closest('.off')) { M.diet = d.diet; M.cuisine = d.cuisine; sh.remove(); applied(); }
+  });
+  recount();
+}
+M.box.addEventListener('click', (e) => { const g = e.target.closest('[data-go]'); if (g) { e.preventDefault(); menuShow(g.dataset.go === '@back' ? 'm-recipes' : g.dataset.go); } });
+
+/* ---------- 2. Simi A vs B ---------- */
+const S = { a: { box: $('#phone-a'), hist: [], view: null }, b: { box: $('#phone-b'), hist: [], view: null } };
+function md(text) {
+  const lines = esc(text).split('\n'); let out = '', list = null;
+  const inline = (s) => s
+    .replace(/\[\[recipe:(\d+)\]\]/g, '<span class="rref" data-rid="$1"></span>')
+    .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
+    .replace(/(^|\W)\*([^*\s][^*]*?)\*(?=\W|$)/g, '$1<i>$2</i>')
+    .replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
+    .replace(/(^|[\s(])(https?:\/\/[^\s)<]+)/g, '$1<a href="$2" target="_blank" rel="noopener">Open recipe ↗</a>');
+  for (const raw of lines) {
+    const l = raw.trim(); const m = l.match(/^([-*•]|\d+[.)])\s+(.*)/);
+    if (m) { const tag = /\d/.test(m[1]) ? 'ol' : 'ul'; if (list !== tag) { if (list) out += `</${list}>`; out += `<${tag}>`; list = tag; } out += `<li>${inline(m[2])}</li>`; continue; }
+    if (list) { out += `</${list}>`; list = null; }
+    if (!l) continue;
+    out += `<p>${inline(l.replace(/^#{1,6}\s*/, ''))}</p>`;
+  }
+  if (list) out += `</${list}>`;
+  return `<div class="md t-bs">${out}</div>`;
+}
+function simiRender(k) {
+  const s = S[k];
+  const msgs = [niaMsg(`<p class="t-bs">Hi, I'm Simi. Ask me for a recipe: by ingredients, meal, cuisine or diet.</p>`, '9:41 AM')];
+  for (const m of s.hist) msgs.push(m.role === 'user' ? userMsg(esc(m.content), m.time) : niaMsg(m.error ? `<p class="t-bs err">${esc(m.error)}</p>` : md(m.content), m.time));
+  if (s.busy) msgs.push(niaMsg(`<p class="t-bs typing">Simi is looking…</p>`));
+  mountPhone(s.box, chatScreen(msgs.join(''), {})); fit();
+  const sc = s.box.querySelector('.scroll'); if (sc) sc.scrollTop = sc.scrollHeight;
+  s.box.querySelectorAll('.rref').forEach(async (el) => {
+    const r = await getRecipe(el.dataset.rid).catch(() => null); if (!r || !r.name) return;
+    el.outerHTML = `<button type="button" class="rcard" data-go="s-r:${r.id}"><span class="rthumb" style="background-image:url('${esc(r.thumb || r.image)}')"></span><span class="rname" style="font-size:var(--fsm)">${esc(r.name)}</span></button>`;
+  });
+}
+for (const k of ['a', 'b']) S[k].box.addEventListener('click', async (e) => {
+  const g = e.target.closest('[data-go]'); if (!g) return; e.preventDefault();
+  if (g.dataset.go.startsWith('s-r:')) { const r = await getRecipe(g.dataset.go.slice(4)); mountPhone(S[k].box, recipeScreen(r, 's-chat')); fit(); }
+  else simiRender(k);
+});
+function showTrace(k, res) {
+  const el = $('#trace-' + k);
+  if (res.error) { el.innerHTML = `<span class="err">${esc(res.error)}</span>`; return; }
+  const steps = res.trace.map((t) => {
+    const args = Object.entries(t.args || {}).map(([a, v]) => `${a}: ${esc(v)}`).join(', ');
+    const what = t.tool === 'open_page' ? 'Opened' : t.tool === 'get_recipe' ? 'Read recipe' : t.tool === 'retry' ? 'Retried' : 'Searched';
+    return `<li><b>${what}</b> <code>${args}</code><br>${esc(t.found.slice(0, 8).join(', ') || 'nothing found')}</li>`;
+  }).join('');
+  el.innerHTML = `<b>What Simi did</b> · ${res.seconds}s${steps ? `<ol>${steps}</ol>` : '<br>Answered without using a tool.'}`;
+}
+async function ask(text) {
+  text = text.trim(); if (!text) return;
+  $('#q').value = '';
+  await Promise.all(['a', 'b'].map(async (k) => {
+    const s = S[k]; s.hist.push({ role: 'user', content: text, time: now() }); s.busy = true; simiRender(k);
+    $('#trace-' + k).textContent = 'Working…';
+    const history = s.hist.filter((m) => !m.error).map(({ role, content }) => ({ role, content }));
+    try { const res = await runAgent(k, history);
+      s.hist.push({ role: 'assistant', content: res.reply || '(no reply)', time: now() }); showTrace(k, res);
+    } catch (err) { s.hist.push({ role: 'assistant', error: 'Something went wrong: ' + err.message, time: now() }); showTrace(k, { error: err.message }); }
+    s.busy = false; simiRender(k);
+  }));
+}
+$('#ask').addEventListener('submit', (e) => { e.preventDefault(); ask($('#q').value); });
+$('#reset').addEventListener('click', () => { for (const k of ['a', 'b']) { S[k].hist = []; simiRender(k); $('#trace-' + k).textContent = 'What Simi did shows here.'; } });
+const EXAMPLES = ['I have paneer and spinach, what can I make for dinner?', 'Something non-veg and high protein for lunch', 'A quick healthy breakfast with oats', 'Give me the recipe for palak paneer', 'Any Chinese snack ideas?', 'A low calorie dessert', 'What can I make with leftover rice?', 'Vegan dinner ideas'];
+$('#examples').innerHTML = EXAMPLES.map((x) => `<button type="button">${esc(x)}</button>`).join('');
+$('#examples').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) ask(b.textContent); });
+
+/* ---------- page ---------- */
+function fit() {
+  const h = innerHeight - (document.querySelector('#view-simi:not([hidden])') ? 330 : 120);
+  document.querySelectorAll('.devbox').forEach((b) => fitPhone(b, { maxHeight: Math.max(420, h) }));
+}
+addEventListener('resize', fit);
+document.querySelectorAll('.tabs button').forEach((b) => b.addEventListener('click', () => {
+  document.querySelectorAll('.tabs button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+  document.querySelectorAll('.view').forEach((v) => (v.hidden = v.id !== 'view-' + b.dataset.view));
+  fit();
+}));
+loadEngine().then(() => {
+  const f = FACETS = ENGINE.facets;
+  $('#meta').textContent = `${f.count.toLocaleString()} recipes indexed · ${ENGINE.titles.length} blog titles · model ${ENGINE.model}`;
+  $('#menu-count').innerHTML = `<b>${f.count.toLocaleString()}</b> recipes from the old admin panel.`;
+  $('#how-b').textContent = `Knows only the ${ENGINE.titles.length} titles and links under nourishwithsim.com/blogs/recipes/. May open up to 3 of those pages, nothing else.`;
+  menuShow('m-menu'); simiRender('a'); simiRender('b');
+});
+</script>
+</body>
+</html>
